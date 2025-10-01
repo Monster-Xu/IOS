@@ -30,7 +30,7 @@
     // 验证SF Pro Rounded字体加载
     [FontValidationHelper validateFontsInAppDelegate];
     // ⭐️ 只需要这一行代码，即可开始全局自动记录 ⭐️
-    [LogManager startAutoLogging];
+//    [LogManager startAutoLogging];
     [[ThingSmartSDK sharedInstance] startWithAppKey:Smart_APPID secretKey:Smart_AppSecret];
     // App 启动时初始化涂鸦小程序
     [[ThingMiniAppClient initialClient] initialize];

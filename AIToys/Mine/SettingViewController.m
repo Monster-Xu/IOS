@@ -80,10 +80,10 @@
         @{@"title" : LocalString(@"清理缓存"),@"value" :[NSString stringWithFormat:@"%.2fM",[PublicObj readCacheSize]], @"toVC" : @""}
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr4]];
-    NSArray *arr5 = @[
-        @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @""}
-        ];
-    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr5]];
+//    NSArray *arr5 = @[
+//        @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @""}
+//        ];
+//    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr5]];
 }
 
 - (UIView *)setupfooterView {
@@ -172,28 +172,30 @@
                 });
             }
         }];
-    }else if ([title isEqualToString:@"导出日志"]){
-        [[LogManager sharedManager] exportLogsWithCompletion:^(NSURL * _Nullable fileURL, NSError * _Nullable error) {
-            //            [self.activityIndicator stopAnimating];
-            //            self.exportButton.enabled = YES;
-            
-            if (error) {
-                
-                return;
-            }
-            // 显示导出成功提示，告知用户文件位置
-                    NSString *message = [NSString stringWithFormat:@"日志已导出到：\n%@\n\n可以在「文件」App 的「我的 iPhone/ExportedLogs」中查看", fileURL.lastPathComponent];
-            NSLog(@"%@", message);
-
-//            UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:nil];
+    }
+//    else if ([title isEqualToString:@"导出日志"]){
+//        [[LogManager sharedManager] exportLogsWithCompletion:^(NSURL * _Nullable fileURL, NSError * _Nullable error) {
+//            //            [self.activityIndicator stopAnimating];
+//            //            self.exportButton.enabled = YES;
 //            
-//            if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-//                //                activityVC.popoverPresentationController.sourceView = self.exportButton;
-//                //                activityVC.popoverPresentationController.sourceRect = self.exportButton.bounds;
+//            if (error) {
+//                
+//                return;
 //            }
-            
-        }];
-    }else{
+//            // 显示导出成功提示，告知用户文件位置
+//                    NSString *message = [NSString stringWithFormat:@"日志已导出到：\n%@\n\n可以在「文件」App 的「我的 iPhone/ExportedLogs」中查看", fileURL.lastPathComponent];
+//            NSLog(@"%@", message);
+//
+////            UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:nil];
+////            
+////            if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+////                //                activityVC.popoverPresentationController.sourceView = self.exportButton;
+////                //                activityVC.popoverPresentationController.sourceRect = self.exportButton.bounds;
+////            }
+//            
+//        }];
+//    }
+    else{
         UIViewController* vc = [NSString stringChangeToClass:str];
         vc.title = title;
         if (vc) {
