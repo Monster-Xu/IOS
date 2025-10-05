@@ -15,11 +15,9 @@
 		<string>SFProRoundedRegular.otf</string>
 		<string>SFProRoundedSemibold.ttf</string>
 	</array>
-	<key>UIFileSharingEnabled</key>
-	<true/>
-	<key>LSSupportsOpeningDocumentsInPlace</key>
-	<true/>
 	<key>UIApplicationSupportsShakeToEdit</key>
+	<true/>
+	<key>UIFileSharingEnabled</key>
 	<true/>
 </dict>
 </plist>
