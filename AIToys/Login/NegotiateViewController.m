@@ -33,7 +33,7 @@
             break;
 
         case 1:
-            fileURL = [bundle URLForResource:@"Talenpal_Content_Creation_User_Agreement_EN" withExtension:@"docx"];
+            fileURL = [bundle URLForResource:@"Talenpal_Terms_of_Use" withExtension:@"docx"];
             break;
 
         case 2:
@@ -41,7 +41,7 @@
             break;
 
         case 3:
-            fileURL = [bundle URLForResource:@"Talenpal_Terms_of_Use" withExtension:@"docx"];
+            fileURL = [bundle URLForResource:@"Talenpal_Content_Creation_User_Agreement_EN" withExtension:@"docx"];
             break;
 
         default:

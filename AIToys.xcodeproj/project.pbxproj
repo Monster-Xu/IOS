@@ -14,6 +14,15 @@
 		187647DE2E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647D92E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx */; };
 		187647E02E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647DF2E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx */; };
 		188C18572E8D30570095B6BC /* LogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 188C18562E8D30570095B6BC /* LogManager.m */; };
+		18938FC12E8D7C730054623B /* VoiceStoryModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 18938FBD2E8D7C730054623B /* VoiceStoryModel.m */; };
+		18938FC22E8D7C730054623B /* VoiceStoryTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 18938FBF2E8D7C730054623B /* VoiceStoryTableViewCell.m */; };
+		18938FC32E8D7C730054623B /* CreationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18938FBB2E8D7C730054623B /* CreationViewController.m */; };
+		18938FC42E8D7C730054623B /* VoiceStoryTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18938FC02E8D7C730054623B /* VoiceStoryTableViewCell.xib */; };
+		18CF0EE12E9257A900F9E19E /* VoiceModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EE02E9257A900F9E19E /* VoiceModel.m */; };
+		18CF0EE42E9257BD00F9E19E /* APIResponseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EE32E9257BD00F9E19E /* APIResponseModel.m */; };
+		18CF0EE72E9257E300F9E19E /* APIRequestModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EE62E9257E300F9E19E /* APIRequestModel.m */; };
+		18CF0EF12E92614B00F9E19E /* CreateStoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EF02E92614B00F9E19E /* CreateStoryViewController.m */; };
+		18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */; };
 		18EE7F4E2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18EE7F4C2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m */; };
 		18EE7F4F2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18EE7F4D2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib */; };
 		A3E81D34F080E0F6069DDC1F /* libPods-AIToys.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CD81051212684563E5D7D2BB /* libPods-AIToys.a */; };
@@ -336,8 +345,6 @@
 		E49272C72E01CB4700DB6A2A /* HomeViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E49272C52E01CB4700DB6A2A /* HomeViewController.xib */; };
 		E49272CB2E01CB5800DB6A2A /* ContactViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E49272C92E01CB5800DB6A2A /* ContactViewController.m */; };
 		E49272CC2E01CB5800DB6A2A /* ContactViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E49272CA2E01CB5800DB6A2A /* ContactViewController.xib */; };
-		E49272D02E01CB7000DB6A2A /* CreationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E49272CE2E01CB7000DB6A2A /* CreationViewController.m */; };
-		E49272D12E01CB7000DB6A2A /* CreationViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E49272CF2E01CB7000DB6A2A /* CreationViewController.xib */; };
 		E49272D52E01CB7D00DB6A2A /* MineViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E49272D32E01CB7D00DB6A2A /* MineViewController.m */; };
 		E49272D62E01CB7D00DB6A2A /* MineViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = E49272D42E01CB7D00DB6A2A /* MineViewController.xib */; };
 		E49272DA2E03052200DB6A2A /* RegistViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E49272D82E03052200DB6A2A /* RegistViewController.m */; };
@@ -403,6 +410,23 @@
 		187647DF2E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Talenpal_User_Privacy_Policy.docx; sourceTree = "<group>"; };
 		188C18552E8D30570095B6BC /* LogManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LogManager.h; sourceTree = "<group>"; };
 		188C18562E8D30570095B6BC /* LogManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LogManager.m; sourceTree = "<group>"; };
+		18938FBA2E8D7C730054623B /* CreationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CreationViewController.h; sourceTree = "<group>"; };
+		18938FBB2E8D7C730054623B /* CreationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CreationViewController.m; sourceTree = "<group>"; };
+		18938FBC2E8D7C730054623B /* VoiceStoryModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoiceStoryModel.h; sourceTree = "<group>"; };
+		18938FBD2E8D7C730054623B /* VoiceStoryModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VoiceStoryModel.m; sourceTree = "<group>"; };
+		18938FBE2E8D7C730054623B /* VoiceStoryTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoiceStoryTableViewCell.h; sourceTree = "<group>"; };
+		18938FBF2E8D7C730054623B /* VoiceStoryTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VoiceStoryTableViewCell.m; sourceTree = "<group>"; };
+		18938FC02E8D7C730054623B /* VoiceStoryTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VoiceStoryTableViewCell.xib; sourceTree = "<group>"; };
+		18CF0EDF2E9257A200F9E19E /* VoiceModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoiceModel.h; sourceTree = "<group>"; };
+		18CF0EE02E9257A900F9E19E /* VoiceModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VoiceModel.m; sourceTree = "<group>"; };
+		18CF0EE22E9257B200F9E19E /* APIResponseModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = APIResponseModel.h; sourceTree = "<group>"; };
+		18CF0EE32E9257BD00F9E19E /* APIResponseModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = APIResponseModel.m; sourceTree = "<group>"; };
+		18CF0EE52E9257CC00F9E19E /* APIRequestModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = APIRequestModel.h; sourceTree = "<group>"; };
+		18CF0EE62E9257E300F9E19E /* APIRequestModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = APIRequestModel.m; sourceTree = "<group>"; };
+		18CF0EEF2E92614B00F9E19E /* CreateStoryViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CreateStoryViewController.h; sourceTree = "<group>"; };
+		18CF0EF02E92614B00F9E19E /* CreateStoryViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CreateStoryViewController.m; sourceTree = "<group>"; };
+		18CF0EF22E92626900F9E19E /* AFStoryAPIManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AFStoryAPIManager.h; sourceTree = "<group>"; };
+		18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AFStoryAPIManager.m; sourceTree = "<group>"; };
 		18EE7F4A2E882F7C00E9E078 /* ModernScreenAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModernScreenAdapter.h; sourceTree = "<group>"; };
 		18EE7F4B2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThirdPartySDKInfoViewController.h; sourceTree = "<group>"; };
 		18EE7F4C2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ThirdPartySDKInfoViewController.m; sourceTree = "<group>"; };
@@ -998,9 +1022,6 @@
 		E49272C82E01CB5800DB6A2A /* ContactViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ContactViewController.h; sourceTree = "<group>"; };
 		E49272C92E01CB5800DB6A2A /* ContactViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ContactViewController.m; sourceTree = "<group>"; };
 		E49272CA2E01CB5800DB6A2A /* ContactViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ContactViewController.xib; sourceTree = "<group>"; };
-		E49272CD2E01CB7000DB6A2A /* CreationViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CreationViewController.h; sourceTree = "<group>"; };
-		E49272CE2E01CB7000DB6A2A /* CreationViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CreationViewController.m; sourceTree = "<group>"; };
-		E49272CF2E01CB7000DB6A2A /* CreationViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CreationViewController.xib; sourceTree = "<group>"; };
 		E49272D22E01CB7D00DB6A2A /* MineViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MineViewController.h; sourceTree = "<group>"; };
 		E49272D32E01CB7D00DB6A2A /* MineViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MineViewController.m; sourceTree = "<group>"; };
 		E49272D42E01CB7D00DB6A2A /* MineViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MineViewController.xib; sourceTree = "<group>"; };
@@ -2291,9 +2312,23 @@
 		E49272C12E01CB0400DB6A2A /* Creation */ = {
 			isa = PBXGroup;
 			children = (
-				E49272CD2E01CB7000DB6A2A /* CreationViewController.h */,
-				E49272CE2E01CB7000DB6A2A /* CreationViewController.m */,
-				E49272CF2E01CB7000DB6A2A /* CreationViewController.xib */,
+				18938FBA2E8D7C730054623B /* CreationViewController.h */,
+				18938FBB2E8D7C730054623B /* CreationViewController.m */,
+				18CF0EEF2E92614B00F9E19E /* CreateStoryViewController.h */,
+				18CF0EF02E92614B00F9E19E /* CreateStoryViewController.m */,
+				18938FBC2E8D7C730054623B /* VoiceStoryModel.h */,
+				18938FBD2E8D7C730054623B /* VoiceStoryModel.m */,
+				18938FBE2E8D7C730054623B /* VoiceStoryTableViewCell.h */,
+				18938FBF2E8D7C730054623B /* VoiceStoryTableViewCell.m */,
+				18938FC02E8D7C730054623B /* VoiceStoryTableViewCell.xib */,
+				18CF0EDF2E9257A200F9E19E /* VoiceModel.h */,
+				18CF0EE02E9257A900F9E19E /* VoiceModel.m */,
+				18CF0EE22E9257B200F9E19E /* APIResponseModel.h */,
+				18CF0EE32E9257BD00F9E19E /* APIResponseModel.m */,
+				18CF0EE52E9257CC00F9E19E /* APIRequestModel.h */,
+				18CF0EE62E9257E300F9E19E /* APIRequestModel.m */,
+				18CF0EF22E92626900F9E19E /* AFStoryAPIManager.h */,
+				18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */,
 			);
 			path = Creation;
 			sourceTree = "<group>";
@@ -2476,7 +2511,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DC70F1E72E1E544F00C4D646 /* UserPermmitVC.xib in Resources */,
-				E49272D12E01CB7000DB6A2A /* CreationViewController.xib in Resources */,
 				DCB047C82E1FD0A100953861 /* MineListCell.xib in Resources */,
 				DC862ACA2E093EDB001A4793 /* FamailyMemberCell.xib in Resources */,
 				E42A8A2F2E06CBAA00AD0BD9 /* HomeToysCell.xib in Resources */,
@@ -2522,6 +2556,7 @@
 				DC4877012E60909000967B2D /* deviceDetailConfig.json in Resources */,
 				DC4877022E60909000967B2D /* thing_custom_config.json in Resources */,
 				E45B01CD2E27EA7800CC3A5A /* EmaileViewController.xib in Resources */,
+				18938FC42E8D7C730054623B /* VoiceStoryTableViewCell.xib in Resources */,
 				DCEA01042E12771400170D8C /* SelectWifiVC.xib in Resources */,
 				E46F39862E0FE7060039CE33 /* DeviceManuallyAddCell.xib in Resources */,
 				DC7C452E2E28D9BE0069CBA4 /* QATabAnimationCell.xib in Resources */,
@@ -2706,6 +2741,9 @@
 				DC481E312E0A99C50048354E /* LGTipView.m in Sources */,
 				DC17BE9D2E20EC1C00FF4EB7 /* BannerModel.m in Sources */,
 				DC481E322E0A99C50048354E /* LGGuideCollectionViewCell.m in Sources */,
+				18938FC12E8D7C730054623B /* VoiceStoryModel.m in Sources */,
+				18938FC22E8D7C730054623B /* VoiceStoryTableViewCell.m in Sources */,
+				18938FC32E8D7C730054623B /* CreationViewController.m in Sources */,
 				DC481E332E0A99C50048354E /* LGNoDataView.m in Sources */,
 				DC7C44F92E28D9880069CBA4 /* TABComponentManager.m in Sources */,
 				DC7C44FA2E28D9880069CBA4 /* TABClassicAnimationImpl.m in Sources */,
@@ -2737,10 +2775,12 @@
 				DC7C450B2E28D9880069CBA4 /* TABComponentLayer+TABDropAnimation.m in Sources */,
 				DC7C450C2E28D9880069CBA4 /* TABAnimatedChainManagerImpl.m in Sources */,
 				DC7C450D2E28D9880069CBA4 /* UIView+TABControlAnimation.m in Sources */,
+				18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */,
 				DC7C450E2E28D9880069CBA4 /* NSArray+TABDropAnimation.m in Sources */,
 				DC7C450F2E28D9880069CBA4 /* TABShimmerAnimationImpl.m in Sources */,
 				DC7C45102E28D9880069CBA4 /* NSArray+TABAnimated.m in Sources */,
 				DC7C45112E28D9880069CBA4 /* TABAnimationMethod.m in Sources */,
+				18CF0EE72E9257E300F9E19E /* APIRequestModel.m in Sources */,
 				DC7C45122E28D9880069CBA4 /* TABWeakDelegateManager.m in Sources */,
 				DC7C45132E28D9880069CBA4 /* TABAnimationManagerImpl.m in Sources */,
 				DC7C45142E28D9880069CBA4 /* TABBaseComponent+TABDropAnimation.m in Sources */,
@@ -2774,6 +2814,7 @@
 				DC3E069E2E2A4D130099A9FB /* ComponentLicenseCell.m in Sources */,
 				E42F14F72E225C1A00376855 /* JXCategoryIndicatorBallView.m in Sources */,
 				E49272962E01C1C300DB6A2A /* UIImageView+Corner.m in Sources */,
+				18CF0EF12E92614B00F9E19E /* CreateStoryViewController.m in Sources */,
 				DCA5A1A22E29085A00096913 /* RevokePrivacyPolicyVC.m in Sources */,
 				DCF802442E12224C00C72B4D /* DeviceAddVC.m in Sources */,
 				E49272922E01C1C300DB6A2A /* UIButton+HKBtnImagePosition.m in Sources */,
@@ -2826,7 +2867,6 @@
 				E4B5C6EA2E248D3400950B7D /* MineAvatarCell.m in Sources */,
 				DCD5A2722E56BF6500531779 /* AppSettingModel.m in Sources */,
 				E46A38C82E099C9C00C930D3 /* Alert.m in Sources */,
-				E49272D02E01CB7000DB6A2A /* CreationViewController.m in Sources */,
 				E492729E2E01C1C300DB6A2A /* APIManager.m in Sources */,
 				E42F14D72E225C1A00376855 /* JXCategoryImageCellModel.m in Sources */,
 				E49272102E01BD2F00DB6A2A /* AppDelegate.m in Sources */,
@@ -2843,6 +2883,7 @@
 				DCCD62BE2E0E2EE7008988A9 /* FindDeviceViewController.m in Sources */,
 				DC984F0C2E0D446D00CD9E7B /* HomeExploreToysView.m in Sources */,
 				E46F39762E0FE24C0039CE33 /* DeviceHavenFindCell.m in Sources */,
+				18CF0EE42E9257BD00F9E19E /* APIResponseModel.m in Sources */,
 				E46F39982E1147990039CE33 /* GuideOpenCell.m in Sources */,
 				DC7C452F2E28D9BE0069CBA4 /* QATabAnimationCell.m in Sources */,
 				E46F39622E0FD51E0039CE33 /* FindDeviceAlertCell.m in Sources */,
@@ -2924,6 +2965,7 @@
 				DC7C43B52E25E0EB0069CBA4 /* JXCategoryIndicatorParamsModel.m in Sources */,
 				E45B01C82E27E47A00CC3A5A /* MineItemModel.m in Sources */,
 				DCEA01052E12771400170D8C /* SelectWifiVC.m in Sources */,
+				18CF0EE12E9257A900F9E19E /* VoiceModel.m in Sources */,
 				E80BED9B2E575FF500F33EA9 /* AnalyticsUsageExample.m in Sources */,
 				E80BED9C2E575FF500F33EA9 /* AnalyticsManager.m in Sources */,
 				E80BED9D2E575FF500F33EA9 /* EventLogModel.m in Sources */,
@@ -3139,6 +3181,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/AIToys/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIToys/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "允许定位以访问你附近的设备";
@@ -3146,6 +3189,7 @@
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "通话需要使用麦克风";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "授予相册权限以开启截图录像功能";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "授予相册权限以开启截图录像功能";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "允许使用语音识别功能以完成声音转换";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -3160,8 +3204,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
@@ -3181,6 +3229,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/AIToys/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIToys/Info.plist;
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "允许定位以访问你附近的设备";
@@ -3188,6 +3237,7 @@
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "通话需要使用麦克风";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "授予相册权限以开启截图录像功能";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "授予相册权限以开启截图录像功能";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "允许使用语音识别功能以完成声音转换";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -3202,8 +3252,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Release;

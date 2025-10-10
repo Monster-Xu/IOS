@@ -122,12 +122,12 @@
 
 #pragma mark -- event method
 -(BOOL)tabBarController:(UITabBarController *)tabBarController shouldSelectViewController:(UIViewController *)viewController{
-    if ([viewController.tabBarItem.title isEqualToString:LocalString(@"创作")]) {
-        NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
-        // 跳转小程序
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/plush-toy/index" params:@{@"ownerId":currentHomeId?:@"",@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en"}];
-        return NO;
-    }
+//    if ([viewController.tabBarItem.title isEqualToString:LocalString(@"创作")]) {
+////        NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
+////        // 跳转小程序
+////        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/plush-toy/index" params:@{@"ownerId":currentHomeId?:@"",@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en"}];
+////        return NO;
+//    }
     return YES;
 }
 

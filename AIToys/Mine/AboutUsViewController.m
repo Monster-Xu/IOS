@@ -55,10 +55,10 @@
 
 -(void)loadData{
     NSArray *arr = @[
-        @{@"title" : LocalString(@"鼓励一下我们"),@"value" :@"", @"toVC" : @"EmaileViewController"},
+//        @{@"title" : LocalString(@"鼓励一下我们"),@"value" :@"", @"toVC" : @"EmaileViewController"},
         @{@"title" : LocalString(@"开源组件许可"),@"value" :@"", @"toVC" : @"ComponentLicensesViewController"},
         @{@"title" : LocalString(@"当前版本"),@"value" :APP_VERSION},
-        @{@"title" : LocalString(@"检查更新"),@"value" :@"",@"toVC" : @"ComponentLicensesViewController"},
+//        @{@"title" : LocalString(@"检查更新"),@"value" :@"",@"toVC" : @"ComponentLicensesViewController"},
 //        @{@"title" : LocalString(@"更新日志"),@"value" :@"", @"toVC" : @""},
         ];
     self.itemArray = [NSMutableArray arrayWithArray:[MineItemModel mj_objectArrayWithKeyValuesArray:arr]];
