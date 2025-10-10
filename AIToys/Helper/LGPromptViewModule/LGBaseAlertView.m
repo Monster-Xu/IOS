@@ -100,18 +100,18 @@
 
 + (LGBaseAlertView *)showAlertwWithContent:(NSString *)contentStr WithHandle:(void (^)(BOOL isValue, id obj))block{
     NSMutableDictionary* info = @{}.mutableCopy;
-    [info setValue:@"温馨提示" forKey:@"title"];
+    [info setValue:LocalString(@"温馨提示") forKey:@"title"];
     [info setValue:contentStr forKey:@"content"];
-    [info setValue:@"取消" forKey:@"cancelStr"];
-    [info setValue:@"确定" forKey:@"confirmStr"];
+    [info setValue:LocalString(@"取消")forKey:@"cancelStr"];
+    [info setValue:LocalString(@"确认") forKey:@"confirmStr"];
     return [self showAlertInfo:info withType:ALERT_VIEW_TYPE_NORMAL confirmBlock:block];
 }
 
 + (LGBaseAlertView* )showAlertWithContent:(NSString *)contentStr  confirmBlock:(void (^)(BOOL is_value, id obj))block {
     NSMutableDictionary* info = @{}.mutableCopy;
-    [info setValue:@"温馨提示" forKey:@"title"];
+    [info setValue:LocalString(@"温馨提示") forKey:@"title"];
     [info setValue:contentStr forKey:@"content"];
-    [info setValue:@"确定" forKey:@"confirmStr"];
+    [info setValue:LocalString(@"确认") forKey:@"confirmStr"];
     return [self showAlertInfo:info withType:ALERT_VIEW_TYPE_NORMAL_VERTION confirmBlock:block];
 }
 
@@ -420,7 +420,7 @@
                 make.width.mas_equalTo(1);
                 make.centerX.equalTo(self.bgView);
             }];
-            [self.cancelBtn setTitle:@"取消" forState:UIControlStateNormal];
+            [self.cancelBtn setTitle:LocalString(@"取消") forState:UIControlStateNormal];
             [self.cancelBtn setTitleColor:UIColorFromRGBA(0x000000, 0.5) forState:UIControlStateNormal];
             [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
@@ -428,7 +428,7 @@
                 make.right.equalTo(self.midlleView);
                 make.bottom.equalTo(self.bgView);
             }];
-            [self.confirmBtn setTitle:@"确定" forState:UIControlStateNormal];
+            [self.confirmBtn setTitle:LocalString(@"确认") forState:UIControlStateNormal];
             [self.confirmBtn setTitleColor:mainColor forState:UIControlStateNormal];
             [self.confirmBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
@@ -481,14 +481,14 @@
                 make.width.mas_equalTo(1);
                 make.centerX.equalTo(self.bgView);
             }];
-            [self.cancelBtn setTitle:@"取消" forState:UIControlStateNormal];
+            [self.cancelBtn setTitle:LocalString(@"取消") forState:UIControlStateNormal];
             [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
                 make.left.equalTo(self.bgView);
                 make.right.equalTo(self.midlleView);
                 make.bottom.equalTo(self.bgView);
             }];
-            [self.confirmBtn setTitle:@"确定" forState:UIControlStateNormal];
+            [self.confirmBtn setTitle:LocalString(@"确认") forState:UIControlStateNormal];
             [self.confirmBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
                 make.left.equalTo(self.midlleView.mas_right);
@@ -539,14 +539,14 @@
                 make.width.mas_equalTo(1);
                 make.centerX.equalTo(self.bgView);
             }];
-            [self.cancelBtn setTitle:_info[@"cancelStr"] ? _info[@"cancelStr"] :@"取消" forState:UIControlStateNormal];
+            [self.cancelBtn setTitle:_info[@"cancelStr"] ? _info[@"cancelStr"] :LocalString(@"取消")forState:UIControlStateNormal];
             [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
                 make.left.equalTo(self.bgView);
                 make.right.equalTo(self.midlleView);
                 make.bottom.equalTo(self.bgView);
             }];
-            [self.confirmBtn setTitle:_info[@"confirmStr"] ? _info[@"confirmStr"] :@"确定" forState:UIControlStateNormal];
+            [self.confirmBtn setTitle:_info[@"confirmStr"] ? _info[@"confirmStr"] :LocalString(@"确认") forState:UIControlStateNormal];
             [self.confirmBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
                 make.left.equalTo(self.midlleView.mas_right);

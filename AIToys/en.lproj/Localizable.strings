@@ -117,6 +117,7 @@
 "确定要撤销该邀请吗？" = "Are you sure cancel the invitation?";
 "撤销成功" = "Revoke success";
 "取消" = "Cancel";
+"确认" = "Confirm";
 "请至少保留一个家庭" = "Please keep at least one family";
 "删除家庭不可恢复，您的家庭成员将会被清退，是否继续？" = "Deleting a family cannot be restored, and your family members will be removed. Do you want to continue?";
 "添加设备" = "Add Device";

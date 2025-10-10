@@ -38,7 +38,7 @@ static CGFloat const AlvertViewWidth = 260.0f;
     LGAlertView *view = [[LGAlertView alloc] initWithFrame:CGRectMake(0, 0, [[UIScreen mainScreen] bounds].size.width, [[UIScreen mainScreen] bounds].size.height)];
     view.titleLabel.text = title;
     view.detailLabel.text = message;
-    view.buttons = @[@"取消",@"确定"];
+    view.buttons = @[LocalString(@"取消"),LocalString(@"确认")];
     view.block = action;
     [[UIApplication sharedApplication].keyWindow addSubview:view];
 }
@@ -89,7 +89,7 @@ static CGFloat const AlvertViewWidth = 260.0f;
 
 - (NSArray *)buttons {
     if (!_buttons) {
-        _buttons = @[@"取消",@"确定"];
+        _buttons =  @[LocalString(@"取消"),LocalString(@"确认")];
     }
     return _buttons;
 }
