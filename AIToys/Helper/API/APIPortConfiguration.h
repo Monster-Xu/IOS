@@ -60,6 +60,51 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取用户头像
 + (NSString *)getAppAvatarUrl;
 
+#pragma mark - 故事相关接口
+/// 创建故事
++ (NSString *)getCreateStoryUrl;
+
+/// 查询故事列表
++ (NSString *)getStoriesListUrl;
+
+/// 查询故事详情
++ (NSString *)getStoryDetailUrl;
+
+/// 编辑故事
++ (NSString *)getUpdateStoryUrl;
+
+/// 删除故事
++ (NSString *)getDeleteStoryUrl;
+
+/// 故事音频合成
++ (NSString *)getSynthesizeStoryUrl;
+
+#pragma mark - 声音相关接口
+
+/// 创建声音（开始克隆）
++ (NSString *)getCreateVoiceUrl;
+
+/// 查询声音列表
++ (NSString *)getVoicesListUrl;
+
+/// 查询声音详情
++ (NSString *)getVoiceDetailUrl;
+
+/// 编辑声音
++ (NSString *)getUpdateVoiceUrl;
+
+/// 删除声音
++ (NSString *)getDeleteVoiceUrl;
+
+#pragma mark - 通用资源接口
+
+/// 获取官方插画列表
++ (NSString *)getIllustrationsUrl;
+
+/// 获取官方音色列表
++ (NSString *)getOfficialVoicesUrl;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

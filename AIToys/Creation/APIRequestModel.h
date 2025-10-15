@@ -3,6 +3,7 @@
 //  AIToys
 //
 //  Created by xuxuxu on 2025/10/5.
+//  Updated: 添加 familyId 到所有请求模型
 //
 
 #import <Foundation/Foundation.h>
@@ -13,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 // 创建故事请求模型
 @interface CreateStoryRequestModel : NSObject
 
+@property (nonatomic, assign) NSInteger familyId;  // ⭐ 新增
 @property (nonatomic, copy) NSString *storyName;
 @property (nonatomic, copy) NSString *storySummary;
 @property (nonatomic, assign) StoryType storyType;
@@ -21,11 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *illustrationUrl;
 
 // 便利初始化方法
-- (instancetype)initWithName:(NSString *)name 
-                     summary:(NSString *)summary 
-                        type:(StoryType)type 
-              protagonistName:(NSString *)protagonistName 
-                      length:(NSInteger)length 
+- (instancetype)initWithName:(NSString *)name
+                     summary:(NSString *)summary
+                        type:(StoryType)type
+              protagonistName:(NSString *)protagonistName
+                      length:(NSInteger)length
               illustrationUrl:(NSString *)illustrationUrl;
 
 // 验证方法
@@ -40,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 // 编辑故事请求模型
 @interface UpdateStoryRequestModel : NSObject
 
+@property (nonatomic, assign) NSInteger familyId;  // ⭐ 新增
 @property (nonatomic, assign) NSInteger storyId;
 @property (nonatomic, copy, nullable) NSString *storyName;
 @property (nonatomic, copy, nullable) NSString *storyContent;
@@ -55,12 +58,13 @@ NS_ASSUME_NONNULL_BEGIN
 // 创建声音（克隆）请求模型
 @interface CreateVoiceRequestModel : NSObject
 
+@property (nonatomic, assign) NSInteger familyId;  // ⭐ 新增
 @property (nonatomic, copy) NSString *voiceName;
 @property (nonatomic, copy) NSString *avatarUrl;
 @property (nonatomic, copy) NSString *audioFileUrl;
 
-- (instancetype)initWithName:(NSString *)name 
-                   avatarUrl:(NSString *)avatarUrl 
+- (instancetype)initWithName:(NSString *)name
+                   avatarUrl:(NSString *)avatarUrl
                 audioFileUrl:(NSString *)audioFileUrl;
 
 - (BOOL)isValid;
@@ -72,6 +76,7 @@ NS_ASSUME_NONNULL_BEGIN
 // 编辑声音请求模型
 @interface UpdateVoiceRequestModel : NSObject
 
+@property (nonatomic, assign) NSInteger familyId;  // ⭐ 新增
 @property (nonatomic, assign) NSInteger voiceId;
 @property (nonatomic, copy, nullable) NSString *voiceName;
 @property (nonatomic, copy, nullable) NSString *avatarUrl;
@@ -86,6 +91,7 @@ NS_ASSUME_NONNULL_BEGIN
 // 故事音频合成请求模型
 @interface SynthesizeStoryRequestModel : NSObject
 
+@property (nonatomic, assign) NSInteger familyId;  // ⭐ 新增
 @property (nonatomic, assign) NSInteger storyId;
 @property (nonatomic, assign) NSInteger voiceId;
 
@@ -98,6 +104,7 @@ NS_ASSUME_NONNULL_BEGIN
 // 删除请求模型
 @interface DeleteRequestModel : NSObject
 
+@property (nonatomic, assign) NSInteger familyId;  // ⭐ 新增
 @property (nonatomic, assign) NSInteger resourceId;
 
 - (instancetype)initWithResourceId:(NSInteger)resourceId;
@@ -110,6 +117,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, assign) NSInteger pageNum;
 @property (nonatomic, assign) NSInteger pageSize;
+@property (nonatomic, assign) NSInteger familyId;
+//@property (nonatomic, assign) NSInteger storyStatus;
 
 - (instancetype)initWithPageNum:(NSInteger)pageNum pageSize:(NSInteger)pageSize;
 - (NSDictionary *)toQueryParameters;

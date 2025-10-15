@@ -3,6 +3,7 @@
 //  AIToys
 //
 //  Created by xuxuxu on 2025/10/5.
+//  Updated: 添加 familyId 到所有请求模型
 //
 
 #import "APIRequestModel.h"
@@ -13,15 +14,17 @@
     if (self = [super init]) {
         _storyType = StoryTypeFairyTale;
         _storyLength = 180;
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
     }
     return self;
 }
 
-- (instancetype)initWithName:(NSString *)name 
-                     summary:(NSString *)summary 
-                        type:(StoryType)type 
-              protagonistName:(NSString *)protagonistName 
-                      length:(NSInteger)length 
+- (instancetype)initWithName:(NSString *)name
+                     summary:(NSString *)summary
+                        type:(StoryType)type
+              protagonistName:(NSString *)protagonistName
+                      length:(NSInteger)length
               illustrationUrl:(NSString *)illustrationUrl {
     if (self = [super init]) {
         _storyName = [name copy];
@@ -30,6 +33,8 @@
         _protagonistName = [protagonistName copy];
         _storyLength = length;
         _illustrationUrl = [illustrationUrl copy];
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
     }
     return self;
 }
@@ -39,6 +44,10 @@
 }
 
 - (NSString *)validationError {
+    if (self.familyId <= 0) {
+        return @"familyId 不能为空";
+    }
+    
     if (self.storyName.length == 0 || self.storyName.length > 120) {
         return @"故事名称长度必须在1-120字符之间";
     }
@@ -65,6 +74,7 @@
 
 - (NSDictionary *)toDictionary {
     return @{
+        @"familyId": @(self.familyId),  // ⭐ 添加 familyId
         @"storyName": self.storyName ?: @"",
         @"storySummary": self.storySummary ?: @"",
         @"storyType": @(self.storyType),
@@ -81,19 +91,24 @@
 - (instancetype)initWithStoryId:(NSInteger)storyId {
     if (self = [super init]) {
         _storyId = storyId;
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
     }
     return self;
 }
 
 - (BOOL)hasChanges {
-    return self.storyName != nil || 
-           self.storyContent != nil || 
-           self.illustrationUrl != nil || 
+    return self.storyName != nil ||
+           self.storyContent != nil ||
+           self.illustrationUrl != nil ||
            self.voiceId > 0;
 }
 
 - (NSDictionary *)toDictionary {
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObject:@(self.storyId) forKey:@"storyId"];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    
+    dict[@"familyId"] = @(self.familyId);  // ⭐ 添加 familyId
+    dict[@"storyId"] = @(self.storyId);
     
     if (self.storyName) {
         dict[@"storyName"] = self.storyName;
@@ -115,13 +130,23 @@
 
 @implementation CreateVoiceRequestModel
 
-- (instancetype)initWithName:(NSString *)name 
-                   avatarUrl:(NSString *)avatarUrl 
+- (instancetype)init {
+    if (self = [super init]) {
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
+    }
+    return self;
+}
+
+- (instancetype)initWithName:(NSString *)name
+                   avatarUrl:(NSString *)avatarUrl
                 audioFileUrl:(NSString *)audioFileUrl {
     if (self = [super init]) {
         _voiceName = [name copy];
         _avatarUrl = [avatarUrl copy];
         _audioFileUrl = [audioFileUrl copy];
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
     }
     return self;
 }
@@ -131,6 +156,10 @@
 }
 
 - (NSString *)validationError {
+    if (self.familyId <= 0) {
+        return @"familyId 不能为空";
+    }
+    
     if (self.voiceName.length == 0 || self.voiceName.length > 30) {
         return @"声音名称长度必须在1-30字符之间";
     }
@@ -148,6 +177,7 @@
 
 - (NSDictionary *)toDictionary {
     return @{
+        @"familyId": @(self.familyId),  // ⭐ 添加 familyId
         @"voiceName": self.voiceName ?: @"",
         @"avatarUrl": self.avatarUrl ?: @"",
         @"audioFileUrl": self.audioFileUrl ?: @""
@@ -161,18 +191,23 @@
 - (instancetype)initWithVoiceId:(NSInteger)voiceId {
     if (self = [super init]) {
         _voiceId = voiceId;
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
     }
     return self;
 }
 
 - (BOOL)hasChanges {
-    return self.voiceName != nil || 
-           self.avatarUrl != nil || 
+    return self.voiceName != nil ||
+           self.avatarUrl != nil ||
            self.audioFileUrl != nil;
 }
 
 - (NSDictionary *)toDictionary {
-    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithObject:@(self.voiceId) forKey:@"voiceId"];
+    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+    
+    dict[@"familyId"] = @(self.familyId);  // ⭐ 添加 familyId
+    dict[@"voiceId"] = @(self.voiceId);
     
     if (self.voiceName) {
         dict[@"voiceName"] = self.voiceName;
@@ -195,16 +230,19 @@
     if (self = [super init]) {
         _storyId = storyId;
         _voiceId = voiceId;
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
     }
     return self;
 }
 
 - (BOOL)isValid {
-    return self.storyId > 0 && self.voiceId > 0;
+    return self.familyId > 0 && self.storyId > 0 && self.voiceId > 0;
 }
 
 - (NSDictionary *)toDictionary {
     return @{
+        @"familyId": @(self.familyId),  // ⭐ 添加 familyId
         @"storyId": @(self.storyId),
         @"voiceId": @(self.voiceId)
     };
@@ -217,12 +255,17 @@
 - (instancetype)initWithResourceId:(NSInteger)resourceId {
     if (self = [super init]) {
         _resourceId = resourceId;
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
     }
     return self;
 }
 
 - (NSDictionary *)toDictionary {
-    return @{@"storyId": @(self.resourceId)}; // 根据具体接口调整key名
+    return @{
+        @"familyId": @(self.familyId),  // ⭐ 添加 familyId
+        @"storyId": @(self.resourceId)
+    };
 }
 
 @end
@@ -233,6 +276,8 @@
     if (self = [super init]) {
         _pageNum = 1;
         _pageSize = 20;
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
+//        _storyStatus = 5;
     }
     return self;
 }
@@ -241,6 +286,9 @@
     if (self = [super init]) {
         _pageNum = pageNum;
         _pageSize = pageSize;
+        // ⭐ 自动获取当前 familyId
+        _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
+//        _storyStatus = 5;
     }
     return self;
 }
@@ -248,7 +296,9 @@
 - (NSDictionary *)toQueryParameters {
     return @{
         @"pageNum": @(self.pageNum),
-        @"pageSize": @(self.pageSize)
+        @"pageSize": @(self.pageSize),
+        @"familyId": @(self.familyId),
+//        @"storyStatus": @(self.storyStatus)
     };
 }
 

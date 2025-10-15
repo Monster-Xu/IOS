@@ -8,191 +8,197 @@
 #import "VoiceStoryTableViewCell.h"
 #import "VoiceStoryModel.h"
 
-
-
 @implementation VoiceStoryTableViewCell
-
-
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
 }
+
 - (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
+        // 默认不是批量编辑模式
+        _isBatchEditingMode = NO;
+        
+        // 设置 cell 背景为透明，显示父视图背景色
+        self.backgroundColor = [UIColor clearColor];
+        self.contentView.backgroundColor = [UIColor clearColor];
+        
         [self setupUI];
     }
     return self;
 }
 
 - (void)setupUI {
+    // 配置选择样式
     self.selectionStyle = UITableViewCellSelectionStyleNone;
-    self.backgroundColor = [UIColor whiteColor];
+    self.tintColor = [UIColor systemBlueColor];
+    
+    // 创建白色卡片容器视图
+    UIView *cardContainerView = [[UIView alloc] init];
+    cardContainerView.backgroundColor = [UIColor whiteColor];
+    cardContainerView.layer.cornerRadius = 20;
+    cardContainerView.layer.masksToBounds = YES;
+    [self.contentView addSubview:cardContainerView];
+    
+    // 使用Masonry设置卡片容器的约束：左右各16，上下填满（无边距）
+    [cardContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.contentView).offset(16);
+        make.right.equalTo(self.contentView).offset(-16);
+        make.top.equalTo(self.contentView);      // ✅ 移除上边距
+        make.bottom.equalTo(self.contentView);   // ✅ 移除下边距
+    }];
     
     // 封面图
     self.coverImageView = [[UIImageView alloc] init];
     self.coverImageView.contentMode = UIViewContentModeScaleAspectFill;
     self.coverImageView.clipsToBounds = YES;
     self.coverImageView.layer.cornerRadius = 8;
+    self.coverImageView.image = [UIImage imageNamed:@"home_toys_img"];
     self.coverImageView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1];
-    [self.contentView addSubview:self.coverImageView];
+    [cardContainerView addSubview:self.coverImageView];
     
-    // New标签（在封面图上层）
-    self.badgeView = [[UIView alloc] init];
-    self.badgeView.backgroundColor = [UIColor systemOrangeColor];
-    self.badgeView.layer.cornerRadius = 10;
-    self.badgeView.hidden = YES;
-    [self.contentView addSubview:self.badgeView];
+    // New标签
+    self.badgeImageView = [[UIImageView alloc] init];
+    self.badgeImageView.image = [UIImage imageNamed:@"create_new"];
+    self.badgeImageView.hidden = YES;
+    [cardContainerView addSubview:self.badgeImageView];
     
-    self.badgeLabel = [[UILabel alloc] init];
-    self.badgeLabel.text = @"New";
-    self.badgeLabel.font = [UIFont systemFontOfSize:10 weight:UIFontWeightBold];
-    self.badgeLabel.textColor = [UIColor whiteColor];
-    self.badgeLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.badgeView addSubview:self.badgeLabel];
     
-    [NSLayoutConstraint activateConstraints:@[
-        [self.badgeLabel.centerXAnchor constraintEqualToAnchor:self.badgeView.centerXAnchor],
-        [self.badgeLabel.centerYAnchor constraintEqualToAnchor:self.badgeView.centerYAnchor]
-    ]];
+    // ⭐️ 状态视图 - 显示在封面图下方
+    self.statusView = [[UIView alloc] init];
+    self.statusView.layer.cornerRadius = 4;
+    self.statusView.hidden = YES;
+    [cardContainerView addSubview:self.statusView];
+    
+    self.statusLabel = [[UILabel alloc] init];
+    self.statusLabel.font = [UIFont systemFontOfSize:14]; // 更小的字体
+    self.statusLabel.textAlignment = NSTextAlignmentLeft;
+    self.statusLabel.numberOfLines = 2; // 允许两行显示
+    [self.statusView addSubview:self.statusLabel];
+    
+    // 使用Masonry设置statusLabel约束
+    [self.statusLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.statusView).offset(4);
+        make.right.equalTo(self.statusView).offset(-4);
+        make.top.equalTo(self.statusView).offset(3);
+        make.bottom.equalTo(self.statusView).offset(-3);
+    }];
     
     // 标题
     self.titleLabel = [[UILabel alloc] init];
     self.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
     self.titleLabel.textColor = [UIColor blackColor];
     self.titleLabel.numberOfLines = 2;
-    [self.contentView addSubview:self.titleLabel];
+    [cardContainerView addSubview:self.titleLabel];
     
-    // 副标题（Voice - Dad 或 No Voice）
+    // 副标题
     self.subtitleLabel = [[UILabel alloc] init];
+    self.subtitleLabel.borderWidth = 1;
+    self.subtitleLabel.borderColor = [UIColor blueColor];
     self.subtitleLabel.font = [UIFont systemFontOfSize:13];
-    [self.contentView addSubview:self.subtitleLabel];
-    
-    // 状态视图（生成中/失败）
-    self.statusView = [[UIView alloc] init];
-    self.statusView.layer.cornerRadius = 6;
-    self.statusView.hidden = YES;
-    [self.contentView addSubview:self.statusView];
-    
-    self.statusLabel = [[UILabel alloc] init];
-    self.statusLabel.font = [UIFont systemFontOfSize:13];
-    self.statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.statusView addSubview:self.statusLabel];
-    
-    [NSLayoutConstraint activateConstraints:@[
-        [self.statusLabel.leadingAnchor constraintEqualToAnchor:self.statusView.leadingAnchor constant:12],
-        [self.statusLabel.trailingAnchor constraintEqualToAnchor:self.statusView.trailingAnchor constant:-12],
-        [self.statusLabel.topAnchor constraintEqualToAnchor:self.statusView.topAnchor constant:6],
-        [self.statusLabel.bottomAnchor constraintEqualToAnchor:self.statusView.bottomAnchor constant:-6]
-    ]];
+    [cardContainerView addSubview:self.subtitleLabel];
     
     // 编辑按钮
     self.editButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self.editButton setImage:[UIImage systemImageNamed:@"pencil"] forState:UIControlStateNormal];
+    [self.editButton setImage:[UIImage imageNamed:@"create_edit"] forState:UIControlStateNormal];
     self.editButton.tintColor = [UIColor systemGrayColor];
     [self.editButton addTarget:self action:@selector(editButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    [self.contentView addSubview:self.editButton];
+    [cardContainerView addSubview:self.editButton];
     
-    // 播放/暂停按钮
+    // 播放按钮
     self.playButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.playButton setImage:[UIImage systemImageNamed:@"play.circle.fill"] forState:UIControlStateNormal];
+    [self.playButton setImage:[UIImage imageNamed:@"create_play"] forState:UIControlStateNormal];
     self.playButton.tintColor = [UIColor systemGrayColor];
     [self.playButton addTarget:self action:@selector(playButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
-    [self.contentView addSubview:self.playButton];
+    [cardContainerView addSubview:self.playButton];
     
-    [self setupConstraints];
+    [self setupConstraintsWithContainer:cardContainerView];
 }
 
-- (void)setupConstraints {
-    self.coverImageView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.subtitleLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.statusView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.editButton.translatesAutoresizingMaskIntoConstraints = NO;
-    self.playButton.translatesAutoresizingMaskIntoConstraints = NO;
-    self.badgeView.translatesAutoresizingMaskIntoConstraints = NO;
+- (void)setupConstraintsWithContainer:(UIView *)cardContainer {
+    // 封面图 - 左上角
+    [self.coverImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(cardContainer).offset(12);
+        make.top.equalTo(cardContainer).offset(12);
+        make.width.mas_equalTo(64);
+        make.height.mas_equalTo(64);
+    }];
     
-    [NSLayoutConstraint activateConstraints:@[
-        // 封面图
-        [self.coverImageView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:16],
-        [self.coverImageView.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
-        [self.coverImageView.widthAnchor constraintEqualToConstant:60],
-        [self.coverImageView.heightAnchor constraintEqualToConstant:60],
-        
-        // New标签
-        [self.badgeView.leadingAnchor constraintEqualToAnchor:self.coverImageView.leadingAnchor constant:4],
-        [self.badgeView.topAnchor constraintEqualToAnchor:self.coverImageView.topAnchor constant:4],
-        [self.badgeView.widthAnchor constraintEqualToConstant:40],
-        [self.badgeView.heightAnchor constraintEqualToConstant:20],
-        
-        // 标题
-        [self.titleLabel.leadingAnchor constraintEqualToAnchor:self.coverImageView.trailingAnchor constant:12],
-        [self.titleLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:12],
-        [self.titleLabel.trailingAnchor constraintEqualToAnchor:self.editButton.leadingAnchor constant:-8],
-        
-        // 副标题
-        [self.subtitleLabel.leadingAnchor constraintEqualToAnchor:self.titleLabel.leadingAnchor],
-        [self.subtitleLabel.topAnchor constraintEqualToAnchor:self.titleLabel.bottomAnchor constant:4],
-        
-        // 状态视图
-        [self.statusView.leadingAnchor constraintEqualToAnchor:self.titleLabel.leadingAnchor],
-        [self.statusView.topAnchor constraintEqualToAnchor:self.subtitleLabel.bottomAnchor constant:6],
-        [self.statusView.trailingAnchor constraintEqualToAnchor:self.editButton.leadingAnchor constant:-8],
-        
-        // 编辑按钮
-        [self.editButton.trailingAnchor constraintEqualToAnchor:self.playButton.leadingAnchor constant:-12],
-        [self.editButton.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
-        [self.editButton.widthAnchor constraintEqualToConstant:30],
-        [self.editButton.heightAnchor constraintEqualToConstant:30],
-        
-        // 播放按钮
-        [self.playButton.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-16],
-        [self.playButton.centerYAnchor constraintEqualToAnchor:self.contentView.centerYAnchor],
-        [self.playButton.widthAnchor constraintEqualToConstant:36],
-        [self.playButton.heightAnchor constraintEqualToConstant:36]
-    ]];
+    // New标签 - 在封面图上层
+    [self.badgeImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.coverImageView).offset(0);
+        make.top.equalTo(self.coverImageView).offset(0);
+        make.width.mas_equalTo(40);
+        make.height.mas_equalTo(20);
+    }];
+    
+    // 播放按钮 - 最右侧居中（先布局，因为标题需要参考它）
+    [self.playButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(cardContainer).offset(-16);
+        make.centerY.equalTo(cardContainer);
+        make.width.height.mas_equalTo(24);
+    }];
+    
+    // 编辑按钮 - 播放按钮左侧居中
+    [self.editButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.playButton.mas_left).offset(-12);
+        make.centerY.equalTo(cardContainer);
+        make.width.height.mas_equalTo(24);
+    }];
+    
+    // 标题 - 封面图右侧顶部对齐
+    [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.coverImageView.mas_right).offset(12);
+        make.top.equalTo(cardContainer).offset(14);
+        make.right.equalTo(self.editButton.mas_left).offset(-8);
+    }];
+    
+    // 副标题 - 标题下方
+    [self.subtitleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.titleLabel);
+        make.top.equalTo(self.titleLabel.mas_bottom).offset(4);
+//        make.right.equalTo(self.titleLabel);
+    }];
+    
+    // 状态视图 - 卡片底部，左右各12边距
+    [self.statusView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(cardContainer).offset(12);
+        make.right.equalTo(cardContainer).offset(-12);
+        make.bottom.equalTo(cardContainer).offset(-6);
+        make.height.mas_equalTo(20);
+    }];
 }
 
 - (void)setModel:(VoiceStoryModel *)model {
     _model = model;
     
-    // 设置标题
     self.titleLabel.text = model.storyName;
     
-    // 设置封面图
     if (model.illustrationUrl && model.illustrationUrl.length > 0) {
-        // TODO: 使用SDWebImage加载图片
-        // [self.coverImageView sd_setImageWithURL:[NSURL URLWithString:model.illustrationUrl] placeholderImage:[UIImage imageNamed:@"placeholder"]];
         self.coverImageView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1];
     }
     
-    // New标签
-    self.badgeView.hidden = !model.isNew;
+    self.badgeImageView.hidden = !model.isNew;
     
-    // 根据状态设置UI
-    if ([model.status isEqualToString:@"generating"]) {
-        // 生成中状态
+    if (model.storyStatus ==1) {
         [self configureGeneratingState];
-    } else if ([model.status isEqualToString:@"failed"]) {
-        // 失败状态
+    } else if (model.storyStatus ==3) {
         [self configureFailedState];
-    } else if ([model.status isEqualToString:@"completed"]) {
-        // 完成状态
+    } else if (model.storyStatus ==2||model.storyStatus==5) {
         [self configureCompletedState];
     } else {
-        // 待处理状态
         [self configurePendingState];
     }
 }
 
 - (void)configureGeneratingState {
-    // 隐藏副标题，显示状态视图
-    self.subtitleLabel.hidden = YES;
+    // ⭐️ 状态提示显示在封面图下方
+    self.subtitleLabel.hidden = YES; // 隐藏 Voice 信息
     self.statusView.hidden = NO;
-    self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.95 blue:0.8 alpha:1.0]; // 浅橙色背景
-    self.statusView.layer.cornerRadius = 4; // 圆角
-    self.statusLabel.text = @"Story Generation...";
+    self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.95 blue:0.8 alpha:1.0]; // 浅橙色
+    self.statusView.layer.cornerRadius = 4;
+    self.statusLabel.text = @"  Story Generation...";
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
     
     // 隐藏编辑按钮
@@ -205,11 +211,11 @@
 }
 
 - (void)configureFailedState {
-    // 隐藏副标题，显示状态视图
-    self.subtitleLabel.hidden = YES;
+    // ⭐️ 状态提示显示在封面图下方
+    self.subtitleLabel.hidden = YES; // 隐藏 Voice 信息
     self.statusView.hidden = NO;
     self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.9 blue:0.9 alpha:1.0]; // 浅红色
-    self.statusLabel.text = @"Generation Failed, Please Try Again";
+    self.statusLabel.text = @"   Failed, Try Again";
     self.statusLabel.textColor = [UIColor systemRedColor];
     
     // 显示编辑按钮
@@ -222,7 +228,7 @@
 }
 
 - (void)configureCompletedState {
-    // 隐藏状态视图，显示副标题
+    // ⭐️ 隐藏状态视图，显示副标题
     self.statusView.hidden = YES;
     self.subtitleLabel.hidden = NO;
     
@@ -243,16 +249,16 @@
     
     // 根据播放状态设置按钮样式
     if (self.model.isPlaying) {
-        [self.playButton setImage:[UIImage systemImageNamed:@"pause.circle.fill"] forState:UIControlStateNormal];
+        [self.playButton setImage:[UIImage imageNamed:@"create_pause"] forState:UIControlStateNormal];
         self.playButton.tintColor = [UIColor systemBlueColor];
     } else {
-        [self.playButton setImage:[UIImage systemImageNamed:@"play.circle.fill"] forState:UIControlStateNormal];
+        [self.playButton setImage:[UIImage imageNamed:@"create_play"] forState:UIControlStateNormal];
         self.playButton.tintColor = [UIColor systemGrayColor];
     }
 }
 
 - (void)configurePendingState {
-    // 隐藏状态视图，显示副标题
+    // ⭐️ 隐藏状态视图，显示副标题
     self.statusView.hidden = YES;
     self.subtitleLabel.hidden = NO;
     self.subtitleLabel.text = @"No Voice";
@@ -281,18 +287,68 @@
     }
 }
 
+#pragma mark - Editing Mode
+
+// ⭐️ 核心方法：使用明确的标记判断编辑模式
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
     [super setEditing:editing animated:animated];
     
-    // 在编辑模式下隐藏播放和编辑按钮，让位给选择控件
-    if (editing) {
+    NSLog(@"Cell setEditing: %@, isBatchEditingMode: %@",
+          editing ? @"YES" : @"NO",
+          self.isBatchEditingMode ? @"YES" : @"NO");
+    
+    // 清晰的判断逻辑：
+    // 1. 批量编辑模式（isBatchEditingMode = YES）：隐藏按钮，显示选择框
+    // 2. 左滑删除（editing = YES, isBatchEditingMode = NO）：显示按钮
+    // 3. 正常模式（editing = NO）：显示按钮
+    
+    if (self.isBatchEditingMode && editing) {
+        // 批量编辑模式：隐藏操作按钮
+        NSLog(@"📱 批量编辑模式 - 隐藏按钮");
         self.playButton.hidden = YES;
         self.editButton.hidden = YES;
     } else {
-        self.playButton.hidden = NO;
-        self.editButton.hidden = NO;
+        // 左滑删除或正常模式：显示按钮
+        NSLog(@"📱 %@ - 显示按钮", editing ? @"左滑删除" : @"正常模式");
+        
+        // 根据故事状态决定按钮的可见性和可用性
+        if (self.model) {
+            if ([self.model.status isEqualToString:@"generating"]) {
+                // 生成中：隐藏编辑按钮，显示禁用的播放按钮
+                self.editButton.hidden = YES;
+                self.playButton.hidden = NO;
+                self.playButton.enabled = NO;
+            } else if ([self.model.status isEqualToString:@"completed"]) {
+                // 完成：显示所有按钮
+                self.editButton.hidden = NO;
+                self.playButton.hidden = NO;
+                self.playButton.enabled = YES;
+            } else {
+                // 其他状态：显示编辑按钮，禁用播放按钮
+                self.editButton.hidden = NO;
+                self.playButton.hidden = NO;
+                self.playButton.enabled = NO;
+            }
+        } else {
+            // 没有模型数据：显示所有按钮
+            self.editButton.hidden = NO;
+            self.playButton.hidden = NO;
+        }
     }
 }
 
-@end
+// 重置方法
+- (void)prepareForReuse {
+    [super prepareForReuse];
+    
+    // 重置批量编辑标记
+    self.isBatchEditingMode = NO;
+    
+    // 重置按钮状态
+    self.playButton.hidden = NO;
+    self.editButton.hidden = NO;
+    
+    NSLog(@"Cell prepareForReuse - 重置状态");
+}
 
+@end

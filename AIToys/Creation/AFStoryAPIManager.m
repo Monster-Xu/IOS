@@ -1,18 +1,7 @@
-//
-//  AFStoryAPIManager.m
-//  AIToys
-//
-//  Created by xuxuxu on 2025/10/5.
-//
-
+// AFStoryAPIManager.m
 #import "AFStoryAPIManager.h"
-
-// 基础URL配置
-static NSString * const kAFAPIBaseURL = @"https://api.example.com/api/v1";
-
-@interface AFStoryAPIManager ()
-@property (nonatomic, strong) AFHTTPSessionManager *sessionManager;
-@end
+#import "APIManager.h"
+#import "APIPortConfiguration.h"
 
 @implementation AFStoryAPIManager
 
@@ -25,77 +14,112 @@ static NSString * const kAFAPIBaseURL = @"https://api.example.com/api/v1";
     return manager;
 }
 
-- (instancetype)init {
-    if (self = [super init]) {
-        [self setupSessionManager];
-    }
-    return self;
-}
-
-- (void)setupSessionManager {
-    self.sessionManager = [[AFHTTPSessionManager alloc] initWithBaseURL:[NSURL URLWithString:kAFAPIBaseURL]];
-    
-    // 设置请求序列化器
-    self.sessionManager.requestSerializer = [AFJSONRequestSerializer serializer];
-    self.sessionManager.requestSerializer.timeoutInterval = 30.0;
-    
-    // 设置通用请求头
-    [self.sessionManager.requestSerializer setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [self.sessionManager.requestSerializer setValue:@"Bearer {access_token}" forHTTPHeaderField:@"Authorization"];
-    [self.sessionManager.requestSerializer setValue:@"{family_id}" forHTTPHeaderField:@"X-Family-Id"];
-    
-    // 设置响应序列化器
-    self.sessionManager.responseSerializer = [AFJSONResponseSerializer serializer];
-    self.sessionManager.responseSerializer.acceptableContentTypes = [NSSet setWithObjects:@"application/json", @"text/json", @"text/html", nil];
-}
+#pragma mark - Helper Methods
 
 - (APIResponseModel *)parseResponseObject:(id)responseObject {
     APIResponseModel *response = [[APIResponseModel alloc] init];
+    
     if ([responseObject isKindOfClass:[NSDictionary class]]) {
         NSDictionary *dict = (NSDictionary *)responseObject;
         response.code = [dict[@"code"] integerValue];
-        response.message = dict[@"message"] ?: @"";
+        response.message = dict[@"msg"] ?: dict[@"message"] ?: @"";
         response.data = dict[@"data"];
         response.timestamp = [dict[@"timestamp"] longLongValue];
         response.requestId = dict[@"requestId"] ?: @"";
+    } else {
+        response.code = -1;
+        response.message = @"响应格式错误";
     }
+    
     return response;
+}
+
+- (VoiceStoryModel *)parseStoryFromDict:(NSDictionary *)dict {
+    if (![dict isKindOfClass:[NSDictionary class]]) {
+        return [[VoiceStoryModel alloc] init];
+    }
+    
+    VoiceStoryModel *story = [[VoiceStoryModel alloc] init];
+    story.storyId = [dict[@"storyId"] integerValue];
+    story.storyName = dict[@"storyName"] ?: @"";
+    story.storyContent = dict[@"storyContent"];
+    story.storySummary = dict[@"storySummary"];
+    story.storyType = [dict[@"storyType"] integerValue];
+    story.storyTypeDesc = dict[@"storyTypeDesc"];
+    story.protagonistName = dict[@"protagonistName"];
+    story.storyLength = [dict[@"storyLength"] integerValue];
+    story.illustrationUrl = dict[@"illustrationUrl"];
+    story.voiceId = [dict[@"voiceId"] integerValue];
+    story.voiceName = dict[@"voiceName"];
+    story.audioUrl = dict[@"audioUrl"];
+    story.storyStatus = [dict[@"storyStatus"] integerValue];
+    story.statusDesc = dict[@"statusDesc"];
+    story.errorMsg = dict[@"errorMsg"];
+    story.dollId = [dict[@"dollId"] integerValue];
+    story.dollName = dict[@"dollName"];
+    story.createTime = dict[@"createTime"];
+    story.updateTime = dict[@"updateTime"];
+    
+    return story;
+}
+
+- (VoiceModel *)parseVoiceFromDict:(NSDictionary *)dict {
+    if (![dict isKindOfClass:[NSDictionary class]]) {
+        return [[VoiceModel alloc] init];
+    }
+    
+    VoiceModel *voice = [[VoiceModel alloc] init];
+    voice.voiceId = [dict[@"voiceId"] integerValue];
+    voice.voiceName = dict[@"voiceName"] ?: @"";
+    voice.avatarUrl = dict[@"avatarUrl"];
+    voice.cloneStatus = [dict[@"cloneStatus"] integerValue];
+    voice.statusDesc = dict[@"statusDesc"];
+    voice.errorMsg = dict[@"errorMsg"];
+    voice.sampleAudioUrl = dict[@"sampleAudioUrl"];
+    voice.sampleText = dict[@"sampleText"];
+    voice.bindStoryCount = [dict[@"bindStoryCount"] integerValue];
+    voice.createTime = dict[@"createTime"];
+    voice.updateTime = dict[@"updateTime"];
+    
+    return voice;
 }
 
 #pragma mark - 故事相关接口
 
-- (NSURLSessionDataTask *)createStory:(CreateStoryRequestModel *)request
-                              success:(AFAPISuccessBlock)success
-                              failure:(AFAPIFailureBlock)failure {
-    // 设置动态请求头
-    [self.sessionManager.requestSerializer setValue:[[NSUUID UUID] UUIDString] forHTTPHeaderField:@"X-Request-Id"];
+- (void)createStory:(CreateStoryRequestModel *)request
+            success:(void(^)(APIResponseModel *response))success
+            failure:(StoryAPIFailureBlock)failure {
     
-    return [self.sessionManager POST:@"/stories" 
-                          parameters:[request toDictionary] 
-                             headers:nil 
-                            progress:nil 
-                             success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        APIResponseModel *response = [self parseResponseObject:responseObject];
+    NSDictionary *parameters = [request toDictionary];
+    
+    [[APIManager shared] POSTJSON:[APIPortConfiguration getCreateStoryUrl]
+                        parameter:parameters
+                          success:^(id result, id data, NSString *msg) {
+        APIResponseModel *response = [self parseResponseObject:result];
         if (success) success(response);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        if (failure) failure(error);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
     }];
 }
 
-- (NSURLSessionDataTask *)getStoriesWithPage:(PageRequestModel *)page
-                                     success:(void(^)(StoryListResponseModel *response))success
-                                     failure:(AFAPIFailureBlock)failure {
-    return [self.sessionManager GET:@"/stories" 
-                         parameters:[page toQueryParameters] 
-                            headers:nil 
-                           progress:nil 
-                            success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        APIResponseModel *apiResponse = [self parseResponseObject:responseObject];
-        if (apiResponse.isSuccess && success) {
-            // 这里可以集成 YYModel 或 Mantle 等进行自动映射
+- (void)getStoriesWithPage:(PageRequestModel *)page
+                   success:(void(^)(StoryListResponseModel *response))success
+                   failure:(StoryAPIFailureBlock)failure {
+    
+    NSDictionary *parameters = [page toQueryParameters];
+    
+    [[APIManager shared] GET:[APIPortConfiguration getStoriesListUrl]
+                   parameter:parameters
+                     success:^(id result, id data, NSString *msg) {
+        APIResponseModel *apiResponse = [self parseResponseObject:result];
+        if (apiResponse.isSuccess) {
             StoryListResponseModel *storyResponse = [[StoryListResponseModel alloc] init];
             
-            // 手动解析数据（实际项目中建议使用自动映射）
             if ([apiResponse.data isKindOfClass:[NSDictionary class]]) {
                 NSDictionary *data = apiResponse.data;
                 storyResponse.total = [data[@"total"] integerValue];
@@ -109,107 +133,151 @@ static NSString * const kAFAPIBaseURL = @"https://api.example.com/api/v1";
                 storyResponse.list = stories;
             }
             
-            success(storyResponse);
-        } else if (failure) {
-            NSError *error = [NSError errorWithDomain:@"APIError" 
-                                                 code:apiResponse.code 
+            if (success) success(storyResponse);
+        } else {
+            NSError *error = [NSError errorWithDomain:@"APIError"
+                                                 code:apiResponse.code
                                              userInfo:@{NSLocalizedDescriptionKey: apiResponse.errorMessage}];
-            failure(error);
+            if (failure) failure(error);
         }
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        if (failure) failure(error);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
     }];
 }
 
-- (NSURLSessionDataTask *)getStoryDetailWithId:(NSInteger)storyId
-                                       success:(void(^)(VoiceStoryModel *story))success
-                                       failure:(AFAPIFailureBlock)failure {
-    NSDictionary *params = @{@"storyId": @(storyId)};
+- (void)getStoryDetailWithId:(NSInteger)storyId
+                     success:(void(^)(VoiceStoryModel *story))success
+                     failure:(StoryAPIFailureBlock)failure {
     
-    return [self.sessionManager GET:@"/stories/detail" 
-                         parameters:params 
-                            headers:nil 
-                           progress:nil 
-                            success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        APIResponseModel *apiResponse = [self parseResponseObject:responseObject];
-        if (apiResponse.isSuccess && success) {
+    NSDictionary *parameters = @{@"storyId": @(storyId)};
+    
+    [[APIManager shared] GET:[APIPortConfiguration getStoryDetailUrl]
+                   parameter:parameters
+                     success:^(id result, id data, NSString *msg) {
+        APIResponseModel *apiResponse = [self parseResponseObject:result];
+        if (apiResponse.isSuccess) {
             VoiceStoryModel *story = [self parseStoryFromDict:apiResponse.data];
-            success(story);
-        } else if (failure) {
-            NSError *error = [NSError errorWithDomain:@"APIError" 
-                                                 code:apiResponse.code 
+            if (success) success(story);
+        } else {
+            NSError *error = [NSError errorWithDomain:@"APIError"
+                                                 code:apiResponse.code
                                              userInfo:@{NSLocalizedDescriptionKey: apiResponse.errorMessage}];
-            failure(error);
+            if (failure) failure(error);
         }
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        if (failure) failure(error);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
     }];
 }
 
-- (NSURLSessionDataTask *)deleteStoryWithId:(NSInteger)storyId
-                                    success:(AFAPISuccessBlock)success
-                                    failure:(AFAPIFailureBlock)failure {
-    NSDictionary *params = @{@"storyId": @(storyId)};
+- (void)updateStory:(UpdateStoryRequestModel *)request
+            success:(void(^)(APIResponseModel *response))success
+            failure:(StoryAPIFailureBlock)failure {
     
-    return [self.sessionManager POST:@"/stories/delete" 
-                          parameters:params 
-                             headers:nil 
-                            progress:nil 
-                             success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        APIResponseModel *response = [self parseResponseObject:responseObject];
+    NSDictionary *parameters = [request toDictionary];
+    
+    [[APIManager shared] POSTJSON:[APIPortConfiguration getUpdateStoryUrl]
+                        parameter:parameters
+                          success:^(id result, id data, NSString *msg) {
+        APIResponseModel *response = [self parseResponseObject:result];
         if (success) success(response);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        if (failure) failure(error);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
     }];
 }
 
-- (NSURLSessionDataTask *)synthesizeStory:(SynthesizeStoryRequestModel *)request
-                                  success:(AFAPISuccessBlock)success
-                                  failure:(AFAPIFailureBlock)failure {
-    return [self.sessionManager POST:@"/stories/synthesize" 
-                          parameters:[request toDictionary] 
-                             headers:nil 
-                            progress:nil 
-                             success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        APIResponseModel *response = [self parseResponseObject:responseObject];
+- (void)deleteStoryWithId:(NSInteger)storyId
+                  success:(void(^)(APIResponseModel *response))success
+                  failure:(StoryAPIFailureBlock)failure {
+    
+    NSDictionary *parameters = @{@"storyId": @(storyId)};
+    
+    [[APIManager shared] POSTJSON:[APIPortConfiguration getDeleteStoryUrl]
+                        parameter:parameters
+                          success:^(id result, id data, NSString *msg) {
+        APIResponseModel *response = [self parseResponseObject:result];
         if (success) success(response);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        if (failure) failure(error);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
+    }];
+}
+
+- (void)synthesizeStory:(SynthesizeStoryRequestModel *)request
+                success:(void(^)(APIResponseModel *response))success
+                failure:(StoryAPIFailureBlock)failure {
+    
+    NSDictionary *parameters = [request toDictionary];
+    
+    [[APIManager shared] POSTJSON:[APIPortConfiguration getSynthesizeStoryUrl]
+                        parameter:parameters
+                          success:^(id result, id data, NSString *msg) {
+        APIResponseModel *response = [self parseResponseObject:result];
+        if (success) success(response);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
     }];
 }
 
 #pragma mark - 声音相关接口
 
-- (NSURLSessionDataTask *)createVoice:(CreateVoiceRequestModel *)request
-                              success:(AFAPISuccessBlock)success
-                              failure:(AFAPIFailureBlock)failure {
-    return [self.sessionManager POST:@"/voices/clone" 
-                          parameters:[request toDictionary] 
-                             headers:nil 
-                            progress:nil 
-                             success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        APIResponseModel *response = [self parseResponseObject:responseObject];
+- (void)createVoice:(CreateVoiceRequestModel *)request
+            success:(void(^)(APIResponseModel *response))success
+            failure:(StoryAPIFailureBlock)failure {
+    
+    NSDictionary *parameters = [request toDictionary];
+    
+    [[APIManager shared] POSTJSON:[APIPortConfiguration getCreateVoiceUrl]
+                        parameter:parameters
+                          success:^(id result, id data, NSString *msg) {
+        APIResponseModel *response = [self parseResponseObject:result];
         if (success) success(response);
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        if (failure) failure(error);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
     }];
 }
 
-- (NSURLSessionDataTask *)getVoicesWithStatus:(NSInteger)status
-                                      success:(void(^)(VoiceListResponseModel *response))success
-                                      failure:(AFAPIFailureBlock)failure {
-    NSDictionary *params = status > 0 ? @{@"cloneStatus": @(status)} : nil;
+- (void)getVoicesWithStatus:(NSInteger)status
+                    success:(void(^)(VoiceListResponseModel *response))success
+                    failure:(StoryAPIFailureBlock)failure {
     
-    return [self.sessionManager GET:@"/voices" 
-                         parameters:params 
-                            headers:nil 
-                           progress:nil 
-                            success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        APIResponseModel *apiResponse = [self parseResponseObject:responseObject];
-        if (apiResponse.isSuccess && success) {
+    NSDictionary *parameters = status > 0 ? @{@"cloneStatus": @(status)} : nil;
+    
+    [[APIManager shared] GET:[APIPortConfiguration getVoicesListUrl]
+                   parameter:parameters
+                     success:^(id result, id data, NSString *msg) {
+        APIResponseModel *apiResponse = [self parseResponseObject:result];
+        if (apiResponse.isSuccess) {
             VoiceListResponseModel *voiceResponse = [[VoiceListResponseModel alloc] init];
             
-            // 手动解析声音数据
             if ([apiResponse.data isKindOfClass:[NSDictionary class]]) {
                 NSDictionary *data = apiResponse.data;
                 voiceResponse.total = [data[@"total"] integerValue];
@@ -223,78 +291,172 @@ static NSString * const kAFAPIBaseURL = @"https://api.example.com/api/v1";
                 voiceResponse.list = voices;
             }
             
-            success(voiceResponse);
-        } else if (failure) {
-            NSError *error = [NSError errorWithDomain:@"APIError" 
-                                                 code:apiResponse.code 
+            if (success) success(voiceResponse);
+        } else {
+            NSError *error = [NSError errorWithDomain:@"APIError"
+                                                 code:apiResponse.code
                                              userInfo:@{NSLocalizedDescriptionKey: apiResponse.errorMessage}];
-            failure(error);
+            if (failure) failure(error);
         }
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        if (failure) failure(error);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
     }];
 }
 
-#pragma mark - Helper Methods
-
-- (VoiceStoryModel *)parseStoryFromDict:(NSDictionary *)dict {
-    if (![dict isKindOfClass:[NSDictionary class]]) {
-        return [[VoiceStoryModel alloc] init];
-    }
+- (void)getVoiceDetailWithId:(NSInteger)voiceId
+                     success:(void(^)(VoiceModel *voice))success
+                     failure:(StoryAPIFailureBlock)failure {
     
-    VoiceStoryModel *story = [[VoiceStoryModel alloc] init];
+    NSDictionary *parameters = @{@"voiceId": @(voiceId)};
     
-    story.storyId = [dict[@"storyId"] integerValue];
-    story.storyName = dict[@"storyName"] ?: @"";
-    story.storyContent = dict[@"storyContent"];
-    story.storySummary = dict[@"storySummary"];
-    story.storyType = [dict[@"storyType"] integerValue];
-    story.storyTypeDesc = dict[@"storyTypeDesc"];
-    story.protagonistName = dict[@"protagonistName"];
-    story.storyLength = [dict[@"storyLength"] integerValue];
-    story.illustrationUrl = dict[@"illustrationUrl"];
-    
-    story.voiceId = [dict[@"voiceId"] integerValue];
-    story.voiceName = dict[@"voiceName"];
-    story.audioUrl = dict[@"audioUrl"];
-    
-    story.storyStatus = [dict[@"storyStatus"] integerValue];
-    story.statusDesc = dict[@"statusDesc"];
-    story.errorMsg = dict[@"errorMsg"];
-    
-    story.dollId = [dict[@"dollId"] integerValue];
-    story.dollName = dict[@"dollName"];
-    
-    story.createTime = dict[@"createTime"];
-    story.updateTime = dict[@"updateTime"];
-    
-    return story;
+    [[APIManager shared] GET:[APIPortConfiguration getVoiceDetailUrl]
+                   parameter:parameters
+                     success:^(id result, id data, NSString *msg) {
+        APIResponseModel *apiResponse = [self parseResponseObject:result];
+        if (apiResponse.isSuccess) {
+            VoiceModel *voice = [self parseVoiceFromDict:apiResponse.data];
+            if (success) success(voice);
+        } else {
+            NSError *error = [NSError errorWithDomain:@"APIError"
+                                                 code:apiResponse.code
+                                             userInfo:@{NSLocalizedDescriptionKey: apiResponse.errorMessage}];
+            if (failure) failure(error);
+        }
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
+    }];
 }
 
-- (VoiceModel *)parseVoiceFromDict:(NSDictionary *)dict {
-    if (![dict isKindOfClass:[NSDictionary class]]) {
-        return [[VoiceModel alloc] init];
-    }
+- (void)updateVoice:(UpdateVoiceRequestModel *)request
+            success:(void(^)(APIResponseModel *response))success
+            failure:(StoryAPIFailureBlock)failure {
     
-    VoiceModel *voice = [[VoiceModel alloc] init];
+    NSDictionary *parameters = [request toDictionary];
     
-    voice.voiceId = [dict[@"voiceId"] integerValue];
-    voice.voiceName = dict[@"voiceName"] ?: @"";
-    voice.avatarUrl = dict[@"avatarUrl"];
+    [[APIManager shared] POSTJSON:[APIPortConfiguration getUpdateVoiceUrl]
+                        parameter:parameters
+                          success:^(id result, id data, NSString *msg) {
+        APIResponseModel *response = [self parseResponseObject:result];
+        if (success) success(response);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
+    }];
+}
+
+- (void)deleteVoiceWithId:(NSInteger)voiceId
+                  success:(void(^)(APIResponseModel *response))success
+                  failure:(StoryAPIFailureBlock)failure {
     
-    voice.cloneStatus = [dict[@"cloneStatus"] integerValue];
-    voice.statusDesc = dict[@"statusDesc"];
-    voice.errorMsg = dict[@"errorMsg"];
+    NSDictionary *parameters = @{@"voiceId": @(voiceId)};
     
-    voice.sampleAudioUrl = dict[@"sampleAudioUrl"];
-    voice.sampleText = dict[@"sampleText"];
+    [[APIManager shared] POSTJSON:[APIPortConfiguration getDeleteVoiceUrl]
+                        parameter:parameters
+                          success:^(id result, id data, NSString *msg) {
+        APIResponseModel *response = [self parseResponseObject:result];
+        if (success) success(response);
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
+    }];
+}
+
+#pragma mark - 通用资源接口
+
+- (void)getIllustrationsSuccess:(void(^)(IllustrationListResponseModel *response))success
+                       failure:(StoryAPIFailureBlock)failure {
     
-    voice.bindStoryCount = [dict[@"bindStoryCount"] integerValue];
+    [[APIManager shared] GET:[APIPortConfiguration getIllustrationsUrl]
+                   parameter:nil
+                     success:^(id result, id data, NSString *msg) {
+        APIResponseModel *apiResponse = [self parseResponseObject:result];
+        if (apiResponse.isSuccess) {
+            IllustrationListResponseModel *illustrationResponse = [[IllustrationListResponseModel alloc] init];
+            
+            if ([apiResponse.data isKindOfClass:[NSArray class]]) {
+                NSArray *list = apiResponse.data;
+                NSMutableArray<IllustrationModel *> *illustrations = [NSMutableArray array];
+                for (NSDictionary *item in list) {
+                    IllustrationModel *illustration = [[IllustrationModel alloc] init];
+                    illustration.name = item[@"name"] ?: @"";
+                    illustration.url = item[@"url"] ?: @"";
+                    [illustrations addObject:illustration];
+                }
+                illustrationResponse.list = illustrations;
+                illustrationResponse.total = illustrations.count;
+            }
+            
+            if (success) success(illustrationResponse);
+        } else {
+            NSError *error = [NSError errorWithDomain:@"APIError"
+                                                 code:apiResponse.code
+                                             userInfo:@{NSLocalizedDescriptionKey: apiResponse.errorMessage}];
+            if (failure) failure(error);
+        }
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
+    }];
+}
+
+- (void)getOfficialVoicesSuccess:(void(^)(VoiceListResponseModel *response))success
+                        failure:(StoryAPIFailureBlock)failure {
     
-    voice.createTime = dict[@"createTime"];
-    voice.updateTime = dict[@"updateTime"];
-    
-    return voice;
+    [[APIManager shared] GET:[APIPortConfiguration getOfficialVoicesUrl]
+                   parameter:nil
+                     success:^(id result, id data, NSString *msg) {
+        APIResponseModel *apiResponse = [self parseResponseObject:result];
+        if (apiResponse.isSuccess) {
+            VoiceListResponseModel *voiceResponse = [[VoiceListResponseModel alloc] init];
+            
+            if ([apiResponse.data isKindOfClass:[NSArray class]]) {
+                NSArray *list = apiResponse.data;
+                NSMutableArray<VoiceModel *> *voices = [NSMutableArray array];
+                for (NSDictionary *item in list) {
+                    VoiceModel *voice = [self parseVoiceFromDict:item];
+                    [voices addObject:voice];
+                }
+                voiceResponse.list = voices;
+                voiceResponse.total = voices.count;
+            }
+            
+            if (success) success(voiceResponse);
+        } else {
+            NSError *error = [NSError errorWithDomain:@"APIError"
+                                                 code:apiResponse.code
+                                             userInfo:@{NSLocalizedDescriptionKey: apiResponse.errorMessage}];
+            if (failure) failure(error);
+        }
+    } failure:^(NSError *error, NSString *msg) {
+        if (failure) {
+            NSError *apiError = [NSError errorWithDomain:@"APIError"
+                                                    code:error.code
+                                                userInfo:@{NSLocalizedDescriptionKey: msg ?: error.localizedDescription}];
+            failure(apiError);
+        }
+    }];
 }
 
 @end

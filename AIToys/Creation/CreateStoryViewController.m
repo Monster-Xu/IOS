@@ -6,8 +6,13 @@
 //
 
 #import "CreateStoryViewController.h"
+#import "CreateStoryWithVoiceViewController.h"
+#import "BottomPickerView.h"
+#import "VoiceInputView.h"
 #import <Speech/Speech.h>
 #import <Photos/Photos.h>
+#import <Masonry/Masonry.h>
+#import "AFStoryAPIManager.h"
 
 @interface CreateStoryViewController () <UITextFieldDelegate, UITextViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
 
@@ -15,26 +20,39 @@
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIView *contentView;
 
+// Card Containers
+@property (nonatomic, strong) UIView *themeCardView;
+@property (nonatomic, strong) UIView *illustrationCardView;
+@property (nonatomic, strong) UIView *contentCardView;
+@property (nonatomic, strong) UIView *typeCardView;
+@property (nonatomic, strong) UIView *protagonistCardView;
+@property (nonatomic, strong) UIView *lengthCardView;
+
 // Story Theme
 @property (nonatomic, strong) UILabel *themeLabel;
-@property (nonatomic, strong) UITextField *themeTextField;
-@property (nonatomic, strong) UILabel *themeCharCountLabel;
+@property (nonatomic, strong) UITextView *themeTextView;
+@property (nonatomic, strong) UILabel *themePlaceholderLabel;
 
 // Story Illustration
 @property (nonatomic, strong) UILabel *illustrationLabel;
-@property (nonatomic, strong) UIButton *addImageButton;
+@property (nonatomic, strong) UIView *imageContainerView;
 @property (nonatomic, strong) UIImageView *selectedImageView;
-@property (nonatomic, strong) UILabel *imageHintLabel;
+@property (nonatomic, strong) UIButton *removeImageButton;
+@property (nonatomic, strong) UILabel *addImageLabel;
+@property (nonatomic, strong) UIImageView *addImageIcon;
 
 // Story Content
 @property (nonatomic, strong) UILabel *contentLabel;
 @property (nonatomic, strong) UITextView *contentTextView;
 @property (nonatomic, strong) UIButton *voiceInputButton;
 @property (nonatomic, strong) UILabel *contentCharCountLabel;
+@property (nonatomic, strong) UILabel *contentPlaceholderLabel;
 
 // Story Type
 @property (nonatomic, strong) UILabel *typeLabel;
 @property (nonatomic, strong) UIButton *typeButton;
+@property (nonatomic, strong) UILabel *typeValueLabel;
+@property (nonatomic, strong) UIImageView *typeChevronImageView;
 
 // Story's Protagonist
 @property (nonatomic, strong) UILabel *protagonistLabel;
@@ -43,14 +61,17 @@
 // Story Length
 @property (nonatomic, strong) UILabel *lengthLabel;
 @property (nonatomic, strong) UIButton *lengthButton;
+@property (nonatomic, strong) UILabel *lengthValueLabel;
+@property (nonatomic, strong) UIImageView *lengthChevronImageView;
 
 // Bottom Button
 @property (nonatomic, strong) UIButton *nextButton;
 
 // Data
 @property (nonatomic, strong) UIImage *selectedImage;
-@property (nonatomic, copy) NSString *selectedType;
-@property (nonatomic, copy) NSString *selectedLength;
+@property (nonatomic, copy) NSString *selectedIllustrationUrl;
+@property (nonatomic, assign) NSInteger selectedTypeIndex;
+@property (nonatomic, assign) NSInteger selectedLengthIndex;
 
 // Speech Recognition
 @property (nonatomic, strong) SFSpeechRecognizer *speechRecognizer;
@@ -58,14 +79,23 @@
 @property (nonatomic, strong) SFSpeechRecognitionTask *recognitionTask;
 @property (nonatomic, strong) AVAudioEngine *audioEngine;
 
+// 故事类型和时长数据
+@property (nonatomic, strong) NSArray<NSString *> *storyTypes;
+@property (nonatomic, strong) NSArray<NSString *> *storyLengths;
+
 @end
 
 @implementation CreateStoryViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor whiteColor];
+    
+    // 设置导航栏
     self.title = @"Create Story";
+    self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
+    [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0]];
+    // 初始化数据
+    [self setupData];
     
     [self setupUI];
     [self setupSpeechRecognition];
@@ -79,15 +109,39 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+- (void)setupData {
+    // 初始化故事类型数据
+    self.storyTypes = @[@"Fairy Tale", @"Fable", @"Adventure", @"Superhero", @"Science Fiction", @"Educational", @"Bedtime Story"];
+    
+    // 初始化故事时长数据
+    self.storyLengths = @[@"1min 30s", @"3min", @"4.5min", @"6min"];
+    
+    // 默认值
+    self.selectedTypeIndex = -1;
+    self.selectedLengthIndex = -1;
+}
+
 - (void)setupUI {
     // ScrollView
     self.scrollView = [[UIScrollView alloc] init];
-    self.scrollView.backgroundColor = [UIColor whiteColor];
+    self.scrollView.backgroundColor = [UIColor clearColor];
     self.scrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
+    self.scrollView.showsVerticalScrollIndicator = YES;
     [self.view addSubview:self.scrollView];
+    
+    [self.scrollView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop);
+        make.left.right.equalTo(self.view);
+        make.bottom.equalTo(self.view).offset(-90);
+    }];
     
     self.contentView = [[UIView alloc] init];
     [self.scrollView addSubview:self.contentView];
+    
+    [self.contentView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(self.scrollView);
+        make.width.equalTo(self.scrollView);
+    }];
     
     // Story Theme
     [self setupThemeSection];
@@ -109,203 +163,408 @@
     
     // Next Button
     [self setupNextButton];
-    
-    [self setupConstraints];
 }
 
+#pragma mark - Setup Sections
+
 - (void)setupThemeSection {
+    // 标题
     self.themeLabel = [[UILabel alloc] init];
     self.themeLabel.text = @"Story Theme";
     self.themeLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.themeLabel.textColor = [UIColor blackColor];
     [self.contentView addSubview:self.themeLabel];
     
-    self.themeTextField = [[UITextField alloc] init];
-    self.themeTextField.placeholder = @"Please Input,不超过120字符";
-    self.themeTextField.font = [UIFont systemFontOfSize:15];
-    self.themeTextField.borderStyle = UITextBorderStyleRoundedRect;
-    self.themeTextField.backgroundColor = [UIColor colorWithWhite:0.96 alpha:1];
-    self.themeTextField.layer.cornerRadius = 8;
-    self.themeTextField.layer.borderWidth = 0;
-    self.themeTextField.delegate = self;
-    [self.themeTextField addTarget:self action:@selector(themeTextChanged:) forControlEvents:UIControlEventEditingChanged];
-    [self.contentView addSubview:self.themeTextField];
+    [self.themeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.contentView).offset(16);
+        make.left.equalTo(self.contentView).offset(16);
+    }];
     
-    self.themeCharCountLabel = [[UILabel alloc] init];
-    self.themeCharCountLabel.text = @"0/120";
-    self.themeCharCountLabel.font = [UIFont systemFontOfSize:12];
-    self.themeCharCountLabel.textColor = [UIColor systemGrayColor];
-    self.themeCharCountLabel.textAlignment = NSTextAlignmentRight;
-    [self.contentView addSubview:self.themeCharCountLabel];
+    // 白色卡片容器
+    self.themeCardView = [[UIView alloc] init];
+    self.themeCardView.backgroundColor = [UIColor whiteColor];
+    self.themeCardView.layer.cornerRadius = 12;
+    self.themeCardView.layer.masksToBounds = YES;
+    [self.contentView addSubview:self.themeCardView];
+    
+    [self.themeCardView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.themeLabel.mas_bottom).offset(8);
+        make.left.equalTo(self.contentView).offset(16);
+        make.right.equalTo(self.contentView).offset(-16);
+        make.height.mas_greaterThanOrEqualTo(60);
+    }];
+    
+    // 输入框（使用 UITextView 以支持多行）
+    self.themeTextView = [[UITextView alloc] init];
+    self.themeTextView.font = [UIFont systemFontOfSize:15];
+    self.themeTextView.textColor = [UIColor blackColor];
+    self.themeTextView.backgroundColor = [UIColor clearColor];
+    self.themeTextView.textContainerInset = UIEdgeInsetsMake(16, 16, 16, 16);
+    self.themeTextView.delegate = self;
+    self.themeTextView.scrollEnabled = NO;
+    [self.themeCardView addSubview:self.themeTextView];
+    
+    [self.themeTextView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(self.themeCardView);
+    }];
+    
+    // Placeholder
+    self.themePlaceholderLabel = [[UILabel alloc] init];
+    self.themePlaceholderLabel.text = @"Please Input,不超过120字符";
+    self.themePlaceholderLabel.font = [UIFont systemFontOfSize:15];
+    self.themePlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
+    self.themePlaceholderLabel.userInteractionEnabled = NO;
+    [self.themeCardView addSubview:self.themePlaceholderLabel];
+    
+    [self.themePlaceholderLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.themeCardView).offset(21);
+        make.top.equalTo(self.themeCardView).offset(16);
+    }];
 }
 
 - (void)setupIllustrationSection {
+    // 标题
     self.illustrationLabel = [[UILabel alloc] init];
     self.illustrationLabel.text = @"Story 插图";
     self.illustrationLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.illustrationLabel.textColor = [UIColor blackColor];
     [self.contentView addSubview:self.illustrationLabel];
     
-    self.addImageButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    self.addImageButton.backgroundColor = [UIColor colorWithWhite:0.96 alpha:1];
-    self.addImageButton.layer.cornerRadius = 8;
-    [self.addImageButton addTarget:self action:@selector(addImageButtonTapped) forControlEvents:UIControlEventTouchUpInside];
-    [self.contentView addSubview:self.addImageButton];
+    [self.illustrationLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.themeCardView.mas_bottom).offset(24);
+        make.left.equalTo(self.contentView).offset(16);
+    }];
     
-    UIImageView *plusIcon = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"plus"]];
-    plusIcon.tintColor = [UIColor systemGrayColor];
-    plusIcon.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.addImageButton addSubview:plusIcon];
+    // 白色卡片容器
+    self.illustrationCardView = [[UIView alloc] init];
+    self.illustrationCardView.backgroundColor = [UIColor whiteColor];
+    self.illustrationCardView.layer.cornerRadius = 12;
+    self.illustrationCardView.layer.masksToBounds = YES;
+    [self.contentView addSubview:self.illustrationCardView];
     
-    UILabel *addLabel = [[UILabel alloc] init];
-    addLabel.text = @"添加图片";
-    addLabel.font = [UIFont systemFontOfSize:14];
-    addLabel.textColor = [UIColor systemGrayColor];
-    addLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.addImageButton addSubview:addLabel];
+    [self.illustrationCardView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.illustrationLabel.mas_bottom).offset(8);
+        make.left.equalTo(self.contentView).offset(16);
+        make.right.equalTo(self.contentView).offset(-16);
+        make.height.mas_equalTo(108);
+    }];
     
-    [NSLayoutConstraint activateConstraints:@[
-        [plusIcon.centerXAnchor constraintEqualToAnchor:self.addImageButton.centerXAnchor],
-        [plusIcon.topAnchor constraintEqualToAnchor:self.addImageButton.topAnchor constant:20],
-        [plusIcon.widthAnchor constraintEqualToConstant:40],
-        [plusIcon.heightAnchor constraintEqualToConstant:40],
-        
-        [addLabel.centerXAnchor constraintEqualToAnchor:self.addImageButton.centerXAnchor],
-        [addLabel.topAnchor constraintEqualToAnchor:plusIcon.bottomAnchor constant:8]
-    ]];
+    // 图片容器
+    self.imageContainerView = [[UIView alloc] init];
+    self.imageContainerView.backgroundColor = [UIColor colorWithWhite:0.95 alpha:1];
+    self.imageContainerView.layer.cornerRadius = 8;
+    self.imageContainerView.layer.masksToBounds = YES;
+    self.imageContainerView.userInteractionEnabled = YES;
+    [self.illustrationCardView addSubview:self.imageContainerView];
     
-    self.imageHintLabel = [[UILabel alloc] init];
-    self.imageHintLabel.text = @"只能选择图库图片";
-    self.imageHintLabel.font = [UIFont systemFontOfSize:12];
-    self.imageHintLabel.textColor = [UIColor systemRedColor];
-    [self.contentView addSubview:self.imageHintLabel];
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(addImageButtonTapped)];
+    [self.imageContainerView addGestureRecognizer:tapGesture];
+    
+    [self.imageContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.illustrationCardView).offset(16);
+        make.centerY.equalTo(self.illustrationCardView);
+        make.width.height.mas_equalTo(76);
+    }];
+    
+    // 添加图片图标
+    self.addImageIcon = [[UIImageView alloc] init];
+    self.addImageIcon.image = [UIImage systemImageNamed:@"plus"];
+    self.addImageIcon.tintColor = [UIColor colorWithWhite:0.6 alpha:1];
+    [self.imageContainerView addSubview:self.addImageIcon];
+    
+    [self.addImageIcon mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(self.imageContainerView);
+        make.centerY.equalTo(self.imageContainerView).offset(-10);
+        make.width.height.mas_equalTo(24);
+    }];
+    
+    // 添加图片文字
+    self.addImageLabel = [[UILabel alloc] init];
+    self.addImageLabel.text = @"添加图片";
+    self.addImageLabel.font = [UIFont systemFontOfSize:12];
+    self.addImageLabel.textColor = [UIColor colorWithWhite:0.6 alpha:1];
+    self.addImageLabel.textAlignment = NSTextAlignmentCenter;
+    [self.imageContainerView addSubview:self.addImageLabel];
+    
+    [self.addImageLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerX.equalTo(self.imageContainerView);
+        make.top.equalTo(self.addImageIcon.mas_bottom).offset(4);
+    }];
+    
+    // 选中的图片视图
+    self.selectedImageView = [[UIImageView alloc] init];
+    self.selectedImageView.contentMode = UIViewContentModeScaleAspectFill;
+    self.selectedImageView.clipsToBounds = YES;
+    self.selectedImageView.hidden = YES;
+    [self.imageContainerView addSubview:self.selectedImageView];
+    
+    [self.selectedImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(self.imageContainerView);
+    }];
+    
+    // 删除按钮（X）
+    self.removeImageButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    self.removeImageButton.backgroundColor = [UIColor colorWithWhite:0 alpha:0.6];
+    self.removeImageButton.layer.cornerRadius = 12;
+    [self.removeImageButton setImage:[UIImage systemImageNamed:@"xmark"] forState:UIControlStateNormal];
+    self.removeImageButton.tintColor = [UIColor whiteColor];
+    [self.removeImageButton addTarget:self action:@selector(removeImageButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    self.removeImageButton.hidden = YES;
+    [self.imageContainerView addSubview:self.removeImageButton];
+    
+    [self.removeImageButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.right.equalTo(self.imageContainerView).offset(-4);
+        make.width.height.mas_equalTo(24);
+    }];
 }
 
 - (void)setupContentSection {
+    // 标题
     self.contentLabel = [[UILabel alloc] init];
     self.contentLabel.text = @"Story Content";
     self.contentLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.contentLabel.textColor = [UIColor blackColor];
     [self.contentView addSubview:self.contentLabel];
     
+    [self.contentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.illustrationCardView.mas_bottom).offset(24);
+        make.left.equalTo(self.contentView).offset(16);
+    }];
+    
+    // 白色卡片容器
+    self.contentCardView = [[UIView alloc] init];
+    self.contentCardView.backgroundColor = [UIColor whiteColor];
+    self.contentCardView.layer.cornerRadius = 12;
+    self.contentCardView.layer.masksToBounds = YES;
+    [self.contentView addSubview:self.contentCardView];
+    
+    [self.contentCardView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.contentLabel.mas_bottom).offset(8);
+        make.left.equalTo(self.contentView).offset(16);
+        make.right.equalTo(self.contentView).offset(-16);
+        make.height.mas_equalTo(160);
+    }];
+    
+    // 内容输入框
     self.contentTextView = [[UITextView alloc] init];
     self.contentTextView.font = [UIFont systemFontOfSize:15];
-    self.contentTextView.backgroundColor = [UIColor colorWithWhite:0.96 alpha:1];
-    self.contentTextView.layer.cornerRadius = 8;
-    self.contentTextView.textContainerInset = UIEdgeInsetsMake(12, 8, 12, 8);
+    self.contentTextView.textColor = [UIColor blackColor];
+    self.contentTextView.backgroundColor = [UIColor clearColor];
+    self.contentTextView.textContainerInset = UIEdgeInsetsMake(16, 16, 40, 16);
     self.contentTextView.delegate = self;
-    [self.contentView addSubview:self.contentTextView];
+    [self.contentCardView addSubview:self.contentTextView];
+    
+    [self.contentTextView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(self.contentCardView);
+    }];
     
     // Placeholder
-    UILabel *placeholderLabel = [[UILabel alloc] init];
-    placeholderLabel.text = @"Please Input";
-    placeholderLabel.font = [UIFont systemFontOfSize:15];
-    placeholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
-    placeholderLabel.tag = 999;
-    placeholderLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentTextView addSubview:placeholderLabel];
-    [NSLayoutConstraint activateConstraints:@[
-        [placeholderLabel.topAnchor constraintEqualToAnchor:self.contentTextView.topAnchor constant:12],
-        [placeholderLabel.leadingAnchor constraintEqualToAnchor:self.contentTextView.leadingAnchor constant:12]
-    ]];
+    self.contentPlaceholderLabel = [[UILabel alloc] init];
+    self.contentPlaceholderLabel.text = @"Please Input";
+    self.contentPlaceholderLabel.font = [UIFont systemFontOfSize:15];
+    self.contentPlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
+    self.contentPlaceholderLabel.userInteractionEnabled = NO;
+    [self.contentCardView addSubview:self.contentPlaceholderLabel];
     
-    // Voice Input Button
+    [self.contentPlaceholderLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.contentCardView).offset(21);
+        make.top.equalTo(self.contentCardView).offset(16);
+    }];
+    
+    // 麦克风按钮
     self.voiceInputButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.voiceInputButton setImage:[UIImage systemImageNamed:@"mic.fill"] forState:UIControlStateNormal];
     self.voiceInputButton.tintColor = [UIColor systemGrayColor];
     [self.voiceInputButton addTarget:self action:@selector(voiceInputButtonTapped) forControlEvents:UIControlEventTouchUpInside];
-    self.voiceInputButton.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentTextView addSubview:self.voiceInputButton];
+    [self.contentCardView addSubview:self.voiceInputButton];
     
+    [self.voiceInputButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.contentCardView).offset(-16);
+        make.bottom.equalTo(self.contentCardView).offset(-12);
+        make.width.height.mas_equalTo(24);
+    }];
+    
+    // 字数统计
     self.contentCharCountLabel = [[UILabel alloc] init];
     self.contentCharCountLabel.text = @"0/2400";
     self.contentCharCountLabel.font = [UIFont systemFontOfSize:12];
     self.contentCharCountLabel.textColor = [UIColor systemGrayColor];
-    self.contentCharCountLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.contentTextView addSubview:self.contentCharCountLabel];
+    [self.contentCardView addSubview:self.contentCharCountLabel];
     
-    [NSLayoutConstraint activateConstraints:@[
-        [self.voiceInputButton.trailingAnchor constraintEqualToAnchor:self.contentTextView.trailingAnchor constant:-12],
-        [self.voiceInputButton.bottomAnchor constraintEqualToAnchor:self.contentTextView.bottomAnchor constant:-12],
-        [self.voiceInputButton.widthAnchor constraintEqualToConstant:24],
-        [self.voiceInputButton.heightAnchor constraintEqualToConstant:24],
-        
-        [self.contentCharCountLabel.trailingAnchor constraintEqualToAnchor:self.voiceInputButton.leadingAnchor constant:-8],
-        [self.contentCharCountLabel.centerYAnchor constraintEqualToAnchor:self.voiceInputButton.centerYAnchor]
-    ]];
+    [self.contentCharCountLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.voiceInputButton.mas_left).offset(-8);
+        make.centerY.equalTo(self.voiceInputButton);
+    }];
 }
 
 - (void)setupTypeSection {
+    // 标题
     self.typeLabel = [[UILabel alloc] init];
     self.typeLabel.text = @"Story Type";
     self.typeLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.typeLabel.textColor = [UIColor blackColor];
     [self.contentView addSubview:self.typeLabel];
     
-    self.typeButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self.typeButton setTitle:@"Please Select" forState:UIControlStateNormal];
-    [self.typeButton setTitleColor:[UIColor colorWithWhite:0.7 alpha:1] forState:UIControlStateNormal];
-    self.typeButton.titleLabel.font = [UIFont systemFontOfSize:15];
-    self.typeButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
-    self.typeButton.backgroundColor = [UIColor colorWithWhite:0.96 alpha:1];
-    self.typeButton.layer.cornerRadius = 8;
+    [self.typeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.contentCardView.mas_bottom).offset(24);
+        make.left.equalTo(self.contentView).offset(16);
+    }];
+    
+    // 白色卡片容器
+    self.typeCardView = [[UIView alloc] init];
+    self.typeCardView.backgroundColor = [UIColor whiteColor];
+    self.typeCardView.layer.cornerRadius = 12;
+    self.typeCardView.layer.masksToBounds = YES;
+    [self.contentView addSubview:self.typeCardView];
+    
+    [self.typeCardView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.typeLabel.mas_bottom).offset(8);
+        make.left.equalTo(self.contentView).offset(16);
+        make.right.equalTo(self.contentView).offset(-16);
+        make.height.mas_equalTo(52);
+    }];
+    
+    // 可点击按钮（透明覆盖整个卡片）
+    self.typeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.typeButton addTarget:self action:@selector(typeButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    [self.typeCardView addSubview:self.typeButton];
     
-    UIImageView *chevron = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"chevron.right"]];
-    chevron.tintColor = [UIColor systemGrayColor];
-    chevron.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.typeButton addSubview:chevron];
-    [NSLayoutConstraint activateConstraints:@[
-        [chevron.trailingAnchor constraintEqualToAnchor:self.typeButton.trailingAnchor constant:-12],
-        [chevron.centerYAnchor constraintEqualToAnchor:self.typeButton.centerYAnchor]
-    ]];
+    [self.typeButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(self.typeCardView);
+    }];
     
-    [self.contentView addSubview:self.typeButton];
+    // 值标签
+    self.typeValueLabel = [[UILabel alloc] init];
+    self.typeValueLabel.text = @"Please Select";
+    self.typeValueLabel.font = [UIFont systemFontOfSize:15];
+    self.typeValueLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
+    self.typeValueLabel.userInteractionEnabled = NO;
+    [self.typeCardView addSubview:self.typeValueLabel];
+    
+    [self.typeValueLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.typeCardView).offset(-40);
+        make.centerY.equalTo(self.typeCardView);
+    }];
+    
+    // 右箭头
+    self.typeChevronImageView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"chevron.right"]];
+    self.typeChevronImageView.tintColor = [UIColor systemGrayColor];
+    self.typeChevronImageView.userInteractionEnabled = NO;
+    [self.typeCardView addSubview:self.typeChevronImageView];
+    
+    [self.typeChevronImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.typeCardView).offset(-16);
+        make.centerY.equalTo(self.typeCardView);
+        make.width.mas_equalTo(8);
+        make.height.mas_equalTo(14);
+    }];
 }
 
 - (void)setupProtagonistSection {
+    // 标题
     self.protagonistLabel = [[UILabel alloc] init];
     self.protagonistLabel.text = @"Story's Protagonist";
     self.protagonistLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.protagonistLabel.textColor = [UIColor blackColor];
     [self.contentView addSubview:self.protagonistLabel];
     
+    [self.protagonistLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.typeCardView.mas_bottom).offset(24);
+        make.left.equalTo(self.contentView).offset(16);
+    }];
+    
+    // 白色卡片容器
+    self.protagonistCardView = [[UIView alloc] init];
+    self.protagonistCardView.backgroundColor = [UIColor whiteColor];
+    self.protagonistCardView.layer.cornerRadius = 12;
+    self.protagonistCardView.layer.masksToBounds = YES;
+    [self.contentView addSubview:self.protagonistCardView];
+    
+    [self.protagonistCardView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.protagonistLabel.mas_bottom).offset(8);
+        make.left.equalTo(self.contentView).offset(16);
+        make.right.equalTo(self.contentView).offset(-16);
+        make.height.mas_equalTo(52);
+    }];
+    
+    // 输入框
     self.protagonistTextField = [[UITextField alloc] init];
-    self.protagonistTextField.placeholder = @"Please Input";
     self.protagonistTextField.font = [UIFont systemFontOfSize:15];
-    self.protagonistTextField.borderStyle = UITextBorderStyleRoundedRect;
-    self.protagonistTextField.backgroundColor = [UIColor colorWithWhite:0.96 alpha:1];
-    self.protagonistTextField.layer.cornerRadius = 8;
-    self.protagonistTextField.layer.borderWidth = 0;
-    [self.contentView addSubview:self.protagonistTextField];
+    self.protagonistTextField.textColor = [UIColor blackColor];
+    self.protagonistTextField.textAlignment = NSTextAlignmentRight;
+    self.protagonistTextField.placeholder = @"Please Input";
+    self.protagonistTextField.delegate = self;
+    [self.protagonistCardView addSubview:self.protagonistTextField];
+    
+    [self.protagonistTextField mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.protagonistCardView).offset(16);
+        make.right.equalTo(self.protagonistCardView).offset(-16);
+        make.centerY.equalTo(self.protagonistCardView);
+    }];
 }
 
 - (void)setupLengthSection {
+    // 标题
     self.lengthLabel = [[UILabel alloc] init];
     self.lengthLabel.text = @"Story Length";
     self.lengthLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.lengthLabel.textColor = [UIColor blackColor];
     [self.contentView addSubview:self.lengthLabel];
     
-    self.lengthButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self.lengthButton setTitle:@"Please Select" forState:UIControlStateNormal];
-    [self.lengthButton setTitleColor:[UIColor colorWithWhite:0.7 alpha:1] forState:UIControlStateNormal];
-    self.lengthButton.titleLabel.font = [UIFont systemFontOfSize:15];
-    self.lengthButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight;
-    self.lengthButton.backgroundColor = [UIColor colorWithWhite:0.96 alpha:1];
-    self.lengthButton.layer.cornerRadius = 8;
+    [self.lengthLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.protagonistCardView.mas_bottom).offset(24);
+        make.left.equalTo(self.contentView).offset(16);
+    }];
+    
+    // 白色卡片容器
+    self.lengthCardView = [[UIView alloc] init];
+    self.lengthCardView.backgroundColor = [UIColor whiteColor];
+    self.lengthCardView.layer.cornerRadius = 12;
+    self.lengthCardView.layer.masksToBounds = YES;
+    [self.contentView addSubview:self.lengthCardView];
+    
+    [self.lengthCardView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.lengthLabel.mas_bottom).offset(8);
+        make.left.equalTo(self.contentView).offset(16);
+        make.right.equalTo(self.contentView).offset(-16);
+        make.height.mas_equalTo(52);
+        make.bottom.equalTo(self.contentView).offset(-24);
+    }];
+    
+    // 可点击按钮
+    self.lengthButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.lengthButton addTarget:self action:@selector(lengthButtonTapped) forControlEvents:UIControlEventTouchUpInside];
+    [self.lengthCardView addSubview:self.lengthButton];
     
-    UIImageView *chevron = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"chevron.right"]];
-    chevron.tintColor = [UIColor systemGrayColor];
-    chevron.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.lengthButton addSubview:chevron];
-    [NSLayoutConstraint activateConstraints:@[
-        [chevron.trailingAnchor constraintEqualToAnchor:self.lengthButton.trailingAnchor constant:-12],
-        [chevron.centerYAnchor constraintEqualToAnchor:self.lengthButton.centerYAnchor]
-    ]];
+    [self.lengthButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(self.lengthCardView);
+    }];
     
-    [self.contentView addSubview:self.lengthButton];
+    // 值标签
+    self.lengthValueLabel = [[UILabel alloc] init];
+    self.lengthValueLabel.text = @"Please Select";
+    self.lengthValueLabel.font = [UIFont systemFontOfSize:15];
+    self.lengthValueLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
+    self.lengthValueLabel.userInteractionEnabled = NO;
+    [self.lengthCardView addSubview:self.lengthValueLabel];
+    
+    [self.lengthValueLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.lengthCardView).offset(-40);
+        make.centerY.equalTo(self.lengthCardView);
+    }];
+    
+    // 右箭头
+    self.lengthChevronImageView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"chevron.right"]];
+    self.lengthChevronImageView.tintColor = [UIColor systemGrayColor];
+    self.lengthChevronImageView.userInteractionEnabled = NO;
+    [self.lengthCardView addSubview:self.lengthChevronImageView];
+    
+    [self.lengthChevronImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.right.equalTo(self.lengthCardView).offset(-16);
+        make.centerY.equalTo(self.lengthCardView);
+        make.width.mas_equalTo(8);
+        make.height.mas_equalTo(14);
+    }];
 }
 
 - (void)setupNextButton {
@@ -314,128 +573,48 @@
     [self.nextButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     self.nextButton.titleLabel.font = [UIFont systemFontOfSize:18 weight:UIFontWeightSemibold];
     self.nextButton.backgroundColor = [UIColor systemBlueColor];
-    self.nextButton.layer.cornerRadius = 25;
+    self.nextButton.layer.cornerRadius = 28;
     [self.nextButton addTarget:self action:@selector(nextButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.nextButton];
-}
-
-- (void)setupConstraints {
-    self.scrollView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.themeLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.themeTextField.translatesAutoresizingMaskIntoConstraints = NO;
-    self.themeCharCountLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.illustrationLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.addImageButton.translatesAutoresizingMaskIntoConstraints = NO;
-    self.imageHintLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.contentLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.contentTextView.translatesAutoresizingMaskIntoConstraints = NO;
-    self.typeLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.typeButton.translatesAutoresizingMaskIntoConstraints = NO;
-    self.protagonistLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.protagonistTextField.translatesAutoresizingMaskIntoConstraints = NO;
-    self.lengthLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    self.lengthButton.translatesAutoresizingMaskIntoConstraints = NO;
-    self.nextButton.translatesAutoresizingMaskIntoConstraints = NO;
     
-    [NSLayoutConstraint activateConstraints:@[
-        // ScrollView
-        [self.scrollView.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor],
-        [self.scrollView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-        [self.scrollView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
-        [self.scrollView.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-80],
-        
-        // ContentView
-        [self.contentView.topAnchor constraintEqualToAnchor:self.scrollView.topAnchor],
-        [self.contentView.leadingAnchor constraintEqualToAnchor:self.scrollView.leadingAnchor],
-        [self.contentView.trailingAnchor constraintEqualToAnchor:self.scrollView.trailingAnchor],
-        [self.contentView.bottomAnchor constraintEqualToAnchor:self.scrollView.bottomAnchor],
-        [self.contentView.widthAnchor constraintEqualToAnchor:self.scrollView.widthAnchor],
-        
-        // Theme
-        [self.themeLabel.topAnchor constraintEqualToAnchor:self.contentView.topAnchor constant:20],
-        [self.themeLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        
-        [self.themeTextField.topAnchor constraintEqualToAnchor:self.themeLabel.bottomAnchor constant:12],
-        [self.themeTextField.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [self.themeTextField.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
-        [self.themeTextField.heightAnchor constraintEqualToConstant:44],
-        
-        [self.themeCharCountLabel.topAnchor constraintEqualToAnchor:self.themeTextField.bottomAnchor constant:4],
-        [self.themeCharCountLabel.trailingAnchor constraintEqualToAnchor:self.themeTextField.trailingAnchor],
-        
-        // Illustration
-        [self.illustrationLabel.topAnchor constraintEqualToAnchor:self.themeCharCountLabel.bottomAnchor constant:24],
-        [self.illustrationLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        
-        [self.addImageButton.topAnchor constraintEqualToAnchor:self.illustrationLabel.bottomAnchor constant:12],
-        [self.addImageButton.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [self.addImageButton.widthAnchor constraintEqualToConstant:120],
-        [self.addImageButton.heightAnchor constraintEqualToConstant:120],
-        
-        [self.imageHintLabel.leadingAnchor constraintEqualToAnchor:self.addImageButton.trailingAnchor constant:12],
-        [self.imageHintLabel.centerYAnchor constraintEqualToAnchor:self.addImageButton.centerYAnchor],
-        
-        // Content
-        [self.contentLabel.topAnchor constraintEqualToAnchor:self.addImageButton.bottomAnchor constant:24],
-        [self.contentLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        
-        [self.contentTextView.topAnchor constraintEqualToAnchor:self.contentLabel.bottomAnchor constant:12],
-        [self.contentTextView.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [self.contentTextView.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
-        [self.contentTextView.heightAnchor constraintEqualToConstant:200],
-        
-        // Type
-        [self.typeLabel.topAnchor constraintEqualToAnchor:self.contentTextView.bottomAnchor constant:24],
-        [self.typeLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        
-        [self.typeButton.topAnchor constraintEqualToAnchor:self.typeLabel.bottomAnchor constant:12],
-        [self.typeButton.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [self.typeButton.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
-        [self.typeButton.heightAnchor constraintEqualToConstant:44],
-        
-        // Protagonist
-        [self.protagonistLabel.topAnchor constraintEqualToAnchor:self.typeButton.bottomAnchor constant:24],
-        [self.protagonistLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        
-        [self.protagonistTextField.topAnchor constraintEqualToAnchor:self.protagonistLabel.bottomAnchor constant:12],
-        [self.protagonistTextField.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [self.protagonistTextField.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
-        [self.protagonistTextField.heightAnchor constraintEqualToConstant:44],
-        
-        // Length
-        [self.lengthLabel.topAnchor constraintEqualToAnchor:self.protagonistTextField.bottomAnchor constant:24],
-        [self.lengthLabel.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        
-        [self.lengthButton.topAnchor constraintEqualToAnchor:self.lengthLabel.bottomAnchor constant:12],
-        [self.lengthButton.leadingAnchor constraintEqualToAnchor:self.contentView.leadingAnchor constant:20],
-        [self.lengthButton.trailingAnchor constraintEqualToAnchor:self.contentView.trailingAnchor constant:-20],
-        [self.lengthButton.heightAnchor constraintEqualToConstant:44],
-        [self.lengthButton.bottomAnchor constraintEqualToAnchor:self.contentView.bottomAnchor constant:-30],
-        
-        // Next Button
-        [self.nextButton.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor constant:20],
-        [self.nextButton.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor constant:-20],
-        [self.nextButton.bottomAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.bottomAnchor constant:-20],
-        [self.nextButton.heightAnchor constraintEqualToConstant:50]
-    ]];
+    [self.nextButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.view).offset(27);
+        make.right.equalTo(self.view).offset(-27);
+        make.bottom.equalTo(self.view.mas_safeAreaLayoutGuideBottom).offset(-16);
+        make.height.mas_equalTo(56);
+    }];
 }
 
 #pragma mark - Actions
 
-- (void)themeTextChanged:(UITextField *)textField {
-    NSInteger length = textField.text.length;
-    if (length > 120) {
-        textField.text = [textField.text substringToIndex:120];
-        length = 120;
-    }
-    self.themeCharCountLabel.text = [NSString stringWithFormat:@"%ld/120", (long)length];
-}
-
 - (void)addImageButtonTapped {
     [self.view endEditing:YES];
     
-    // 检查相册权限
+    // 显示选择器：图库图片 或 相册
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"故事插图"
+                                                                   message:@"只能选择图库图片"
+                                                            preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"从图库选择"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction * _Nonnull action) {
+        [self showIllustrationPicker];
+    }]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"取消"
+                                              style:UIAlertActionStyleCancel
+                                            handler:nil]];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)showIllustrationPicker {
+    // TODO: 显示插图选择界面（3x4网格）
+    // 这里暂时使用系统相册作为演示
+    [self checkPhotoLibraryPermissionAndShowPicker];
+}
+
+- (void)checkPhotoLibraryPermissionAndShowPicker {
     PHAuthorizationStatus status = [PHPhotoLibrary authorizationStatus];
     if (status == PHAuthorizationStatusNotDetermined) {
         [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
@@ -449,11 +628,21 @@
         [self showImagePicker];
     } else {
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"需要相册权限"
-                                                                       message:@"请在设置中开启相册访问权限"
+                                                                       message:@"请在设置中允许访问相册"
                                                                 preferredStyle:UIAlertControllerStyleAlert];
         [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil]];
         [self presentViewController:alert animated:YES completion:nil];
     }
+}
+
+- (void)removeImageButtonTapped {
+    self.selectedImage = nil;
+    self.selectedIllustrationUrl = nil;
+    self.selectedImageView.image = nil;
+    self.selectedImageView.hidden = YES;
+    self.removeImageButton.hidden = YES;
+    self.addImageIcon.hidden = NO;
+    self.addImageLabel.hidden = NO;
 }
 
 - (void)showImagePicker {
@@ -466,177 +655,309 @@
 - (void)voiceInputButtonTapped {
     [self.view endEditing:YES];
     
-    if (self.audioEngine.isRunning) {
-        [self stopRecording];
+    // 检查语音识别权限
+    SFSpeechRecognizerAuthorizationStatus status = [SFSpeechRecognizer authorizationStatus];
+    
+    if (status == SFSpeechRecognizerAuthorizationStatusNotDetermined) {
+        // 请求权限
+        [SFSpeechRecognizer requestAuthorization:^(SFSpeechRecognizerAuthorizationStatus authStatus) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (authStatus == SFSpeechRecognizerAuthorizationStatusAuthorized) {
+                    [self startVoiceRecording];
+                } else {
+                    [self showVoicePermissionDeniedAlert];
+                }
+            });
+        }];
+    } else if (status == SFSpeechRecognizerAuthorizationStatusAuthorized) {
+        [self startVoiceRecording];
     } else {
-        [self startRecording];
+        [self showVoicePermissionDeniedAlert];
     }
+}
+
+- (void)showVoicePermissionDeniedAlert {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"是否允许Tanlepal录制音频"
+                                                                   message:nil
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"仅使用期间允许"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction * _Nonnull action) {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
+                                           options:@{}
+                                 completionHandler:nil];
+    }]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"本次使用允许"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction * _Nonnull action) {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
+                                           options:@{}
+                                 completionHandler:nil];
+    }]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"禁止"
+                                              style:UIAlertActionStyleCancel
+                                            handler:nil]];
+    
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)startVoiceRecording {
+    // TODO: 实现语音录制功能
+    VoiceInputView *voiceView = [[VoiceInputView alloc]
+        initWithCompletionBlock:^(NSString *text) {
+        self.contentTextView.text = text;
+        } cancelBlock:^{
+            // 处理取消操作
+        }];
+    [voiceView show];
+    NSLog(@"开始语音录制");
 }
 
 - (void)typeButtonTapped {
     [self.view endEditing:YES];
     
-    NSArray *types = @[@"童话", @"寓言", @"冒险", @"超级英雄", @"科幻", @"教育", @"睡前故事"];
+    BottomPickerView *picker = [[BottomPickerView alloc] initWithTitle:@"请选择故事类型"
+                                                                options:self.storyTypes
+                                                          selectedIndex:self.selectedTypeIndex
+                                                            selectBlock:^(NSInteger selectedIndex, NSString *selectedValue) {
+        self.selectedTypeIndex = selectedIndex;
+        self.typeValueLabel.text = selectedValue;
+        self.typeValueLabel.textColor = [UIColor blackColor];
+    }];
     
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"选择故事类型"
-                                                                   message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
-    
-    for (NSString *type in types) {
-        [alert addAction:[UIAlertAction actionWithTitle:type
-                                                  style:UIAlertActionStyleDefault
-                                                handler:^(UIAlertAction * _Nonnull action) {
-            self.selectedType = type;
-            [self.typeButton setTitle:type forState:UIControlStateNormal];
-            [self.typeButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        }]];
-    }
-    
-    [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
-    
-    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-        alert.popoverPresentationController.sourceView = self.typeButton;
-        alert.popoverPresentationController.sourceRect = self.typeButton.bounds;
-    }
-    
-    [self presentViewController:alert animated:YES completion:nil];
+    [picker show];
 }
 
 - (void)lengthButtonTapped {
     [self.view endEditing:YES];
     
-    NSArray *lengths = @[@"1.5min", @"3min", @"4.5min", @"6min"];
+    BottomPickerView *picker = [[BottomPickerView alloc] initWithTitle:@"请选择故事时长"
+                                                                options:self.storyLengths
+                                                          selectedIndex:self.selectedLengthIndex
+                                                            selectBlock:^(NSInteger selectedIndex, NSString *selectedValue) {
+        self.selectedLengthIndex = selectedIndex;
+        self.lengthValueLabel.text = selectedValue;
+        self.lengthValueLabel.textColor = [UIColor blackColor];
+    }];
     
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"选择故事长度"
-                                                                   message:nil
-                                                            preferredStyle:UIAlertControllerStyleActionSheet];
-    
-    for (NSString *length in lengths) {
-        [alert addAction:[UIAlertAction actionWithTitle:length
-                                                  style:UIAlertActionStyleDefault
-                                                handler:^(UIAlertAction * _Nonnull action) {
-            self.selectedLength = length;
-            [self.lengthButton setTitle:length forState:UIControlStateNormal];
-            [self.lengthButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-        }]];
-    }
-    
-    [alert addAction:[UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil]];
-    
-    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-        alert.popoverPresentationController.sourceView = self.lengthButton;
-        alert.popoverPresentationController.sourceRect = self.lengthButton.bounds;
-    }
-    
-    [self presentViewController:alert animated:YES completion:nil];
+    [picker show];
 }
 
 - (void)nextButtonTapped {
-    // 验证表单
-    if (self.themeTextField.text.length == 0) {
-        [self showAlertWithMessage:@"请输入故事主题"];
+    [self.view endEditing:YES];
+    
+    // 验证输入
+    NSString *errorMessage = [self validateInputs];
+    if (errorMessage) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:errorMessage
+                                                                       message:nil
+                                                                preferredStyle:UIAlertControllerStyleAlert];
+        [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil]];
+        [self presentViewController:alert animated:YES completion:nil];
         return;
     }
     
-    if (!self.selectedImage) {
-        [self showAlertWithMessage:@"请选择故事插图"];
-        return;
+    // 创建故事请求
+    [self createStoryRequest];
+}
+
+- (NSString *)validateInputs {
+    // 验证故事名称
+    if (self.themeTextView.text.length == 0) {
+        return @"请输入故事名称";
+    }
+    if (self.themeTextView.text.length > 120) {
+        return @"故事名称不超过120字符";
     }
     
+    // 验证插图
+    if (!self.selectedImage && !self.selectedIllustrationUrl) {
+        return @"请选择故事插图";
+    }
+    
+    // 验证故事内容
     if (self.contentTextView.text.length == 0) {
-        [self showAlertWithMessage:@"请输入故事内容"];
-        return;
+        return @"请输入故事内容";
+    }
+    if (self.contentTextView.text.length > 2400) {
+        return @"故事内容不超过2400字符";
     }
     
-    if (!self.selectedType) {
-        [self showAlertWithMessage:@"请选择故事类型"];
-        return;
+    // 验证故事类型
+    if (self.selectedTypeIndex < 0) {
+        return @"请选择故事类型";
     }
     
+    // 验证主角名称
     if (self.protagonistTextField.text.length == 0) {
-        [self showAlertWithMessage:@"请输入主角名称"];
+        return @"请输入故事主角";
+    }
+    if (self.protagonistTextField.text.length > 30) {
+        return @"故事主角不超过30字符";
+    }
+    
+    // 验证故事时长
+    if (self.selectedLengthIndex < 0) {
+        return @"请选择故事时长";
+    }
+    
+    return nil;
+}
+
+- (void)createStoryRequest {
+    // 显示加载提示
+    [self showLoadingAlert];
+    
+    // 转换参数
+    NSArray *lengthValues = @[@90, @180, @270, @360];
+    NSInteger storyLength = [lengthValues[self.selectedLengthIndex] integerValue];
+    StoryType storyType = (StoryType)(self.selectedTypeIndex + 1);
+    
+    // 创建请求模型
+    CreateStoryRequestModel *request = [[CreateStoryRequestModel alloc]
+        initWithName:self.themeTextView.text
+             summary:self.contentTextView.text
+                type:storyType
+      protagonistName:self.protagonistTextField.text
+              length:storyLength
+      illustrationUrl:self.selectedIllustrationUrl ?: @"/illustration/001.png"];
+    
+     //验证请求模型
+    if (![request isValid]) {
+        [self hideLoadingAlert];
+        [self showErrorAlert:[request validationError]];
         return;
     }
     
-    if (!self.selectedLength) {
-        [self showAlertWithMessage:@"请选择故事长度"];
-        return;
-    }
-    
-    // TODO: 提交数据到下一步
-    NSLog(@"所有数据验证通过，准备提交");
-    
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提交成功"
-                                                                   message:@"进入下一步：选择声音"
+    // 调用API
+    __weak typeof(self) weakSelf = self;
+    [[AFStoryAPIManager sharedManager] createStory:request
+                                           success:^(APIResponseModel *response) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        [strongSelf hideLoadingAlert];
+        
+        if (response.isSuccess) {
+            NSLog(@"✅ 故事创建成功");
+            [strongSelf handleCreateStorySuccess:response];
+        } else {
+            NSLog(@"❌ 故事创建失败: %@", response.errorMessage);
+            [strongSelf showErrorAlert:response.errorMessage];
+        }
+        
+    } failure:^(NSError *error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        [strongSelf hideLoadingAlert];
+        NSLog(@"❌ 网络请求失败: %@", error.localizedDescription);
+        [strongSelf showErrorAlert:error.localizedDescription];
+    }];
+}
+- (void)handleCreateStorySuccess:(APIResponseModel *)response {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"创建成功"
+                                                                   message:@"故事已开始生成，可在故事列表中查看"
                                                             preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:@"查看故事"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction * _Nonnull action) {
+        [self.navigationController popViewControllerAnimated:YES];
+    }]];
+    
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (void)showAlertWithMessage:(NSString *)message {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"提示"
-                                                                   message:message
+- (void)showLoadingAlert {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:nil
+                                                                   message:@"正在创建故事...\n\n"
                                                             preferredStyle:UIAlertControllerStyleAlert];
-    [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil]];
+    
+    UIActivityIndicatorView *indicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleMedium];
+    indicator.translatesAutoresizingMaskIntoConstraints = NO;
+    [alert.view addSubview:indicator];
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [indicator.centerXAnchor constraintEqualToAnchor:alert.view.centerXAnchor],
+        [indicator.bottomAnchor constraintEqualToAnchor:alert.view.bottomAnchor constant:-20]
+    ]];
+    
+    [indicator startAnimating];
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-#pragma mark - UITextFieldDelegate
-
-- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
-    if (textField == self.themeTextField) {
-        NSString *newText = [textField.text stringByReplacingCharactersInRange:range withString:string];
-        return newText.length <= 120;
+- (void)hideLoadingAlert {
+    if (self.presentedViewController && [self.presentedViewController isKindOfClass:[UIAlertController class]]) {
+        [self.presentedViewController dismissViewControllerAnimated:YES completion:nil];
     }
-    return YES;
 }
 
-#pragma mark - UITextViewDelegate
-
-- (void)textViewDidChange:(UITextView *)textView {
-    // 更新占位符
-    UILabel *placeholderLabel = [textView viewWithTag:999];
-    placeholderLabel.hidden = textView.text.length > 0;
+- (void)showErrorAlert:(NSString *)errorMessage {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"创建失败"
+                                                                   message:errorMessage ?: @"请稍后重试"
+                                                            preferredStyle:UIAlertControllerStyleAlert];
     
-    // 更新字数统计
-    NSInteger length = textView.text.length;
-    if (length > 2400) {
-        textView.text = [textView.text substringToIndex:2400];
-        length = 2400;
-    }
-    self.contentCharCountLabel.text = [NSString stringWithFormat:@"%ld/2400", (long)length];
+    [alert addAction:[UIAlertAction actionWithTitle:@"确定"
+                                              style:UIAlertActionStyleDefault
+                                            handler:nil]];
+    
+    [self presentViewController:alert animated:YES completion:nil];
 }
-
 #pragma mark - UIImagePickerControllerDelegate
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey,id> *)info {
     UIImage *image = info[UIImagePickerControllerOriginalImage];
     self.selectedImage = image;
-    
-    // 显示选中的图片
-    if (!self.selectedImageView) {
-        self.selectedImageView = [[UIImageView alloc] init];
-        self.selectedImageView.contentMode = UIViewContentModeScaleAspectFill;
-        self.selectedImageView.clipsToBounds = YES;
-        self.selectedImageView.layer.cornerRadius = 8;
-        [self.addImageButton addSubview:self.selectedImageView];
-        
-        self.selectedImageView.translatesAutoresizingMaskIntoConstraints = NO;
-        [NSLayoutConstraint activateConstraints:@[
-            [self.selectedImageView.topAnchor constraintEqualToAnchor:self.addImageButton.topAnchor],
-            [self.selectedImageView.leadingAnchor constraintEqualToAnchor:self.addImageButton.leadingAnchor],
-            [self.selectedImageView.trailingAnchor constraintEqualToAnchor:self.addImageButton.trailingAnchor],
-            [self.selectedImageView.bottomAnchor constraintEqualToAnchor:self.addImageButton.bottomAnchor]
-        ]];
-    }
-    
     self.selectedImageView.image = image;
+    self.selectedImageView.hidden = NO;
+    self.removeImageButton.hidden = NO;
+    self.addImageIcon.hidden = YES;
+    self.addImageLabel.hidden = YES;
     
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker {
     [picker dismissViewControllerAnimated:YES completion:nil];
+}
+
+#pragma mark - UITextViewDelegate
+
+- (void)textViewDidChange:(UITextView *)textView {
+    if (textView == self.themeTextView) {
+        // 更新placeholder
+        self.themePlaceholderLabel.hidden = textView.text.length > 0;
+        
+        // 限制字数
+        if (textView.text.length > 120) {
+            textView.text = [textView.text substringToIndex:120];
+        }
+    } else if (textView == self.contentTextView) {
+        // 更新placeholder
+        self.contentPlaceholderLabel.hidden = textView.text.length > 0;
+        
+        // 更新字数统计
+        NSInteger length = textView.text.length;
+        if (length > 2400) {
+            textView.text = [textView.text substringToIndex:2400];
+            length = 2400;
+        }
+        self.contentCharCountLabel.text = [NSString stringWithFormat:@"%ld/2400", (long)length];
+    }
+}
+
+#pragma mark - UITextFieldDelegate
+
+- (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    if (textField == self.protagonistTextField) {
+        NSString *newText = [textField.text stringByReplacingCharactersInRange:range withString:string];
+        return newText.length <= 30;
+    }
+    return YES;
 }
 
 #pragma mark - Speech Recognition
@@ -646,88 +967,22 @@
     self.audioEngine = [[AVAudioEngine alloc] init];
 }
 
-- (void)startRecording {
-    // 请求语音识别权限
-    [SFSpeechRecognizer requestAuthorization:^(SFSpeechRecognizerAuthorizationStatus status) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (status == SFSpeechRecognizerAuthorizationStatusAuthorized) {
-                [self performRecording];
-            } else {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"需要语音识别权限"
-                                                                               message:@"请在设置中开启语音识别权限"
-                                                                        preferredStyle:UIAlertControllerStyleAlert];
-                [alert addAction:[UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:nil]];
-                [self presentViewController:alert animated:YES completion:nil];
-            }
-        });
-    }];
-}
-
-- (void)performRecording {
-    if (self.recognitionTask) {
-        [self.recognitionTask cancel];
-        self.recognitionTask = nil;
-    }
-    
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    NSError *error;
-    [audioSession setCategory:AVAudioSessionCategoryRecord mode:AVAudioSessionModeMeasurement options:0 error:&error];
-    [audioSession setActive:YES withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:&error];
-    
-    self.recognitionRequest = [[SFSpeechAudioBufferRecognitionRequest alloc] init];
-    
-    AVAudioInputNode *inputNode = self.audioEngine.inputNode;
-    self.recognitionRequest.shouldReportPartialResults = YES;
-    
-    self.recognitionTask = [self.speechRecognizer recognitionTaskWithRequest:self.recognitionRequest resultHandler:^(SFSpeechRecognitionResult * _Nullable result, NSError * _Nullable error) {
-        if (result) {
-            self.contentTextView.text = [self.contentTextView.text stringByAppendingString:result.bestTranscription.formattedString];
-            [self textViewDidChange:self.contentTextView];
-        }
-        
-        if (error || result.isFinal) {
-            [self stopRecording];
-        }
-    }];
-    
-    AVAudioFormat *recordingFormat = [inputNode outputFormatForBus:0];
-    [inputNode installTapOnBus:0 bufferSize:1024 format:recordingFormat block:^(AVAudioPCMBuffer * _Nonnull buffer, AVAudioTime * _Nonnull when) {
-        [self.recognitionRequest appendAudioPCMBuffer:buffer];
-    }];
-    
-    [self.audioEngine prepare];
-    [self.audioEngine startAndReturnError:&error];
-    
-    [self.voiceInputButton setImage:[UIImage systemImageNamed:@"mic.fill.badge.plus"] forState:UIControlStateNormal];
-    self.voiceInputButton.tintColor = [UIColor systemRedColor];
-}
-
-- (void)stopRecording {
-    [self.audioEngine stop];
-    [self.recognitionRequest endAudio];
-    [self.audioEngine.inputNode removeTapOnBus:0];
-    
-    self.recognitionRequest = nil;
-    self.recognitionTask = nil;
-    
-    [self.voiceInputButton setImage:[UIImage systemImageNamed:@"mic.fill"] forState:UIControlStateNormal];
-    self.voiceInputButton.tintColor = [UIColor systemGrayColor];
-}
-
-#pragma mark - Keyboard
+#pragma mark - Keyboard Handling
 
 - (void)keyboardWillShow:(NSNotification *)notification {
     NSDictionary *userInfo = notification.userInfo;
     CGRect keyboardFrame = [userInfo[UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGFloat keyboardHeight = keyboardFrame.size.height;
     
-    self.scrollView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight, 0);
-    self.scrollView.scrollIndicatorInsets = self.scrollView.contentInset;
+    [UIView animateWithDuration:0.3 animations:^{
+        self.scrollView.contentInset = UIEdgeInsetsMake(0, 0, keyboardHeight - 80, 0);
+    }];
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification {
-    self.scrollView.contentInset = UIEdgeInsetsZero;
-    self.scrollView.scrollIndicatorInsets = UIEdgeInsetsZero;
+    [UIView animateWithDuration:0.3 animations:^{
+        self.scrollView.contentInset = UIEdgeInsetsZero;
+    }];
 }
 
 @end

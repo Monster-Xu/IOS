@@ -90,6 +90,8 @@ NSArray *allSubviews(UIView *aView) {
         [self.leftBarButton sizeToFit];
         
         self.navigationItem.leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:self.leftBarButton];
+        
+        
     } else {
         // iOS 15 以下的兼容方案
         UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];

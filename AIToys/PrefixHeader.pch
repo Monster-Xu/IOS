@@ -16,7 +16,7 @@
 #import "YYCategories.h"
 #import "MJExtension.h"
 #import <ThingSmartHomeKit/ThingSmartKit.h>
-#import "Masonry.h"
+#import <Masonry/Masonry.h>
 
 #import "APIPortConfiguration.h"
 #import "APIManager.h"

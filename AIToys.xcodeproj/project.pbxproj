@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		185F7AA52E9D2C8000265FC9 /* BottomPickerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 185F7AA42E9D2C8000265FC9 /* BottomPickerView.m */; };
+		185F7AA82E9D2FB700265FC9 /* VoiceInputView.m in Sources */ = {isa = PBXBuildFile; fileRef = 185F7AA72E9D2FB700265FC9 /* VoiceInputView.m */; };
+		185F7AAC2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 185F7AAB2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.xib */; };
+		185F7AAD2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 185F7AAA2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.m */; };
+		185F7AB12E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 185F7AB02E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.xib */; };
+		185F7AB22E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 185F7AAF2E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.m */; };
+		185F7AB62E9D4A3A00265FC9 /* VoiceManagementViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 185F7AB52E9D4A3A00265FC9 /* VoiceManagementViewController.xib */; };
+		185F7AB72E9D4A3A00265FC9 /* VoiceManagementViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 185F7AB42E9D4A3A00265FC9 /* VoiceManagementViewController.m */; };
+		185F7ABB2E9D4D8A00265FC9 /* VoiceManagementTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 185F7ABA2E9D4D8A00265FC9 /* VoiceManagementTableViewCell.xib */; };
+		185F7ABC2E9D4D8A00265FC9 /* VoiceManagementTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 185F7AB92E9D4D8A00265FC9 /* VoiceManagementTableViewCell.m */; };
+		185F7AC02E9E7D3F00265FC9 /* CreateVoiceViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 185F7ABF2E9E7D3F00265FC9 /* CreateVoiceViewController.xib */; };
+		185F7AC12E9E7D3F00265FC9 /* CreateVoiceViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 185F7ABE2E9E7D3F00265FC9 /* CreateVoiceViewController.m */; };
 		187647D52E86B1F20025E3A2 /* NegotiateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 187647D32E86B1F20025E3A2 /* NegotiateViewController.m */; };
 		187647D62E86B1F20025E3A2 /* NegotiateViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 187647D42E86B1F20025E3A2 /* NegotiateViewController.xib */; };
 		187647DB2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647DA2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx */; };
@@ -18,6 +30,8 @@
 		18938FC22E8D7C730054623B /* VoiceStoryTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 18938FBF2E8D7C730054623B /* VoiceStoryTableViewCell.m */; };
 		18938FC32E8D7C730054623B /* CreationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18938FBB2E8D7C730054623B /* CreationViewController.m */; };
 		18938FC42E8D7C730054623B /* VoiceStoryTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18938FC02E8D7C730054623B /* VoiceStoryTableViewCell.xib */; };
+		18A0DE942E9EB9F700DA1A9F /* SkeletonView.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A0DE932E9EB9F700DA1A9F /* SkeletonView.m */; };
+		18A0DE972E9EBA3300DA1A9F /* SkeletonTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 18A0DE962E9EBA3300DA1A9F /* SkeletonTableViewCell.m */; };
 		18CF0EE12E9257A900F9E19E /* VoiceModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EE02E9257A900F9E19E /* VoiceModel.m */; };
 		18CF0EE42E9257BD00F9E19E /* APIResponseModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EE32E9257BD00F9E19E /* APIResponseModel.m */; };
 		18CF0EE72E9257E300F9E19E /* APIRequestModel.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EE62E9257E300F9E19E /* APIRequestModel.m */; };
@@ -401,6 +415,25 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		185F7AA32E9D2C8000265FC9 /* BottomPickerView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BottomPickerView.h; sourceTree = "<group>"; };
+		185F7AA42E9D2C8000265FC9 /* BottomPickerView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BottomPickerView.m; sourceTree = "<group>"; };
+		185F7AA62E9D2FB700265FC9 /* VoiceInputView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoiceInputView.h; sourceTree = "<group>"; };
+		185F7AA72E9D2FB700265FC9 /* VoiceInputView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VoiceInputView.m; sourceTree = "<group>"; };
+		185F7AA92E9D32E800265FC9 /* CreateStoryWithVoiceViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CreateStoryWithVoiceViewController.h; sourceTree = "<group>"; };
+		185F7AAA2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CreateStoryWithVoiceViewController.m; sourceTree = "<group>"; };
+		185F7AAB2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CreateStoryWithVoiceViewController.xib; sourceTree = "<group>"; };
+		185F7AAE2E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CreateStoryWithVoiceTableViewCell.h; sourceTree = "<group>"; };
+		185F7AAF2E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CreateStoryWithVoiceTableViewCell.m; sourceTree = "<group>"; };
+		185F7AB02E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CreateStoryWithVoiceTableViewCell.xib; sourceTree = "<group>"; };
+		185F7AB32E9D4A3A00265FC9 /* VoiceManagementViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoiceManagementViewController.h; sourceTree = "<group>"; };
+		185F7AB42E9D4A3A00265FC9 /* VoiceManagementViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VoiceManagementViewController.m; sourceTree = "<group>"; };
+		185F7AB52E9D4A3A00265FC9 /* VoiceManagementViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VoiceManagementViewController.xib; sourceTree = "<group>"; };
+		185F7AB82E9D4D8A00265FC9 /* VoiceManagementTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoiceManagementTableViewCell.h; sourceTree = "<group>"; };
+		185F7AB92E9D4D8A00265FC9 /* VoiceManagementTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VoiceManagementTableViewCell.m; sourceTree = "<group>"; };
+		185F7ABA2E9D4D8A00265FC9 /* VoiceManagementTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VoiceManagementTableViewCell.xib; sourceTree = "<group>"; };
+		185F7ABD2E9E7D3F00265FC9 /* CreateVoiceViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CreateVoiceViewController.h; sourceTree = "<group>"; };
+		185F7ABE2E9E7D3F00265FC9 /* CreateVoiceViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CreateVoiceViewController.m; sourceTree = "<group>"; };
+		185F7ABF2E9E7D3F00265FC9 /* CreateVoiceViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CreateVoiceViewController.xib; sourceTree = "<group>"; };
 		187647D22E86B1F20025E3A2 /* NegotiateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NegotiateViewController.h; sourceTree = "<group>"; };
 		187647D32E86B1F20025E3A2 /* NegotiateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NegotiateViewController.m; sourceTree = "<group>"; };
 		187647D42E86B1F20025E3A2 /* NegotiateViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NegotiateViewController.xib; sourceTree = "<group>"; };
@@ -417,6 +450,10 @@
 		18938FBE2E8D7C730054623B /* VoiceStoryTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoiceStoryTableViewCell.h; sourceTree = "<group>"; };
 		18938FBF2E8D7C730054623B /* VoiceStoryTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VoiceStoryTableViewCell.m; sourceTree = "<group>"; };
 		18938FC02E8D7C730054623B /* VoiceStoryTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = VoiceStoryTableViewCell.xib; sourceTree = "<group>"; };
+		18A0DE922E9EB9F700DA1A9F /* SkeletonView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkeletonView.h; sourceTree = "<group>"; };
+		18A0DE932E9EB9F700DA1A9F /* SkeletonView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SkeletonView.m; sourceTree = "<group>"; };
+		18A0DE952E9EBA3300DA1A9F /* SkeletonTableViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkeletonTableViewCell.h; sourceTree = "<group>"; };
+		18A0DE962E9EBA3300DA1A9F /* SkeletonTableViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SkeletonTableViewCell.m; sourceTree = "<group>"; };
 		18CF0EDF2E9257A200F9E19E /* VoiceModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoiceModel.h; sourceTree = "<group>"; };
 		18CF0EE02E9257A900F9E19E /* VoiceModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VoiceModel.m; sourceTree = "<group>"; };
 		18CF0EE22E9257B200F9E19E /* APIResponseModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = APIResponseModel.h; sourceTree = "<group>"; };
@@ -2316,6 +2353,21 @@
 				18938FBB2E8D7C730054623B /* CreationViewController.m */,
 				18CF0EEF2E92614B00F9E19E /* CreateStoryViewController.h */,
 				18CF0EF02E92614B00F9E19E /* CreateStoryViewController.m */,
+				185F7AA92E9D32E800265FC9 /* CreateStoryWithVoiceViewController.h */,
+				185F7AAA2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.m */,
+				185F7AAB2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.xib */,
+				185F7AB32E9D4A3A00265FC9 /* VoiceManagementViewController.h */,
+				185F7AB42E9D4A3A00265FC9 /* VoiceManagementViewController.m */,
+				185F7AB52E9D4A3A00265FC9 /* VoiceManagementViewController.xib */,
+				185F7ABD2E9E7D3F00265FC9 /* CreateVoiceViewController.h */,
+				185F7ABE2E9E7D3F00265FC9 /* CreateVoiceViewController.m */,
+				185F7ABF2E9E7D3F00265FC9 /* CreateVoiceViewController.xib */,
+				185F7AAE2E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.h */,
+				185F7AAF2E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.m */,
+				185F7AB02E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.xib */,
+				185F7AB82E9D4D8A00265FC9 /* VoiceManagementTableViewCell.h */,
+				185F7AB92E9D4D8A00265FC9 /* VoiceManagementTableViewCell.m */,
+				185F7ABA2E9D4D8A00265FC9 /* VoiceManagementTableViewCell.xib */,
 				18938FBC2E8D7C730054623B /* VoiceStoryModel.h */,
 				18938FBD2E8D7C730054623B /* VoiceStoryModel.m */,
 				18938FBE2E8D7C730054623B /* VoiceStoryTableViewCell.h */,
@@ -2329,6 +2381,14 @@
 				18CF0EE62E9257E300F9E19E /* APIRequestModel.m */,
 				18CF0EF22E92626900F9E19E /* AFStoryAPIManager.h */,
 				18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */,
+				185F7AA32E9D2C8000265FC9 /* BottomPickerView.h */,
+				185F7AA42E9D2C8000265FC9 /* BottomPickerView.m */,
+				185F7AA62E9D2FB700265FC9 /* VoiceInputView.h */,
+				185F7AA72E9D2FB700265FC9 /* VoiceInputView.m */,
+				18A0DE922E9EB9F700DA1A9F /* SkeletonView.h */,
+				18A0DE932E9EB9F700DA1A9F /* SkeletonView.m */,
+				18A0DE952E9EBA3300DA1A9F /* SkeletonTableViewCell.h */,
+				18A0DE962E9EBA3300DA1A9F /* SkeletonTableViewCell.m */,
 			);
 			path = Creation;
 			sourceTree = "<group>";
@@ -2537,8 +2597,11 @@
 				DC862AD42E094FCC001A4793 /* AddFamailyMemeberVC.xib in Resources */,
 				DC3E06952E2A3AF80099A9FB /* PrivacyInfo.xcprivacy in Resources */,
 				E46F398F2E11355E0039CE33 /* GuideOpenTopCell.xib in Resources */,
+				185F7ABB2E9D4D8A00265FC9 /* VoiceManagementTableViewCell.xib in Resources */,
 				DC1AA0842E04F22100BADB1C /* AcountLoginViewController.xib in Resources */,
 				E46F396D2E0FDD7D0039CE33 /* DeviceFindingCell.xib in Resources */,
+				185F7AAC2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.xib in Resources */,
+				185F7AC02E9E7D3F00265FC9 /* CreateVoiceViewController.xib in Resources */,
 				DC862AD92E095399001A4793 /* FamailyMemeberVC.xib in Resources */,
 				E46F39632E0FD51E0039CE33 /* FindDeviceAlertCell.xib in Resources */,
 				E80BED9F2E575FF500F33EA9 /* 埋点集成完成报告.md in Resources */,
@@ -2564,6 +2627,7 @@
 				E46F39812E0FE5BF0039CE33 /* DeviceManuallyAddItem.xib in Resources */,
 				DC3E06A72E2A51CA0099A9FB /* ComponentLicensesViewController.xib in Resources */,
 				E49272A52E01C1D000DB6A2A /* LoginViewController.xib in Resources */,
+				185F7AB12E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.xib in Resources */,
 				E492721E2E01BD3100DB6A2A /* LaunchScreen.storyboard in Resources */,
 				DCEA01092E127BEA00170D8C /* ConnectWifiVC.xib in Resources */,
 				E46F39992E1147990039CE33 /* GuideOpenCell.xib in Resources */,
@@ -2594,6 +2658,7 @@
 				187647E02E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx in Resources */,
 				187647D62E86B1F20025E3A2 /* NegotiateViewController.xib in Resources */,
 				E48284FB2E11550300F1CFF8 /* SetupDeviceVC.xib in Resources */,
+				185F7AB62E9D4A3A00265FC9 /* VoiceManagementViewController.xib in Resources */,
 				DCF8024E2E122A5800C72B4D /* DeviceAddCell.xib in Resources */,
 				E42A8A1B2E0677F200AD0BD9 /* HomeDeviceCell.xib in Resources */,
 				E46F39682E0FD68C0039CE33 /* FindDeviceNoBluetoothCell.xib in Resources */,
@@ -2708,6 +2773,7 @@
 				DC862AC92E093EDB001A4793 /* FamailyMemberCell.m in Sources */,
 				DC1AA07C2E04168000BADB1C /* QSTextCodeView.m in Sources */,
 				E4C4BDB12E12F21000243DA2 /* GlobalBluetoothManager.m in Sources */,
+				185F7AB72E9D4A3A00265FC9 /* VoiceManagementViewController.m in Sources */,
 				DCD5A26C2E55B9A100531779 /* APIPortConfiguration.m in Sources */,
 				DC70F1E82E1E544F00C4D646 /* UserPermmitVC.m in Sources */,
 				E4B5C6E12E236A7A00950B7D /* SettingCell.m in Sources */,
@@ -2715,6 +2781,7 @@
 				E46A38D92E0C4B4D00C930D3 /* HomeToysListVC.m in Sources */,
 				DC862ADD2E09541C001A4793 /* FamailyMemeberCell.m in Sources */,
 				E49272A42E01C1D000DB6A2A /* LoginViewController.m in Sources */,
+				185F7AA82E9D2FB700265FC9 /* VoiceInputView.m in Sources */,
 				187647D52E86B1F20025E3A2 /* NegotiateViewController.m in Sources */,
 				DCEA00F32E1267CC00170D8C /* ExitView.m in Sources */,
 				E42F15042E225C8200376855 /* JXCategoryTitleImageCell.m in Sources */,
@@ -2775,6 +2842,7 @@
 				DC7C450B2E28D9880069CBA4 /* TABComponentLayer+TABDropAnimation.m in Sources */,
 				DC7C450C2E28D9880069CBA4 /* TABAnimatedChainManagerImpl.m in Sources */,
 				DC7C450D2E28D9880069CBA4 /* UIView+TABControlAnimation.m in Sources */,
+				18A0DE942E9EB9F700DA1A9F /* SkeletonView.m in Sources */,
 				18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */,
 				DC7C450E2E28D9880069CBA4 /* NSArray+TABDropAnimation.m in Sources */,
 				DC7C450F2E28D9880069CBA4 /* TABShimmerAnimationImpl.m in Sources */,
@@ -2821,6 +2889,7 @@
 				E49272E32E030D4900DB6A2A /* CodeViewController.m in Sources */,
 				E822B0AD2E4DBCFE00714498 /* FontValidationHelper.m in Sources */,
 				E822B0AE2E4DBCFE00714498 /* ATFontManager.m in Sources */,
+				185F7AB22E9D3A1300265FC9 /* CreateStoryWithVoiceTableViewCell.m in Sources */,
 				DC862ABA2E092E37001A4793 /* FamailyManageVC.m in Sources */,
 				E49272E92E03102300DB6A2A /* SetPasswordVC.m in Sources */,
 				E49272912E01C1C300DB6A2A /* NSDate+Extension.m in Sources */,
@@ -2834,6 +2903,8 @@
 				E49272162E01BD2F00DB6A2A /* ViewController.m in Sources */,
 				E49272932E01C1C300DB6A2A /* UIColor+Extension.m in Sources */,
 				E45B01D12E27F05A00CC3A5A /* ChangeEmailViewController.m in Sources */,
+				18A0DE972E9EBA3300DA1A9F /* SkeletonTableViewCell.m in Sources */,
+				185F7ABC2E9D4D8A00265FC9 /* VoiceManagementTableViewCell.m in Sources */,
 				DCA5A1AC2E2912B400096913 /* AccessPermissionsSettingCell.m in Sources */,
 				E42A8A132E0665C400AD0BD9 /* RYFGifHeader.m in Sources */,
 				E4B5C6F22E2496F600950B7D /* SelctAvatarCell.m in Sources */,
@@ -2902,6 +2973,7 @@
 				DC1AA07F2E04319200BADB1C /* UILabel+ClickIndex.m in Sources */,
 				E42F14F62E225C1A00376855 /* JXCategoryIndicatorImageView.m in Sources */,
 				E492729D2E01C1C300DB6A2A /* MineInfoModel.m in Sources */,
+				185F7AAD2E9D32E800265FC9 /* CreateStoryWithVoiceViewController.m in Sources */,
 				DC984F082E0D3B8000CD9E7B /* HomeExploreToysCell.m in Sources */,
 				DCA5A19E2E29011300096913 /* PrivacyPolicyManagementVC.m in Sources */,
 				E42F14EF2E225C1A00376855 /* JXCategoryTitleVerticalZoomView.m in Sources */,
@@ -2919,6 +2991,7 @@
 				E49272982E01C1C300DB6A2A /* NSArray+Log.m in Sources */,
 				E49272952E01C1C300DB6A2A /* NSString+Utils.m in Sources */,
 				DC17BEA12E20EFF700FF4EB7 /* ADImageView.m in Sources */,
+				185F7AA52E9D2C8000265FC9 /* BottomPickerView.m in Sources */,
 				E49272532E01C1AB00DB6A2A /* PublicObj.m in Sources */,
 				E42A8A1A2E0677F200AD0BD9 /* HomeDeviceCell.m in Sources */,
 				E492729B2E01C1C300DB6A2A /* FormatFactory.m in Sources */,
@@ -2929,6 +3002,7 @@
 				E49272522E01C1AB00DB6A2A /* MyNavigationController.m in Sources */,
 				E49272992E01C1C300DB6A2A /* UITextField+IndexPath.m in Sources */,
 				DC862AD82E095399001A4793 /* FamailyMemeberVC.m in Sources */,
+				185F7AC12E9E7D3F00265FC9 /* CreateVoiceViewController.m in Sources */,
 				E492728F2E01C1C300DB6A2A /* CompressImageData.m in Sources */,
 				E49272DA2E03052200DB6A2A /* RegistViewController.m in Sources */,
 				E42F14FC2E225C1B00376855 /* JXCategoryIndicatorCell.m in Sources */,

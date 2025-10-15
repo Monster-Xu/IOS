@@ -1,12 +1,5 @@
-//
-//  AFStoryAPIManager.h
-//  AIToys
-//
-//  Created by xuxuxu on 2025/10/5.
-//
-
+// AFStoryAPIManager.h
 #import <Foundation/Foundation.h>
-#import <AFNetworking/AFNetworking.h>
 #import "APIRequestModel.h"
 #import "APIResponseModel.h"
 #import "VoiceStoryModel.h"
@@ -14,8 +7,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void(^AFAPISuccessBlock)(APIResponseModel *response);
-typedef void(^AFAPIFailureBlock)(NSError *error);
+typedef void(^StoryAPISuccessBlock)(APIResponseModel *response);
+typedef void(^StoryAPIFailureBlock)(NSError *error);
 
 @interface AFStoryAPIManager : NSObject
 
@@ -24,71 +17,71 @@ typedef void(^AFAPIFailureBlock)(NSError *error);
 #pragma mark - 故事相关接口
 
 // 创建故事
-- (NSURLSessionDataTask *)createStory:(CreateStoryRequestModel *)request
-                              success:(AFAPISuccessBlock)success
-                              failure:(AFAPIFailureBlock)failure;
+- (void)createStory:(CreateStoryRequestModel *)request
+            success:(void(^)(APIResponseModel *response))success
+            failure:(StoryAPIFailureBlock)failure;
 
 // 查询故事列表
-- (NSURLSessionDataTask *)getStoriesWithPage:(PageRequestModel *)page
-                                     success:(void(^)(StoryListResponseModel *response))success
-                                     failure:(AFAPIFailureBlock)failure;
+- (void)getStoriesWithPage:(PageRequestModel *)page
+                   success:(void(^)(StoryListResponseModel *response))success
+                   failure:(StoryAPIFailureBlock)failure;
 
 // 查询故事详情
-- (NSURLSessionDataTask *)getStoryDetailWithId:(NSInteger)storyId
-                                       success:(void(^)(VoiceStoryModel *story))success
-                                       failure:(AFAPIFailureBlock)failure;
+- (void)getStoryDetailWithId:(NSInteger)storyId
+                     success:(void(^)(VoiceStoryModel *story))success
+                     failure:(StoryAPIFailureBlock)failure;
 
 // 编辑故事
-- (NSURLSessionDataTask *)updateStory:(UpdateStoryRequestModel *)request
-                              success:(AFAPISuccessBlock)success
-                              failure:(AFAPIFailureBlock)failure;
+- (void)updateStory:(UpdateStoryRequestModel *)request
+            success:(void(^)(APIResponseModel *response))success
+            failure:(StoryAPIFailureBlock)failure;
 
 // 删除故事
-- (NSURLSessionDataTask *)deleteStoryWithId:(NSInteger)storyId
-                                    success:(AFAPISuccessBlock)success
-                                    failure:(AFAPIFailureBlock)failure;
+- (void)deleteStoryWithId:(NSInteger)storyId
+                  success:(void(^)(APIResponseModel *response))success
+                  failure:(StoryAPIFailureBlock)failure;
 
 // 故事音频合成
-- (NSURLSessionDataTask *)synthesizeStory:(SynthesizeStoryRequestModel *)request
-                                  success:(AFAPISuccessBlock)success
-                                  failure:(AFAPIFailureBlock)failure;
+- (void)synthesizeStory:(SynthesizeStoryRequestModel *)request
+                success:(void(^)(APIResponseModel *response))success
+                failure:(StoryAPIFailureBlock)failure;
 
 #pragma mark - 声音相关接口
 
 // 创建声音（开始克隆）
-- (NSURLSessionDataTask *)createVoice:(CreateVoiceRequestModel *)request
-                              success:(AFAPISuccessBlock)success
-                              failure:(AFAPIFailureBlock)failure;
+- (void)createVoice:(CreateVoiceRequestModel *)request
+            success:(void(^)(APIResponseModel *response))success
+            failure:(StoryAPIFailureBlock)failure;
 
 // 查询声音列表
-- (NSURLSessionDataTask *)getVoicesWithStatus:(NSInteger)status
-                                      success:(void(^)(VoiceListResponseModel *response))success
-                                      failure:(AFAPIFailureBlock)failure;
+- (void)getVoicesWithStatus:(NSInteger)status
+                    success:(void(^)(VoiceListResponseModel *response))success
+                    failure:(StoryAPIFailureBlock)failure;
 
 // 查询声音详情
-- (NSURLSessionDataTask *)getVoiceDetailWithId:(NSInteger)voiceId
-                                       success:(void(^)(VoiceModel *voice))success
-                                       failure:(AFAPIFailureBlock)failure;
+- (void)getVoiceDetailWithId:(NSInteger)voiceId
+                     success:(void(^)(VoiceModel *voice))success
+                     failure:(StoryAPIFailureBlock)failure;
 
 // 编辑声音
-- (NSURLSessionDataTask *)updateVoice:(UpdateVoiceRequestModel *)request
-                              success:(AFAPISuccessBlock)success
-                              failure:(AFAPIFailureBlock)failure;
+- (void)updateVoice:(UpdateVoiceRequestModel *)request
+            success:(void(^)(APIResponseModel *response))success
+            failure:(StoryAPIFailureBlock)failure;
 
 // 删除声音
-- (NSURLSessionDataTask *)deleteVoiceWithId:(NSInteger)voiceId
-                                    success:(AFAPISuccessBlock)success
-                                    failure:(AFAPIFailureBlock)failure;
+- (void)deleteVoiceWithId:(NSInteger)voiceId
+                  success:(void(^)(APIResponseModel *response))success
+                  failure:(StoryAPIFailureBlock)failure;
 
 #pragma mark - 通用资源接口
 
 // 获取官方插画列表
-- (NSURLSessionDataTask *)getIllustrationsSuccess:(void(^)(IllustrationListResponseModel *response))success
-                                          failure:(AFAPIFailureBlock)failure;
+- (void)getIllustrationsSuccess:(void(^)(IllustrationListResponseModel *response))success
+                       failure:(StoryAPIFailureBlock)failure;
 
 // 获取官方音色列表
-- (NSURLSessionDataTask *)getOfficialVoicesSuccess:(void(^)(VoiceListResponseModel *response))success
-                                           failure:(AFAPIFailureBlock)failure;
+- (void)getOfficialVoicesSuccess:(void(^)(VoiceListResponseModel *response))success
+                        failure:(StoryAPIFailureBlock)failure;
 
 @end
 
