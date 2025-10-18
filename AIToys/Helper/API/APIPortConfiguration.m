@@ -159,6 +159,11 @@
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices/delete"];
 }
 
+/// ⭐ 上传音频文件（用于声音克隆）
++ (NSString *)getUploadAudioUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/minimax/upload_audio"];
+}
+
 #pragma mark - 通用资源接口
 
 /// 获取官方插画列表
@@ -170,5 +175,6 @@
 + (NSString *)getOfficialVoicesUrl {
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices/official"];
 }
+
 
 @end

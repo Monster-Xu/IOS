@@ -96,6 +96,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// 删除声音
 + (NSString *)getDeleteVoiceUrl;
 
+/// ⭐ 上传音频文件
++ (NSString *)getUploadAudioUrl;
+
 #pragma mark - 通用资源接口
 
 /// 获取官方插画列表
