@@ -76,12 +76,18 @@
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr3]];
     
+    
+    
     NSArray *arr4 = @[
-        @{@"title" : LocalString(@"清理缓存"),@"value" :[NSString stringWithFormat:@"%.2fM",[PublicObj readCacheSize]], @"toVC" : @""}
+        @{@"title" : LocalString(@"WiFi列表"),@"value" :@"", @"toVC" : @"WiFiListViewController"},
+        @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @""}
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr4]];
+    
+    
+    
     NSArray *arr5 = @[
-        @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @""}
+        @{@"title" : LocalString(@"清理缓存"),@"value" :[NSString stringWithFormat:@"%.2fM",[PublicObj readCacheSize]], @"toVC" : @""}
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr5]];
 }
@@ -173,7 +179,7 @@
             }
         }];
     }
-    else if ([title isEqualToString:@"导出日志"]){
+    else if ([title isEqualToString:LocalString(@"导出日志")]){
         WEAK_SELF
         [SVProgressHUD showWithStatus:LocalString(@"导出中...")];
         
@@ -188,7 +194,7 @@
                 
                 // 显示导出成功提示，告知用户文件位置
                 NSString *fileName = fileURL.lastPathComponent;
-                NSString *message = [NSString stringWithFormat:LocalString(@"日志已成功导出！\n\n文件名：%@\n\n可以在「文件」App 的「我的 iPhone/ExportedLogs」文件夹中查看和分享"), fileName];
+                NSString *message = [NSString stringWithFormat:LocalString(@"Log exported successfully! \n\n Filename: %@ \n\n You can view and share it in the 'My iPhone/ExportedLogs' folder in the 'Files' app."), fileName];
                 
                 [LGBaseAlertView showAlertWithTitle:LocalString(@"导出成功") content:message cancelBtnStr:nil confirmBtnStr:LocalString(@"我知道了") confirmBlock:^(BOOL isValue, id obj) {
                     // 可选：导出成功后直接打开系统分享界面

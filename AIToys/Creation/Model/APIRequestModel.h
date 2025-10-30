@@ -50,7 +50,36 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger voiceId;
 
 - (instancetype)initWithStoryId:(NSInteger)storyId;
+- (instancetype)initWithParams:(NSDictionary *)params;
 - (BOOL)hasChanges;
+- (NSDictionary *)toDictionary;
+
+@end
+
+// 编辑失败故事请求模型（用于 /doll/stories/update_fail 接口）
+@interface UpdateFailedStoryRequestModel : NSObject
+
+@property (nonatomic, assign) NSInteger storyId;
+@property (nonatomic, assign) NSInteger familyId;
+@property (nonatomic, copy) NSString *storyName;
+@property (nonatomic, copy) NSString *storySummary;
+@property (nonatomic, assign) StoryType storyType;
+@property (nonatomic, copy) NSString *protagonistName;
+@property (nonatomic, assign) NSInteger storyLength;
+
+- (instancetype)initWithStoryId:(NSInteger)storyId
+                      familyId:(NSInteger)familyId
+                     storyName:(NSString *)storyName
+                  storySummary:(NSString *)storySummary
+                     storyType:(StoryType)storyType
+                protagonistName:(NSString *)protagonistName
+                   storyLength:(NSInteger)storyLength;
+
+// 验证方法
+- (BOOL)isValid;
+- (NSString *)validationError;
+
+// 转换为字典
 - (NSDictionary *)toDictionary;
 
 @end

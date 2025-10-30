@@ -31,16 +31,19 @@
 #import <ThingModuleServices/ThingSmartHomeDataProtocol.h>
 
 #import <AudioToolbox/AudioToolbox.h>
+#import <MediaPlayer/MediaPlayer.h>
+#import <AVFoundation/AVFoundation.h>
 #import "WCQRCodeScanningVC.h"
 #import "SGQRCodeScanManager.h"
 #import "ATFontManager.h"
 #import "SwitchConfigViewController.h"
 #import "AnalyticsManager.h"
 #import "AppSettingModel.h"
+#import "AudioPlayerView.h"
 
 static const CGFloat JXPageheightForHeaderInSection = 100;
 
-@interface HomeViewController ()<SDCycleScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,JHCustomMenuDelegate,ThingSmartHomeManagerDelegate,JXPageListViewDelegate,ThingSmartHomeDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate>
+@interface HomeViewController ()<SDCycleScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,JHCustomMenuDelegate,ThingSmartHomeManagerDelegate,JXPageListViewDelegate,ThingSmartHomeDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate,AudioPlayerViewDelegate>
 @property (weak, nonatomic) IBOutlet UIView *topView;
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UIView *containerView;
@@ -65,6 +68,15 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @property (nonatomic, strong) NSMutableArray <BannerModel *> *bannerImgArray;
 @property (nonatomic, copy) NSString *lastHardwareCode;//最新一次toyID
 @property (nonatomic, copy) NSString *homeDisplayMode; // 首页显示模式控制，从propValue获取
+//播放器
+@property (nonatomic, strong) AudioPlayerView *currentAudioPlayer;
+@property (nonatomic, assign) BOOL isAudioSessionActive; // 标记音频会话是否激活
+
+// 播放器持久化信息，用于应用恢复时重建播放器
+@property (nonatomic, copy) NSString *currentAudioURL;
+@property (nonatomic, copy) NSString *currentStoryTitle;
+@property (nonatomic, copy) NSString *currentCoverImageURL;
+
 @end
 
 @implementation HomeViewController
@@ -101,10 +113,54 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [super viewWillAppear:animated];
     [self getData];
     [self becomeFirstResponder];// 激活第一响应者
+    
+    // 检查系统媒体播放状态，如果有播放但没有当前播放器，则恢复显示
+    [self checkAndRestoreAudioPlayerFromSystemState];
+    
+    // 检查并恢复音频播放器状态
+    if (self.currentAudioPlayer && !self.isAudioSessionActive) {
+        // 重新激活音频会话
+        NSError *error = nil;
+        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback mode:AVAudioSessionModeDefault options:AVAudioSessionCategoryOptionMixWithOthers error:&error];
+        if (!error) {
+            [[AVAudioSession sharedInstance] setActive:YES error:&error];
+            if (!error) {
+                self.isAudioSessionActive = YES;
+                NSLog(@"✅ 音频会话重新激活成功");
+            } else {
+                NSLog(@"⚠️ 音频会话激活失败: %@", error.localizedDescription);
+            }
+        } else {
+            NSLog(@"⚠️ 音频会话设置失败: %@", error.localizedDescription);
+        }
+    }
 }
-
+-(void)viewWillDisappear:(BOOL)animated{
+    [super viewWillDisappear:animated];
+    if (self.currentAudioPlayer) {
+        [self.currentAudioPlayer pause];
+    }
+    // 标记音频会话为非激活状态
+    self.isAudioSessionActive = NO;
+}
 - (void)dealloc{
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"HomeDeviceRefresh" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:AVAudioSessionInterruptionNotification object:nil];
+    
+    // 清理音频播放器
+    if (self.currentAudioPlayer) {
+        [self.currentAudioPlayer stop];
+        [self.currentAudioPlayer removeFromSuperview];
+        self.currentAudioPlayer = nil;
+    }
+    
+    // 清理持久化播放信息
+    self.currentAudioURL = nil;
+    self.currentStoryTitle = nil;
+    self.currentCoverImageURL = nil;
+    
+    // 清理系统媒体控制中心
+    [self clearNowPlayingInfo];
 }
 
 - (void)viewDidLoad {
@@ -113,6 +169,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.view.backgroundColor = tableBgColor;
     self.topView.hidden = YES;
     self.titleLabel.text = NSLocalizedString(@"小朋友，你好！", @"");
+    
+    // 初始化音频会话状态
+    self.isAudioSessionActive = NO;
     
     // 添加缓存支持
     [self setupDataCache];
@@ -128,7 +187,13 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
     [self setUpUI];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceSortChanged:) name:@"HomeDeviceRefresh" object:nil];
-   
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(auditionClick:) name:@"auditionNotification" object:nil];
+    
+    // 监听音频会话中断通知，处理后台播放冲突
+    [[NSNotificationCenter defaultCenter] addObserver:self 
+                                             selector:@selector(handleAudioSessionInterruption:)
+                                                 name:AVAudioSessionInterruptionNotification 
+                                               object:nil];
 }
 
 - (void)setupDataCache {
@@ -859,6 +924,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 HomeDollModel *dollModel = weakSelf.diyDollList[index];
                 [[AnalyticsManager sharedManager] reportMyDollClickWithId:dollModel.dollModelId ?: @""
                                                                      name:dollModel.dollModel.name ?: @""];
+                
 
                 NSLog(@"deviceId:%@,token:%@",weakSelf.diyDollList[index].Id,kMyUser.accessToken);
                 // 跳转小程序
@@ -907,6 +973,17 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         make.left.equalTo(headView).offset(15);
         make.centerY.equalTo(headView);
     }];
+    if(section == 0){
+        UIButton *addBtn= [UIButton buttonWithType:UIButtonTypeCustom];
+        [addBtn setImage:QD_IMG(@"device_add") forState:UIControlStateNormal];
+        [addBtn addTarget:self action:@selector(addDevice) forControlEvents:UIControlEventTouchUpInside];
+        [headView addSubview:addBtn];
+        [addBtn mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(titleLab.mas_right).offset(0);
+            make.top.bottom.equalTo(headView);
+            make.width.mas_equalTo(40);
+        }];
+    }
     if(section == 1){
         UIButton *infoBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         [infoBtn setImage:QD_IMG(@"home_info") forState:UIControlStateNormal];
@@ -918,6 +995,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             make.width.mas_equalTo(40);
         }];
     }
+    
     if(section ==0 || section ==1){
         UIButton *moreBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         [moreBtn setTitle:NSLocalizedString(@"更多", @"")  forState:UIControlStateNormal];
@@ -985,7 +1063,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             break;
     }
 }
-
+//添加设备
+-(void)addDevice{
+    if(self.homeList.count == 0){
+        [SVProgressHUD showErrorWithStatus:@"请先创建家庭"];
+        return;
+    }
+    FindDeviceViewController *VC = [FindDeviceViewController new];
+    VC.homeId = self.currentHome.homeId;
+    [self.navigationController pushViewController:VC animated:YES];
+}
 //Toys引导
 -(void)toysGuide{
     AddToysGuideVC *VC = [[AddToysGuideVC alloc] init];
@@ -1077,7 +1164,29 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 - (void)deviceSortChanged:(NSNotification *)notification {
     [self reloadDeviceData:YES];
 }
+-(void)auditionClick:(NSNotification *)notification{
+    
+    [self getDollDetailListWithId:notification.userInfo[@"DollId"]];
+}
+-(void)getDollDetailListWithId:(NSString * )Id{
+    [SVProgressHUD showWithStatus:@"音频加载中...."];
+    WEAK_SELF
+    NSMutableDictionary *param = [NSMutableDictionary dictionary];
+    [param setObject:Id forKey:@"dollModelId"];
+    [[APIManager shared] GET:[APIPortConfiguration getdollListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+        [SVProgressHUD dismiss];
+        if ([data isKindOfClass:NSArray.class]&&data[0]) {
+//            contentUrl
+            NSDictionary * dataDic = data[0];
+            NSString *contentUrl = dataDic[@"contentUrl"];
+            [weakSelf playNewAudioForAudioURL:contentUrl storyTitle:dataDic[@"contentText"] coverImageURL:dataDic[@"assetCoverImg"]];
 
+        }
+    } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+        NSLog(@"%@",msg);
+    }];
+    
+}
 #pragma mark - ThingSmartHomeDelegate
 
 // 家庭的信息更新，例如家庭 name 变化
@@ -1418,14 +1527,199 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+// 播放新的音频
+- (void)playNewAudioForAudioURL:(NSString *)Url storyTitle:(NSString *)title coverImageURL:(NSString *)coverImageURL{
+    NSLog(@"🎵 尝试播放音频 - 故事: %@, audioUrl: %@", title, Url);
+    
+    // 检查音频URL
+    if (!Url || Url.length == 0) {
+        NSLog(@"⚠️ 音频URL为空，无法播放");
+        return;
+    }
+    
+    // 停止并清理当前播放器 - 重要：防止重复播放
+    if (self.currentAudioPlayer) {
+        [self.currentAudioPlayer stop];
+        [self.currentAudioPlayer removeFromSuperview];
+        self.currentAudioPlayer = nil;
+        NSLog(@"🛑 已停止之前的音频播放器");
+    }
+    
+    // 保存播放信息，用于应用恢复时重建播放器
+    self.currentAudioURL = Url;
+    self.currentStoryTitle = title;
+    self.currentCoverImageURL = coverImageURL;
+    
+    // 创建新的音频播放器 - AudioPlayerView 会自动处理音频会话和远程控制设置
+    self.currentAudioPlayer = [[AudioPlayerView alloc] initWithAudioURL:Url storyTitle:title coverImageURL:coverImageURL];
+    self.currentAudioPlayer.delegate = self;
+    
+    // 显示播放器并开始播放
+    [self.currentAudioPlayer showInView:self.view];
+    [self.currentAudioPlayer play];
+    
+    // 标记音频会话为激活状态
+    self.isAudioSessionActive = YES;
+    
+    NSLog(@"✅ 开始播放音频: %@", Url);
 }
-*/
+
+// 检查并从系统状态恢复音频播放器
+- (void)checkAndRestoreAudioPlayerFromSystemState {
+    // 如果已经有播放器显示，无需恢复
+    if (self.currentAudioPlayer) {
+        return;
+    }
+    
+    // 检查是否有保存的播放信息并且系统媒体控制中心有播放状态
+    if (self.currentAudioURL && self.currentStoryTitle) {
+        // 检查系统音频会话状态
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        
+        // 检查当前是否有其他音频在播放（可能是我们的音频在后台继续播放）
+        if (session.isOtherAudioPlaying == NO) {
+            // 检查 Now Playing Info 是否还存在我们的信息
+            NSDictionary *nowPlayingInfo = [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo;
+            NSString *currentTitle = nowPlayingInfo[MPMediaItemPropertyTitle];
+            
+            if (currentTitle && [currentTitle isEqualToString:self.currentStoryTitle]) {
+                NSLog(@"🔄 检测到系统媒体中心有我们的播放信息，恢复播放器界面");
+                
+                // 重新创建播放器界面
+                self.currentAudioPlayer = [[AudioPlayerView alloc] initWithAudioURL:self.currentAudioURL 
+                                                                          storyTitle:self.currentStoryTitle 
+                                                                      coverImageURL:self.currentCoverImageURL];
+                self.currentAudioPlayer.delegate = self;
+                
+                // 显示播放器
+                [self.currentAudioPlayer showInView:self.view];
+                
+                // 检查播放状态
+                NSNumber *playbackRate = nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate];
+                if (playbackRate && [playbackRate floatValue] > 0) {
+                    // 系统显示正在播放，但不自动播放，让播放器根据实际状态显示
+                    self.isAudioSessionActive = YES;
+                    NSLog(@"🎵 播放器UI已恢复，检测到播放状态");
+                } else {
+                    // 系统显示暂停状态
+                    NSLog(@"⏸️ 播放器UI已恢复，检测到暂停状态");
+                }
+            }
+        }
+    }
+}
+
+// 清理系统媒体控制中心的播放信息
+- (void)clearNowPlayingInfo {
+    [[MPNowPlayingInfoCenter defaultCenter] setNowPlayingInfo:nil];
+    NSLog(@"🧹 已清理系统媒体控制中心的播放信息");
+}
+
+#pragma mark - AudioPlayerViewDelegate 实现
+
+- (void)audioPlayerDidStartPlaying {
+    NSLog(@"▶️ 音频播放开始");
+    self.isAudioSessionActive = YES;
+}
+
+- (void)audioPlayerDidPause {
+    NSLog(@"⏸️ 音频播放暂停");
+}
+
+- (void)audioPlayerDidFinish {
+    NSLog(@"✅ 音频播放完成");
+    [self.currentAudioPlayer removeFromSuperview];
+    self.currentAudioPlayer = nil;
+    self.isAudioSessionActive = NO;
+    
+    // 清理持久化播放信息
+    self.currentAudioURL = nil;
+    self.currentStoryTitle = nil;
+    self.currentCoverImageURL = nil;
+    
+    // 清理系统媒体控制中心的播放信息
+    [self clearNowPlayingInfo];
+    
+    // 释放音频会话
+    NSError *error = nil;
+    [[AVAudioSession sharedInstance] setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:&error];
+    if (error) {
+        NSLog(@"⚠️ 音频会话释放失败: %@", error.localizedDescription);
+    } else {
+        NSLog(@"✅ 音频播放完成，会话已释放，媒体控制中心已清理");
+    }
+}
+
+- (void)audioPlayerDidUpdateProgress:(CGFloat)progress currentTime:(NSTimeInterval)currentTime totalTime:(NSTimeInterval)totalTime {
+    // 可以用来更新UI进度等
+    if (currentTime>=60) {
+        [self.currentAudioPlayer pause];
+    }
+}
+
+- (void)audioPlayerDidClose {
+    NSLog(@"❌ 音频播放器关闭");
+    
+    // 清理播放器引用
+    self.currentAudioPlayer = nil;
+    self.isAudioSessionActive = NO;
+    
+    // 清理持久化播放信息
+    self.currentAudioURL = nil;
+    self.currentStoryTitle = nil;
+    self.currentCoverImageURL = nil;
+    
+    // 清理系统媒体控制中心的播放信息
+    [self clearNowPlayingInfo];
+    
+    // 释放音频会话
+    NSError *error = nil;
+    [[AVAudioSession sharedInstance] setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:&error];
+    if (error) {
+        NSLog(@"⚠️ 音频会话释放失败: %@", error.localizedDescription);
+    } else {
+        NSLog(@"✅ 音频会话已释放，媒体控制中心已清理");
+    }
+}
+
+#pragma mark - 音频会话中断处理
+
+- (void)handleAudioSessionInterruption:(NSNotification *)notification {
+    NSNumber *interruptionType = [notification.userInfo objectForKey:AVAudioSessionInterruptionTypeKey];
+    
+    if (interruptionType) {
+        switch ([interruptionType integerValue]) {
+            case AVAudioSessionInterruptionTypeBegan:
+                NSLog(@"🔕 音频会话被中断开始");
+                if (self.currentAudioPlayer) {
+                    [self.currentAudioPlayer pause];
+                }
+                self.isAudioSessionActive = NO;
+                break;
+                
+            case AVAudioSessionInterruptionTypeEnded: {
+                NSLog(@"🔔 音频会话中断结束");
+                // 检查是否应该恢复播放
+                NSNumber *interruptionOptions = [notification.userInfo objectForKey:AVAudioSessionInterruptionOptionKey];
+                if (interruptionOptions && ([interruptionOptions unsignedIntegerValue] & AVAudioSessionInterruptionOptionShouldResume)) {
+                    // 重新激活音频会话
+                    NSError *error = nil;
+                    [[AVAudioSession sharedInstance] setActive:YES error:&error];
+                    if (!error) {
+                        self.isAudioSessionActive = YES;
+                        // 可以选择自动恢复播放，这里暂不自动恢复，让用户手动控制
+                        NSLog(@"🎵 音频会话已恢复，可以继续播放");
+                    } else {
+                        NSLog(@"⚠️ 音频会话恢复失败: %@", error.localizedDescription);
+                    }
+                }
+                break;
+            }
+                
+            default:
+                break;
+        }
+    }
+}
 
 @end

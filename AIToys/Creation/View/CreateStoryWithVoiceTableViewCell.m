@@ -7,68 +7,109 @@
 
 #import "CreateStoryWithVoiceTableViewCell.h"
 
+@interface CreateStoryWithVoiceTableViewCell ()
+@property (nonatomic, strong) VoiceModel *voiceModel;
+@end
+
 @implementation CreateStoryWithVoiceTableViewCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
     
-    // 设置圆角
-    self.headerImageView.layer.cornerRadius = self.headerImageView.frame.size.width / 2;
-    self.headerImageView.layer.masksToBounds = YES;
+    
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
-//    if (selected) {
-//        [self.selectBtn setBackgroundImage:[UIImage imageNamed:@"choose_sel"] forState:UIControlStateNormal];
-//    } else {
-//        [self.selectBtn setBackgroundImage:[UIImage imageNamed:@"choose_normal"] forState:UIControlStateNormal];
-//    }
-
-    // Configure the view for the selected state
 }
 
 #pragma mark - Public Methods
 
 /**
  配置音色数据
- @param voiceModel 音色模型对象
- @param isSelected 是否选中
  */
-- (void)configureWithVoiceModel:(id)voiceModel isSelected:(BOOL)isSelected {
-    // 配置音色头像
-    if ([voiceModel respondsToSelector:@selector(avatarUrl)]) {
-        NSString *avatarUrl = [voiceModel valueForKey:@"avatarUrl"];
-        [self.headerImageView sd_setImageWithURL:[NSURL URLWithString:avatarUrl]
-                                placeholderImage:[UIImage imageNamed:@"default_avatar"]];
-    } else if ([voiceModel respondsToSelector:@selector(imageUrl)]) {
-        NSString *imageUrl = [voiceModel valueForKey:@"imageUrl"];
-        [self.headerImageView sd_setImageWithURL:[NSURL URLWithString:imageUrl]
-                                placeholderImage:[UIImage imageNamed:@"default_avatar"]];
-    }
+- (void)configureWithVoiceModel:(VoiceModel *)voiceModel isSelected:(BOOL)isSelected {
+    // 保存音色模型
+    self.voiceModel = voiceModel;
     
-    // 配置选中状态按钮
-//    self.selectBtn.selected = isSelected;
+    // 根据createTime判断是否是近7天内创建的
+        if (voiceModel.createTime) {
+            // 直接使用doubleValue，无论createTime是NSString还是NSNumber
+            NSTimeInterval createTimeInterval = [voiceModel.createTime doubleValue];
+            
+            // 🔧 处理毫秒时间戳：如果数值大于10位数，说明是毫秒时间戳，需要除以1000
+            if (createTimeInterval > 9999999999) { // 10位数以上认为是毫秒时间戳
+                createTimeInterval = createTimeInterval / 1000.0;
+            }
+            NSDate *createDate = [NSDate dateWithTimeIntervalSince1970:createTimeInterval];
+            
+            // 获取当天的开始时间（00:00:00）
+            NSCalendar *calendar = [NSCalendar currentCalendar];
+            NSDate *today = [NSDate date];
+            NSDate *startOfToday = [calendar startOfDayForDate:today];
+            
+            // 获取明天的开始时间（用于判断范围）
+            NSDate *startOfTomorrow = [calendar dateByAddingUnit:NSCalendarUnitDay value:1 toDate:startOfToday options:0];
+            
+            // 如果创建日期在今天范围内，则显示badge
+            BOOL isCreatedToday = ([createDate compare:startOfToday] != NSOrderedAscending) && 
+                                  ([createDate compare:startOfTomorrow] == NSOrderedAscending);
+            
+            self.voiceNewImage.hidden = !isCreatedToday;
+        } else {
+            self.voiceNewImage.hidden = YES;
+        }
     
-    // 设置选择按钮图片
-    if (isSelected) {
-        [self.selectBtn setImage:[UIImage imageNamed:@"device_added"] forState:UIControlStateNormal];
-    } else {
-        [self.selectBtn setImage:[UIImage imageNamed:@"choose_normal"] forState:UIControlStateNormal];
-    }
+    // 设置头像
+    [self.headerImageView sd_setImageWithURL:[NSURL URLWithString:voiceModel.avatarUrl]
+                            placeholderImage:[UIImage imageNamed:@"default_avatar"]];
     
-//    // 可以根据选中状态更改样式
-//    if (isSelected) {
-//        self.contentView.layer.borderWidth = 2.0;
-//        self.contentView.layer.borderColor = [UIColor colorWithRed:0x1E/255.0
-//                                                              green:0xAA/255.0
-//                                                               blue:0xFD/255.0
-//                                                              alpha:1.0].CGColor;
-//    } else {
-//        self.contentView.layer.borderWidth = 0;
-//        self.contentView.layer.borderColor = [UIColor clearColor].CGColor;
-//    }
+    // ✅ 设置选中状态并添加调试日志
+    self.selectBtn.selected = isSelected;
+    self.voiceNameLabel.text = voiceModel.voiceName;
+    
+    // ✅ 添加调试日志验证按钮状态
+    NSLog(@"🔧 配置音色Cell: '%@' (ID: %ld), isSelected: %@, 按钮实际selected: %@", 
+          voiceModel.voiceName ?: @"无名称", 
+          (long)voiceModel.voiceId,
+          isSelected ? @"YES" : @"NO",
+          self.selectBtn.selected ? @"YES" : @"NO");
+    
+    // ✅ 确保按钮状态立即更新显示
+    [self.selectBtn setNeedsLayout];
+    [self.selectBtn layoutIfNeeded];
+    
+    // 重置播放按钮为未播放状态
+    self.playBtn.selected = NO;
 }
+
+#pragma mark - Private Methods
+
+/**
+ 播放按钮点击事件
+ */
+- (IBAction)playBtnClick:(id)sender {
+    // ✅ 切换播放状态
+    self.playBtn.selected = !self.playBtn.selected;
+    
+    // ✅ 通过block回调通知ViewController
+    if (self.onPlayButtonTapped) {
+        self.onPlayButtonTapped(self.voiceModel, self.playBtn.selected);
+    }
+}
+
+/**
+ 选择按钮点击事件
+ */
+- (IBAction)secletBtnClick:(id)sender {
+    // ✅ 切换选择状态
+    self.selectBtn.selected = !self.selectBtn.selected;
+    
+    // ✅ 通过block回调通知ViewController
+    if (self.onSelectButtonTapped) {
+        self.onSelectButtonTapped(self.voiceModel, self.selectBtn.selected);
+    }
+}
+
 
 @end

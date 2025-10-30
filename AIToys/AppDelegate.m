@@ -18,6 +18,7 @@
 #import "NavigateToNativePageAPI.h"
 #import "AnalyticsManager.h"
 #import "LogManager.h"
+#import <AVFoundation/AVFoundation.h>
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
 
@@ -63,6 +64,14 @@
     //启动广告图
     [self loadAD];
     return [[ThingModuleManager sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+    
+    
+    // 配置音频会话（应用启动时设置一次）
+        NSError *error = nil;
+        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&error];
+        if (error) {
+            NSLog(@"AppDelegate: 音频会话设置失败: %@", error.localizedDescription);
+        };
 }
 
 //涂鸦消息推送
@@ -237,5 +246,33 @@
     NSLog(@"API 是否可用: %@", [navigateAPI canIUseExtApi] ? @"YES" : @"NO");
     NSLog(@"========== 自定义 MiniApp API 注册结束 ==========");
 }
-
+// 处理远程控制事件
+- (void)remoteControlReceivedWithEvent:(UIEvent *)event {
+    if (event.type == UIEventTypeRemoteControl) {
+        switch (event.subtype) {
+            case UIEventSubtypeRemoteControlPlay:
+                // 播放命令 - 可以通过通知中心通知播放器
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPlay" object:nil];
+                break;
+            case UIEventSubtypeRemoteControlPause:
+                // 暂停命令
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPause" object:nil];
+                break;
+            case UIEventSubtypeRemoteControlTogglePlayPause:
+                // 切换播放/暂停
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlTogglePlayPause" object:nil];
+                break;
+            case UIEventSubtypeRemoteControlNextTrack:
+                // 下一曲
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlNextTrack" object:nil];
+                break;
+            case UIEventSubtypeRemoteControlPreviousTrack:
+                // 上一曲
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPreviousTrack" object:nil];
+                break;
+            default:
+                break;
+        }
+    }
+}
 @end

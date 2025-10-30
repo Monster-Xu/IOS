@@ -81,7 +81,7 @@
 //关闭
 - (IBAction)closeBtnClick:(id)sender {
     [SVProgressHUD dismiss];
-    [self dismissViewControllerAnimated:YES completion:nil];
+    [self.navigationController popViewControllerAnimated:YES];
 }
 
 #pragma mark -- UITableViewDataSource

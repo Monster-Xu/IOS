@@ -40,6 +40,8 @@ typedef NS_ENUM(NSInteger, VoiceCloneStatus) {
 @property (nonatomic, copy, nullable) NSString *createTime;
 @property (nonatomic, copy, nullable) NSString *updateTime;
 
+@property (nonatomic,assign)BOOL isPlaying;
+
 // 便利方法
 - (BOOL)canDelete;
 - (BOOL)canUse;

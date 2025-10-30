@@ -48,5 +48,5 @@
 // 埋点系统
 #import "AnalyticsManager.h"
 #import "AnalyticsConstants.h"
-
+#import "RYFGifHeader.h"
 #endif /* PrefixHeader_pch */

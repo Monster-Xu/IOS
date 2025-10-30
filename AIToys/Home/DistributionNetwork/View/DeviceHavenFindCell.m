@@ -16,14 +16,15 @@
 - (UICollectionView *)collectionView {
     if (!_collectionView) {
         UICollectionViewFlowLayout *layout = [UICollectionViewFlowLayout.alloc init];
-        layout.itemSize = CGSizeMake(64, 95);
-//        layout.minimumLineSpacing = 12;
+        layout.itemSize = CGSizeMake(SCREEN_WIDTH-64, 352);
+        layout.minimumLineSpacing = 12;
         layout.minimumInteritemSpacing = 12;
         layout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
-        layout.sectionInset = UIEdgeInsetsMake(20, 15, 40, 15);
+        layout.sectionInset = UIEdgeInsetsMake(0, 16, 0, 16);
         _collectionView = [UICollectionView.alloc initWithFrame:CGRectZero collectionViewLayout:layout];
         _collectionView.showsHorizontalScrollIndicator = false;
         _collectionView.showsVerticalScrollIndicator = false;
+        _collectionView.pagingEnabled = YES;
         _collectionView.backgroundColor = [UIColor clearColor];
         [_collectionView registerNib:[UINib nibWithNibName:@"DeviceHavenFindItem" bundle:nil] forCellWithReuseIdentifier:@"cell"];
         _collectionView.delegate = self;
@@ -35,7 +36,8 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    self.titleLabel.text = LocalString(@"发现设备...");
+//    self.titleLabel.text = LocalString(@"发现设备%@台");
+    
     [self.containerView addSubview:self.collectionView];
     [self.collectionView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(self.containerView);
@@ -44,6 +46,7 @@
 
 -(void)setDeviceList:(NSArray *)deviceList{
     _deviceList = deviceList;
+    self.titleLabel.text = [NSString stringWithFormat:LocalString(@"%lu device was discovered."),(unsigned long)_deviceList.count];
     [self.collectionView reloadData];
 }
 
@@ -54,10 +57,13 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     DeviceHavenFindItem *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
-    NSDictionary *dic = self.deviceList[indexPath.row];
-    [cell.imgView sd_setImageWithURL:[NSURL URLWithString:dic[@"icon"]] placeholderImage:[UIImage imageNamed:@"icon_find_device.png"]];
-    NSString *name = dic[@"name"];
+    ThingBLEAdvModel * model  = self.deviceList[indexPath.row];
+//    [cell.imgView sd_setImageWithURL:[NSURL URLWithString:dic[@"icon"]] placeholderImage:[UIImage imageNamed:@"icon_find_device.png"]];
+    NSString *name = [model.uuid  substringFromIndex:model.uuid.length-4];
     cell.nameLabel.text = [PublicObj isEmptyObject:name] ? @"" : name;
+    cell.clickItemBlock = ^{
+        self.itemClickBlock(indexPath.section);
+    };
     return cell;
 }
 

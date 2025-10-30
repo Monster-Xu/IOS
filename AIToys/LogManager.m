@@ -94,6 +94,9 @@
     
     // 5. 监听通知
     [self observeNotifications];
+     
+    //6.crash
+    [self setupCrashHandler];
 }
 
 #pragma mark - Hook ViewController

@@ -12,12 +12,12 @@
 /// 所有接口请求的基础域名
 + (NSString *)baseURL {
     ///当前环境 1、测试  2、生产
-//    NSInteger type = [[NSUserDefaults standardUserDefaults] integerForKey:KCURRENT_API_TYPE];
-//    if (type == 2) {
-//        return @"https://app.talenpalussaastest.com/";
-//    } else{
-//        return @"https://app.talenpalussaastest.com/";
-//    }
+    NSInteger type = [[NSUserDefaults standardUserDefaults] integerForKey:KCURRENT_API_TYPE];
+    if (type == 2) {
+        return @"https://app.talenpalussaastest.com/";
+    } else{
+        return @"https://app.talenpalussaastest.com/";
+    }
     return @"https://app-pre.talenpalussaastest.com/";
 }
 
@@ -81,6 +81,10 @@
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-property/get-by-key"];
 }
 
++ (NSString *)getDeleteProPertUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-property/delete"];
+}
+
 /// 埋点上报接口
 + (NSString *)getEventLogCreateUrl{
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-event-log/create"];
@@ -99,6 +103,10 @@
 /// 获取用户头像
 + (NSString *)getAppAvatarUrl{
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-avatar/get"];
+}
+
++ (NSString *)getdollListUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/model/asset/list-by-doll-model-id"];
 }
 #pragma mark - 故事相关接口
 
@@ -120,6 +128,11 @@
 /// 编辑故事
 + (NSString *)getUpdateStoryUrl {
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/update"];
+}
+
+/// 编辑失败的故事（重新生成）
++ (NSString *)getUpdateFailedStoryUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/update_fail"];
 }
 
 /// 删除故事
@@ -176,5 +189,14 @@
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices/official"];
 }
 
+/// 查询故事类型枚举
++ (NSString *)getStoryTypesUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/types"];
+}
+
+/// 查询故事长度枚举
++ (NSString *)getStoryLengthsUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/lengths"];
+}
 
 @end

@@ -13,5 +13,13 @@
     [super awakeFromNib];
     // Initialization code
 }
+- (IBAction)addDeviceBtnClick:(id)sender {
+    if (self.clickItemBlock) {
+        self.clickItemBlock();
+    }
+    
+}
+
+
 
 @end

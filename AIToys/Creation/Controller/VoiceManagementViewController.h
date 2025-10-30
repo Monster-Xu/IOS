@@ -11,7 +11,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface VoiceManagementViewController : UIViewController
+@interface VoiceManagementViewController : BaseViewController
 
 /// 声音列表数据源
 @property (nonatomic, strong) NSMutableArray<VoiceModel *> *voiceList;

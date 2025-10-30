@@ -57,7 +57,7 @@
     
     // 底部容器
     self.containerView = [[UIView alloc] init];
-    self.containerView.backgroundColor = [UIColor whiteColor];
+    self.containerView.backgroundColor = [UIColor colorWithWhite:0.9 alpha:1];
     self.containerView.layer.cornerRadius = 20;
 //    self.containerView.layer.maskedCorners = kCALayerMinXMinYCorner | kCALayerMaxXMinYCorner;
     self.containerView.layer.masksToBounds = YES;
@@ -75,7 +75,7 @@
     }
     
     CGFloat tableHeight = MIN(self.options.count * optionHeight, maxHeight - titleHeight - cancelButtonHeight - bottomSafeArea - 20);
-    CGFloat containerHeight = titleHeight + tableHeight + cancelButtonHeight + bottomSafeArea + 20;
+    CGFloat containerHeight = titleHeight + tableHeight + cancelButtonHeight;
     
     [self.containerView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.left.equalTo(self).offset(16);
@@ -90,13 +90,14 @@
     self.titleLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.titleLabel.textColor = [UIColor blackColor];
     self.titleLabel.textAlignment = NSTextAlignmentCenter;
+    self.titleLabel.backgroundColor = [UIColor whiteColor];
     [self.containerView addSubview:self.titleLabel];
     
     [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(self.containerView).offset(20);
-        make.left.equalTo(self.containerView).offset(20);
-        make.right.equalTo(self.containerView).offset(-20);
-        make.height.mas_equalTo(24);
+        make.top.equalTo(self.containerView).offset(0);
+        make.left.equalTo(self.containerView).offset(0);
+        make.right.equalTo(self.containerView).offset(0);
+        make.height.mas_equalTo(54);
     }];
     
     // TableView
@@ -106,29 +107,29 @@
     self.tableView.backgroundColor = [UIColor whiteColor];
     self.tableView.separatorStyle = UITableViewCellSeparatorStyleSingleLine;
     self.tableView.separatorColor = [UIColor colorWithWhite:0.9 alpha:1];
-    self.tableView.separatorInset = UIEdgeInsetsMake(0, 52, 0, 52);
+    self.tableView.separatorInset = UIEdgeInsetsMake(0, 0, 0, 0);
     self.tableView.showsVerticalScrollIndicator = YES;
     self.tableView.bounces = YES;
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"PickerCell"];
     [self.containerView addSubview:self.tableView];
     
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(self.titleLabel.mas_bottom).offset(16);
+        make.top.equalTo(self.titleLabel.mas_bottom).offset(0);
         make.left.right.equalTo(self.containerView);
         make.height.mas_equalTo(tableHeight);
     }];
     
     // 取消按钮
-    self.cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.cancelButton setTitle:@"取消" forState:UIControlStateNormal];
-    [self.cancelButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
+    [self.cancelButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     self.cancelButton.titleLabel.font = [UIFont systemFontOfSize:17];
     self.cancelButton.backgroundColor = [UIColor whiteColor];
     [self.cancelButton addTarget:self action:@selector(cancelButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     [self.containerView addSubview:self.cancelButton];
     
     [self.cancelButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(self.tableView.mas_bottom).offset(20);
+        make.top.equalTo(self.tableView.mas_bottom).offset(10);
         make.left.right.equalTo(self.containerView);
         make.height.mas_equalTo(cancelButtonHeight);
     }];

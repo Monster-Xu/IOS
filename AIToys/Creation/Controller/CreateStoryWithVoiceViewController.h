@@ -12,6 +12,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface CreateStoryWithVoiceViewController : BaseViewController
 
 @property(nonatomic,assign)NSInteger  storyId;
+@property(nonatomic,assign)BOOL isEditMode; // 是否为编辑模式
+
+// 便利初始化方法
+- (instancetype)initWithEditMode:(BOOL)editMode;
 
 @end
 

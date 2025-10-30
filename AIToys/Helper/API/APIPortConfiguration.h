@@ -45,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取app配置属性
 + (NSString *)getAppPropertyUrl;
 
+//删除APP配置属性
++(NSString *)getDeleteProPertUrl;
 /// 根据key获取app配置属性
 + (NSString *)getAppPropertyByKeyUrl;
 
@@ -59,6 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 获取用户头像
 + (NSString *)getAppAvatarUrl;
+//获取创意公仔信息
++ (NSString *)getdollListUrl;
 
 #pragma mark - 故事相关接口
 /// 创建故事
@@ -73,11 +77,20 @@ NS_ASSUME_NONNULL_BEGIN
 /// 编辑故事
 + (NSString *)getUpdateStoryUrl;
 
+/// 编辑失败的故事（重新生成）
++ (NSString *)getUpdateFailedStoryUrl;
+
 /// 删除故事
 + (NSString *)getDeleteStoryUrl;
 
 /// 故事音频合成
 + (NSString *)getSynthesizeStoryUrl;
+
+/// 查询故事类型枚举
++ (NSString *)getStoryTypesUrl;
+
+/// 查询故事长度枚举
++ (NSString *)getStoryLengthsUrl;
 
 #pragma mark - 声音相关接口
 

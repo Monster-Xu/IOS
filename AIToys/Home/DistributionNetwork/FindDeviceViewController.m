@@ -19,8 +19,9 @@
 #import "GlobalBluetoothManager.h"
 #import "FindDollModel.h"
 #import "AnalyticsManager.h"
+#import "SelectWifiVC.h"
 
-@interface FindDeviceViewController ()<UITableViewDelegate,UITableViewDataSource,RYFTableViewDelegate,ThingSmartBLEManagerDelegate>
+@interface FindDeviceViewController ()<UITableViewDelegate,UITableViewDataSource,RYFTableViewDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate>
 @property (nonatomic, strong)RYFTableView *tableView;
 @property (nonatomic, strong)NSMutableArray *checkPermmitionArr;
 
@@ -33,6 +34,7 @@
 @property (nonatomic, strong)NSMutableArray  *deviceInfoList;//设备名称信息
 
 @property (nonatomic, strong)NSMutableArray <FindDollModel *> *recommendDeviceList;//推荐的设备
+@property(nonatomic,assign)NSInteger selectIndex;
 @end
 
 @implementation FindDeviceViewController
@@ -95,6 +97,8 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(wifiHavenOpen) name:NetworkReachableWifi object:nil];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(bluetoothStateChanged:) name:@"BluetoothStateChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(faildBack) name:@"faildBackChange" object:nil];
+    
     [self setupPemissionData];
 }
 
@@ -107,14 +111,14 @@
 
 //获取数据
 - (void)getData{
-    WEAK_SELF
-    [[APIManager shared] GET:[APIPortConfiguration getDoolModelListUrl] parameter:nil success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
-        NSArray *dataArr = data;
-        weakSelf.recommendDeviceList = [NSMutableArray arrayWithArray:[FindDollModel mj_objectArrayWithKeyValuesArray:dataArr]];
-        [weakSelf.tableView reloadData];
-    } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
-        
-    }];
+//    WEAK_SELF
+//    [[APIManager shared] GET:[APIPortConfiguration getDoolModelListUrl] parameter:nil success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+//        NSArray *dataArr = data;
+//        weakSelf.recommendDeviceList = [NSMutableArray arrayWithArray:[FindDollModel mj_objectArrayWithKeyValuesArray:dataArr]];
+//        [weakSelf.tableView reloadData];
+//    } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+//        
+//    }];
 }
 
 //- (void)getToken {
@@ -215,6 +219,18 @@
             break;
     }
 }
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    switch (indexPath.section) {
+        case 2:
+            return 400;
+            break;
+            
+        default:
+            return 70;
+            break;
+    }
+    
+}
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WEAK_SELF
@@ -231,16 +247,11 @@
     }else if(indexPath.section == 2){
         if(self.scanStatus == 1){
             DeviceHavenFindCell *cell = [tableView dequeueReusableCellWithIdentifier:@"DeviceHavenFindCell" forIndexPath:indexPath];
-            cell.deviceList = self.deviceInfoList;
+            cell.deviceList = self.deviceList;
             cell.itemClickBlock = ^(NSInteger index) {
-                DeviceAddVC *VC = [DeviceAddVC new];
-//                MyNavigationController *nav = [[MyNavigationController alloc] initWithRootViewController:VC];
-                VC.deviceInfo = weakSelf.deviceList[index];
-                VC.deviceDic = weakSelf.deviceInfoList[index];
-                VC.homeId = weakSelf.homeId;
-                [weakSelf.navigationController pushViewController:VC animated:YES];
-//                nav.modalPresentationStyle = UIModalPresentationFullScreen;
-//                [weakSelf presentViewController:nav animated:NO completion:nil];
+                weakSelf.selectIndex = index;
+                [self loadWifiDataWithDeviceInfo:weakSelf.deviceList[index]];
+                
             };
             return cell;
         }else if(self.scanStatus == 2){
@@ -257,7 +268,7 @@
         WEAK_SELF
         DeviceManuallyAddCell *cell = [tableView dequeueReusableCellWithIdentifier:@"DeviceManuallyAddCell" forIndexPath:indexPath];
         cell.dataArr = self.recommendDeviceList;
-        cell.itemClickBlock = ^(NSInteger index) {
+        cell.devicebtnClickClickBlock = ^{
             // 埋点上报：手动添加设备点击
             NSString *productId = @"";
 
@@ -386,7 +397,10 @@
     self.wifiIsOpen = YES;
     [self setupPemissionData];
 }
-
+//失败返回
+-(void)faildBack{
+    [self startScan];
+}
 //检查蓝牙弹窗
 - (void)chenckBluetoothAlert{
     WEAK_SELF
@@ -425,13 +439,62 @@
     }
 }
 
+//获取wifi列表
+-(void)loadWifiDataWithDeviceInfo:(ThingBLEAdvModel *)deviceInfo{
+    
+    [SVProgressHUD showWithStatus:LocalString(@"正在寻找可用Wi-Fi...")];
+    [ThingSmartBLEWifiActivator sharedInstance].bleWifiDelegate = self;
+    [[ThingSmartBLEWifiActivator sharedInstance] connectAndQueryWifiListWithUUID:deviceInfo.uuid success:^{
+      // 指令下发成功
+        NSLog(@"指令下发成功");
+    } failure:^(NSError *error) {
+      // 指令下发失败
+        NSLog(@"指令下发失败");
+        [SVProgressHUD showErrorWithStatus:error.description];
+//        self.status = AddStatusType_default;
+        [self.tableView reloadData];
+    }];
+}
+
+
+#pragma mark -- ThingSmartBLEWifiActivatorDelegate
+
+- (void)bleWifiActivator:(ThingSmartBLEWifiActivator *)activator notConfigStateWithError:(NSError *)error {
+  // 设备不在配网状态
+    NSLog(@"！！！！设备不在配网状态");
+    [SVProgressHUD showErrorWithStatus:error.description];
+//    self.status = AddStatusType_fail;
+//    [self.tableView reloadData];
+}
+
+- (void)bleWifiActivator:(ThingSmartBLEWifiActivator *)activator didScanWifiList:(NSArray *)wifiList uuid:(NSString *)uuid error:(nonnull NSError *)error{
+    [SVProgressHUD dismiss];
+//    self.status = AddStatusType_default;
+//    [self.tableView reloadData];
+    if (error) {
+    // Wi-Fi 列表扫描失败
+        NSLog(@"Wi-Fi 列表扫描失败");
+    } else {
+    // Wi-Fi 列表扫描成功
+        NSLog(@"Wi-Fi 列表扫描成功");
+
+
+
+        SelectWifiVC *VC = [SelectWifiVC new];
+        VC.UUID = self.deviceList[self.selectIndex].uuid;
+        VC.homeId = self.homeId;
+        VC.wifiArr = wifiList;
+        [self.navigationController pushViewController:VC animated:YES];
+    }
+}
+
 
 - (RYFTableView *)tableView{
     if (!_tableView) {
         _tableView = [[RYFTableView alloc] initWithFrame:CGRectZero style:UITableViewStyleGrouped];
         _tableView.tableViewDelegate = self;
         _tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
-        _tableView.estimatedRowHeight = 55;
+//        _tableView.estimatedRowHeight = 55;
         _tableView.tableHeaderView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 15)];
         _tableView.sectionHeaderHeight = 0;
         _tableView.sectionFooterHeight = 0;
