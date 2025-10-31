@@ -7,6 +7,7 @@
 
 #import "ConnectWifiVC.h"
 #import "DeviceAddCell.h"
+#import "DeviceConnectingVC.h"
 
 @interface ConnectWifiVC ()<UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -79,8 +80,13 @@
     dict[@"uuid"] = self.UUID;
     dict[@"ssid"] = self.nameTextField.text;
     dict[@"pwd"] = self.pwdTextField.text;
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"DeviceConnectStart" object:dict];
-    [self dismissViewControllerAnimated:YES completion:nil];
+//    [[NSNotificationCenter defaultCenter] postNotificationName:@"DeviceConnectStart" object:dict];
+//    [self dismissViewControllerAnimated:YES completion:nil];
+        DeviceConnectingVC *VC = [DeviceConnectingVC new];
+        VC.connectDeviceInfo = dict;
+        [self.navigationController pushViewController:VC animated:YES];
+    
+    
 //    if(self.ispwdError){
 //        //恢复配网
 //        ThingBLEWifiConfigModel *configModel = [ThingBLEWifiConfigModel new];

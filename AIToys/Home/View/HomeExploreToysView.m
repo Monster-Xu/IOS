@@ -64,10 +64,13 @@
         // 埋点上报：探索页面点击公仔
         [[AnalyticsManager sharedManager] reportExploreClickDollWithId:weakSelf.model.Id ?: @""
                                                                   name:weakSelf.model.name ?: @""];
-
-        // 跳转小程序
-        NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":weakSelf.model.Id,@"BearerId":(kMyUser.accessToken?:@""),@"type":@"explore",@"homeId":(currentHomeId?:@""),@"langType":@"en"}];
+        //试听一下点击
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"auditionNotification"
+                                                            object:nil
+                                                          userInfo:@{@"DollId": weakSelf.model.Id}];
+//        // 跳转小程序
+//        NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
+//        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":weakSelf.model.Id,@"BearerId":(kMyUser.accessToken?:@""),@"type":@"explore",@"homeId":(currentHomeId?:@""),@"langType":@"en"}];
     };
     cell.model = self.model;
     return cell;

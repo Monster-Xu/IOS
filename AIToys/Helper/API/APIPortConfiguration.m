@@ -18,6 +18,7 @@
     } else{
         return @"https://app.talenpalussaastest.com/";
     }
+    return @"https://app-pre.talenpalussaastest.com/";
 }
 
 /// 登录接口
@@ -80,6 +81,10 @@
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-property/get-by-key"];
 }
 
++ (NSString *)getDeleteProPertUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-property/delete"];
+}
+
 /// 埋点上报接口
 + (NSString *)getEventLogCreateUrl{
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-event-log/create"];
@@ -100,5 +105,98 @@
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-avatar/get"];
 }
 
++ (NSString *)getdollListUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/model/asset/list-by-doll-model-id"];
+}
+#pragma mark - 故事相关接口
+
+/// 创建故事
++ (NSString *)getCreateStoryUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories"];
+}
+
+/// 查询故事列表
++ (NSString *)getStoriesListUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories"];
+}
+
+/// 查询故事详情
++ (NSString *)getStoryDetailUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/detail"];
+}
+
+/// 编辑故事
++ (NSString *)getUpdateStoryUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/update"];
+}
+
+/// 编辑失败的故事（重新生成）
++ (NSString *)getUpdateFailedStoryUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/update_fail"];
+}
+
+/// 删除故事
++ (NSString *)getDeleteStoryUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/delete"];
+}
+
+/// 故事音频合成
++ (NSString *)getSynthesizeStoryUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/synthesize"];
+}
+
+#pragma mark - 声音相关接口
+
+/// 创建声音（开始克隆）
++ (NSString *)getCreateVoiceUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices/clone"];
+}
+
+/// 查询声音列表
++ (NSString *)getVoicesListUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices"];
+}
+
+/// 查询声音详情
++ (NSString *)getVoiceDetailUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices/detail"];
+}
+
+/// 编辑声音
++ (NSString *)getUpdateVoiceUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices/update"];
+}
+
+/// 删除声音
++ (NSString *)getDeleteVoiceUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices/delete"];
+}
+
+/// ⭐ 上传音频文件（用于声音克隆）
++ (NSString *)getUploadAudioUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/minimax/upload_audio"];
+}
+
+#pragma mark - 通用资源接口
+
+/// 获取官方插画列表
++ (NSString *)getIllustrationsUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/illustrations"];
+}
+
+/// 获取官方音色列表
++ (NSString *)getOfficialVoicesUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/voices/official"];
+}
+
+/// 查询故事类型枚举
++ (NSString *)getStoryTypesUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/types"];
+}
+
+/// 查询故事长度枚举
++ (NSString *)getStoryLengthsUrl {
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/lengths"];
+}
 
 @end

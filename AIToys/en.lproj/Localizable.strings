@@ -7,7 +7,7 @@
 */
 "首页" = "Home";
 "通讯" = "Contact";
-"创作" = "Create";
+"创作" = "Creation";
 "我的" = "Mine";
 "登录" = "Login";
 "注册" = "Register";
@@ -30,7 +30,6 @@
 "再次输入密码" = "Re-enter password";
 "密码支持6-20位，必须包含字母和数字" = "Password must be 6-20 characters, including both letters and numbers";
 "密码不一致" = "Passwords do not match";
-"确定" = "Confirm";
 "忘记密码" = "Forgot Password";
 "同意隐私政策、用户协议、儿童协议、创作协议" = "Agree to the Privacy Policy, User Agreement, Children's Agreement, and Creative Agreement";
 "隐私政策" = "Privacy Policy";
@@ -117,7 +116,7 @@
 "确定要撤销该邀请吗？" = "Are you sure cancel the invitation?";
 "撤销成功" = "Revoke success";
 "取消" = "Cancel";
-"确认" = "Confirm";
+"确定" = "Confirm";
 "请至少保留一个家庭" = "Please keep at least one family";
 "删除家庭不可恢复，您的家庭成员将会被清退，是否继续？" = "Deleting a family cannot be restored, and your family members will be removed. Do you want to continue?";
 "添加设备" = "Add Device";
@@ -251,3 +250,54 @@
 "抱歉，您还未到允许注册的年龄" = "Sorry, you are not allowed to register at this age.";
 "涂鸦-智慧生活App-sdk   ios-6.7.0版本" = "Tuya Smart Life App SDK iOS 6.7.0";
 "将 Talens 放在 Talenpal 播放器上并等待一会儿，然后 Talens 就会出现。" = "Place Talens on the Talenpal Player and wait for a while, then the Talens will appear.";
+
+
+//二期新增
+"屏幕数字" = "Screen Number";
+"添加此设备" = "Add This Device";
+//"搜索设备中，若长时间未搜索到设备，可查看\"设备复位引导\"" = "Searching for devices. If no device is found for an extended period, please refer to the \"Device Reset Guide.\"";
+"正在寻找可用wifi" = "Searching for Available Wi-Fi";
+"正在连接设备" = "Connecting to Device";
+"保持设备处于通电状态" = "Keep the Device Powered On";
+"设备添加成功" = "Device Added Successfully";
+"为你的设备起个名吧!" = "Give Your Device a Name!";
+"开始使用" = "Start Using";
+"暂无故事，请先创建" = "No stories yet. Please create one first.";
+"编辑音色" = "Edit Voice";
+"音色头像" = "Voice Avatar";
+"声音复刻" = "Voice Replication";
+"请点击「开始朗读」，请吐字清晰，并富有感情地朗读以下文本内容， 录音声音需要超过30秒" = "Please click \"Start Reading\" and read the following text clearly and expressively. The recording must be over 30 seconds.";
+"声音复刻已完成" = "Voice Replication Completed";
+"音色管理" = "Voice Management";
+"按住开始录音" = "Hold to Start Recording";
+"提示" = "Prompt";
+"录音时间太短，至少需要30秒" = "Recording too short. Must be at least 30 seconds.";
+"录音中，松开结束录音" = "Recording in progress. Release to stop.";
+"声音克隆预计需要 3-5mins 可先保存即可" = "Voice cloning is expected to take 3-5 minutes. You can save it for now.";
+"成功" = "Success";
+"声音克隆已启动!" = "Voice Cloning Started!";
+"系统正在后台处理您的声音请稍候片刻后刷新查看进度。" = "The system is processing your voice in the background. Please refresh later to check the progress.";
+"上传中" = "Uploading";
+"声音克隆失败，请重新开始录音" = "Voice cloning failed. Please start recording again.";
+"保存中" = "Saving";
+"创建音色" = "Create Voice";
+"选择插画" = "Select illustration";
+"选择故事类型" = "Choose story type";
+"创建成功" = "Creation successful";
+"故事已开始生成，可在故事列表中查看" = "Story generation started, view in story list";
+"查看故事" = "View story";
+"正在合成音频" = "Audio synthesizing";
+"不超过120字符" = "Under 120 characters";
+"还没有数据，快去添加设备吧！" = "No data yet. Go add devices quickly!";
+"导出日志" = "Export Log";
+"导出成功" = "Export Successful";
+"日志已成功导出" = "Log exported successfully";
+"文件名" = "File Name";
+"可以在「文件」App的「...」文件夹中查看和分享" = "You can view and share it in the \"...\" folder of the Files app.";
+"我知道了" = "Got it";
+"声音克隆中" = "Sound cloning in progress";
+"请选择故事时长" = "Please select story duration";
+"加载超时，请重试" = "Loading timed out, please try again.";
+"WiFi列表" = "Wi-Fi List";
+"按住说话" = "Hold to speak";
+"温馨提示" = "Friendly Reminder";

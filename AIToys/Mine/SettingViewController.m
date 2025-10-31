@@ -76,14 +76,20 @@
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr3]];
     
+    
+    
     NSArray *arr4 = @[
-        @{@"title" : LocalString(@"清理缓存"),@"value" :[NSString stringWithFormat:@"%.2fM",[PublicObj readCacheSize]], @"toVC" : @""}
+        @{@"title" : LocalString(@"WiFi列表"),@"value" :@"", @"toVC" : @"WiFiListViewController"},
+        @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @"WiFiListViewController"}
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr4]];
-//    NSArray *arr5 = @[
-//        @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @""}
-//        ];
-//    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr5]];
+    
+    
+    
+    NSArray *arr5 = @[
+        @{@"title" : LocalString(@"清理缓存"),@"value" :[NSString stringWithFormat:@"%.2fM",[PublicObj readCacheSize]], @"toVC" : @""}
+        ];
+    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr5]];
 }
 
 - (UIView *)setupfooterView {
@@ -173,28 +179,38 @@
             }
         }];
     }
-//    else if ([title isEqualToString:@"导出日志"]){
-//        [[LogManager sharedManager] exportLogsWithCompletion:^(NSURL * _Nullable fileURL, NSError * _Nullable error) {
-//            //            [self.activityIndicator stopAnimating];
-//            //            self.exportButton.enabled = YES;
-//            
-//            if (error) {
-//                
-//                return;
-//            }
-//            // 显示导出成功提示，告知用户文件位置
-//                    NSString *message = [NSString stringWithFormat:@"日志已导出到：\n%@\n\n可以在「文件」App 的「我的 iPhone/ExportedLogs」中查看", fileURL.lastPathComponent];
-//            NSLog(@"%@", message);
-//
-////            UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:nil];
-////            
-////            if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-////                //                activityVC.popoverPresentationController.sourceView = self.exportButton;
-////                //                activityVC.popoverPresentationController.sourceRect = self.exportButton.bounds;
-////            }
-//            
-//        }];
-//    }
+    else if ([title isEqualToString:LocalString(@"导出日志")]){
+        WEAK_SELF
+        [SVProgressHUD showWithStatus:LocalString(@"导出中...")];
+        
+        [[LogManager sharedManager] exportLogsWithCompletion:^(NSURL * _Nullable fileURL, NSError * _Nullable error) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [SVProgressHUD dismiss];
+                
+                if (error) {
+                    [SVProgressHUD showErrorWithStatus:LocalString(@"导出失败")];
+                    return;
+                }
+                
+                // 显示导出成功提示，告知用户文件位置
+                NSString *fileName = fileURL.lastPathComponent;
+                NSString *message = [NSString stringWithFormat:LocalString(@"Log exported successfully! \n\n Filename: %@ \n\n You can view and share it in the 'My iPhone/ExportedLogs' folder in the 'Files' app."), fileName];
+                
+                [LGBaseAlertView showAlertWithTitle:LocalString(@"导出成功") content:message cancelBtnStr:nil confirmBtnStr:LocalString(@"我知道了") confirmBlock:^(BOOL isValue, id obj) {
+                    // 可选：导出成功后直接打开系统分享界面
+                    UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:nil];
+                    
+                    // 为iPad设置弹出位置
+                    if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+                        activityVC.popoverPresentationController.sourceView = weakSelf.view;
+                        activityVC.popoverPresentationController.sourceRect = CGRectMake(weakSelf.view.bounds.size.width/2, weakSelf.view.bounds.size.height/2, 1, 1);
+                    }
+                    
+                    [weakSelf presentViewController:activityVC animated:YES completion:nil];
+                }];
+            });
+        }];
+    }
     else{
         UIViewController* vc = [NSString stringChangeToClass:str];
         vc.title = title;

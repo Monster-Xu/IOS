@@ -16,7 +16,7 @@
 #import "YYCategories.h"
 #import "MJExtension.h"
 #import <ThingSmartHomeKit/ThingSmartKit.h>
-#import "Masonry.h"
+#import <Masonry/Masonry.h>
 
 #import "APIPortConfiguration.h"
 #import "APIManager.h"
@@ -48,5 +48,5 @@
 // 埋点系统
 #import "AnalyticsManager.h"
 #import "AnalyticsConstants.h"
-
+#import "RYFGifHeader.h"
 #endif /* PrefixHeader_pch */

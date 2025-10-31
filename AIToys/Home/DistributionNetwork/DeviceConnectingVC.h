@@ -11,6 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DeviceConnectingVC : BaseViewController
 
+@property(nonatomic,strong)NSDictionary * connectDeviceInfo;
+@property (nonatomic, assign)AddStatusType status;
 @end
 
 NS_ASSUME_NONNULL_END

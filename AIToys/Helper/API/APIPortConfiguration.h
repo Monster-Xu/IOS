@@ -45,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取app配置属性
 + (NSString *)getAppPropertyUrl;
 
+//删除APP配置属性
++(NSString *)getDeleteProPertUrl;
 /// 根据key获取app配置属性
 + (NSString *)getAppPropertyByKeyUrl;
 
@@ -59,6 +61,65 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 获取用户头像
 + (NSString *)getAppAvatarUrl;
+//获取创意公仔信息
++ (NSString *)getdollListUrl;
+
+#pragma mark - 故事相关接口
+/// 创建故事
++ (NSString *)getCreateStoryUrl;
+
+/// 查询故事列表
++ (NSString *)getStoriesListUrl;
+
+/// 查询故事详情
++ (NSString *)getStoryDetailUrl;
+
+/// 编辑故事
++ (NSString *)getUpdateStoryUrl;
+
+/// 编辑失败的故事（重新生成）
++ (NSString *)getUpdateFailedStoryUrl;
+
+/// 删除故事
++ (NSString *)getDeleteStoryUrl;
+
+/// 故事音频合成
++ (NSString *)getSynthesizeStoryUrl;
+
+/// 查询故事类型枚举
++ (NSString *)getStoryTypesUrl;
+
+/// 查询故事长度枚举
++ (NSString *)getStoryLengthsUrl;
+
+#pragma mark - 声音相关接口
+
+/// 创建声音（开始克隆）
++ (NSString *)getCreateVoiceUrl;
+
+/// 查询声音列表
++ (NSString *)getVoicesListUrl;
+
+/// 查询声音详情
++ (NSString *)getVoiceDetailUrl;
+
+/// 编辑声音
++ (NSString *)getUpdateVoiceUrl;
+
+/// 删除声音
++ (NSString *)getDeleteVoiceUrl;
+
+/// ⭐ 上传音频文件
++ (NSString *)getUploadAudioUrl;
+
+#pragma mark - 通用资源接口
+
+/// 获取官方插画列表
++ (NSString *)getIllustrationsUrl;
+
+/// 获取官方音色列表
++ (NSString *)getOfficialVoicesUrl;
+
 
 @end
 

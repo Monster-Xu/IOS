@@ -292,7 +292,7 @@
             self.ispwdError = YES;
         }else if(error.code == 4 || error.code == 2){
             //设备连不上路由器
-            [SVProgressHUD showErrorWithStatus:@"网络信号连接不佳，请将设备和手机尽量靠近路由器。"];
+            [SVProgressHUD showErrorWithStatus:LocalString(@"网络信号连接不佳，请将设备和手机尽量靠近路由器。")];
         }else{
             [SVProgressHUD showErrorWithStatus:error.localizedDescription];
         }

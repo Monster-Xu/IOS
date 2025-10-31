@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///是否隐藏导航栏 默认 NO 不隐藏
 @property (nonatomic, assign) BOOL hj_NavIsHidden;
 @property (nonatomic, strong)UIButton *leftBarButton;
+@property (nonatomic, strong)UIButton * rightBtn;
 
 - (void)setupNavBackBtn;
 
