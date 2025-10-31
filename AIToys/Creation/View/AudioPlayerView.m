@@ -64,6 +64,13 @@
 // 全局单例管理
 @property (nonatomic, strong, class, readonly) NSMutableSet<AudioPlayerView *> *activePlayerInstances;
 
+// 远程控制目标引用
+@property (nonatomic, strong) id playCommandTarget;
+@property (nonatomic, strong) id pauseCommandTarget;
+@property (nonatomic, strong) id togglePlayPauseCommandTarget;
+@property (nonatomic, strong) id previousTrackCommandTarget;
+@property (nonatomic, strong) id nextTrackCommandTarget;
+
 @end
 
 // 全局单例管理的实现
@@ -85,9 +92,10 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
 + (void)stopAllOtherPlayers:(AudioPlayerView *)currentPlayer {
     NSSet *instances = [self.activePlayerInstances copy]; // 创建副本以避免并发修改
     for (AudioPlayerView *player in instances) {
-        if (player != currentPlayer && [player isPlaying]) {
+        if (player != currentPlayer) {
             NSLog(@"🛑 停止其他播放器实例");
             [player stop];
+            [player removeRemoteTransportControls];
             [player removeFromSuperview];
             [self.activePlayerInstances removeObject:player];
         }
@@ -102,6 +110,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
 
 // 注销播放器实例
 - (void)unregisterInstance {
+    [self removeRemoteTransportControls];
     [AudioPlayerView.activePlayerInstances removeObject:self];
     NSLog(@"🗑️ 注销播放器实例，当前总数: %lu", (unsigned long)AudioPlayerView.activePlayerInstances.count);
 }
@@ -174,11 +183,17 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
 }
 
 - (void)dealloc {
+    NSLog(@"🗑️ AudioPlayerView dealloc 开始");
+    
+    // 先移除远程控制，防止被保留
+    [self removeRemoteTransportControls];
+    
     // 注销实例
     [self unregisterInstance];
     
     [self.progressTimer invalidate];
     [self.audioPlayer stop];
+    self.audioPlayer = nil;
     [self.downloadTask cancel]; // 取消下载任务
     
     // 停止显示链
@@ -866,6 +881,9 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         // 在开始播放前，停止所有其他播放器
         [AudioPlayerView stopAllOtherPlayers:self];
         
+        // 设置远程控制（确保只有当前播放器响应）
+        [self setupRemoteTransportControls];
+        
         [self.audioPlayer play];
         [self startProgressTimer];
         
@@ -886,8 +904,14 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
 // 后台播放方法（直接播放，不显示UI）
 - (void)playInBackground {
     if (self.audioPlayer) {
+        // 停止所有其他播放器
+        [AudioPlayerView stopAllOtherPlayers:self];
+        
         // 配置后台音频会话
         [self setupBackgroundAudioSession];
+        
+        // 设置远程控制
+        [self setupRemoteTransportControls];
         
         [self.audioPlayer play];
         [self startProgressTimer];
@@ -1159,42 +1183,113 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     NSLog(@"✅ 后台音频会话已配置");
 }
 
-// 设置远程控制（锁屏界面和控制中心）
-- (void)setupRemoteTransportControls {
+// 移除远程控制目标的方法
+- (void)removeRemoteTransportControls {
     MPRemoteCommandCenter *commandCenter = [MPRemoteCommandCenter sharedCommandCenter];
     
-    // 播放命令
-    [commandCenter.playCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-        [self play];
-        return MPRemoteCommandHandlerStatusSuccess;
-    }];
+    // 移除所有已添加的目标
+    if (self.playCommandTarget) {
+        [commandCenter.playCommand removeTarget:self.playCommandTarget];
+        self.playCommandTarget = nil;
+    }
     
-    // 暂停命令
-    [commandCenter.pauseCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-        [self pause];
-        return MPRemoteCommandHandlerStatusSuccess;
-    }];
+    if (self.pauseCommandTarget) {
+        [commandCenter.pauseCommand removeTarget:self.pauseCommandTarget];
+        self.pauseCommandTarget = nil;
+    }
     
-    // 切换播放/暂停命令
-    [commandCenter.togglePlayPauseCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-        if (self.audioPlayer.isPlaying) {
-            [self pause];
-        } else {
-            [self play];
+    if (self.togglePlayPauseCommandTarget) {
+        [commandCenter.togglePlayPauseCommand removeTarget:self.togglePlayPauseCommandTarget];
+        self.togglePlayPauseCommandTarget = nil;
+    }
+    
+    if (self.previousTrackCommandTarget) {
+        [commandCenter.previousTrackCommand removeTarget:self.previousTrackCommandTarget];
+        self.previousTrackCommandTarget = nil;
+    }
+    
+    if (self.nextTrackCommandTarget) {
+        [commandCenter.nextTrackCommand removeTarget:self.nextTrackCommandTarget];
+        self.nextTrackCommandTarget = nil;
+    }
+    
+    // 禁用命令
+    commandCenter.playCommand.enabled = NO;
+    commandCenter.pauseCommand.enabled = NO;
+    commandCenter.togglePlayPauseCommand.enabled = NO;
+    commandCenter.previousTrackCommand.enabled = NO;
+    commandCenter.nextTrackCommand.enabled = NO;
+    
+    NSLog(@"✅ 已移除远程控制目标");
+}
+
+// 设置远程控制（锁屏界面和控制中心）
+- (void)setupRemoteTransportControls {
+    // 先移除旧的目标
+    [self removeRemoteTransportControls];
+    
+    MPRemoteCommandCenter *commandCenter = [MPRemoteCommandCenter sharedCommandCenter];
+    
+    // 使用 weak self 避免循环引用
+    __weak typeof(self) weakSelf = self;
+    
+    // 播放命令 - 保存目标引用
+    self.playCommandTarget = [commandCenter.playCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf) {
+            NSLog(@"🎵 远程控制：播放");
+            [strongSelf play];
+            return MPRemoteCommandHandlerStatusSuccess;
         }
-        return MPRemoteCommandHandlerStatusSuccess;
+        return MPRemoteCommandHandlerStatusNoSuchContent;
     }];
     
-    // 上一曲命令
-    [commandCenter.previousTrackCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-        [self previousButtonTapped];
-        return MPRemoteCommandHandlerStatusSuccess;
+    // 暂停命令 - 保存目标引用
+    self.pauseCommandTarget = [commandCenter.pauseCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf) {
+            NSLog(@"⏸️ 远程控制：暂停");
+            [strongSelf pause];
+            return MPRemoteCommandHandlerStatusSuccess;
+        }
+        return MPRemoteCommandHandlerStatusNoSuchContent;
     }];
     
-    // 下一曲命令
-    [commandCenter.nextTrackCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
-        [self nextButtonTapped];
-        return MPRemoteCommandHandlerStatusSuccess;
+    // 切换播放/暂停命令 - 保存目标引用
+    self.togglePlayPauseCommandTarget = [commandCenter.togglePlayPauseCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf) {
+            NSLog(@"⏯️ 远程控制：切换播放/暂停");
+            if (strongSelf.audioPlayer.isPlaying) {
+                [strongSelf pause];
+            } else {
+                [strongSelf play];
+            }
+            return MPRemoteCommandHandlerStatusSuccess;
+        }
+        return MPRemoteCommandHandlerStatusNoSuchContent;
+    }];
+    
+    // 上一曲命令 - 保存目标引用
+    self.previousTrackCommandTarget = [commandCenter.previousTrackCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf) {
+            NSLog(@"⏮️ 远程控制：上一曲");
+            [strongSelf previousButtonTapped];
+            return MPRemoteCommandHandlerStatusSuccess;
+        }
+        return MPRemoteCommandHandlerStatusNoSuchContent;
+    }];
+    
+    // 下一曲命令 - 保存目标引用
+    self.nextTrackCommandTarget = [commandCenter.nextTrackCommand addTargetWithHandler:^MPRemoteCommandHandlerStatus(MPRemoteCommandEvent * _Nonnull event) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf) {
+            NSLog(@"⏭️ 远程控制：下一曲");
+            [strongSelf nextButtonTapped];
+            return MPRemoteCommandHandlerStatusSuccess;
+        }
+        return MPRemoteCommandHandlerStatusNoSuchContent;
     }];
     
     // 启用命令
@@ -1204,7 +1299,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     commandCenter.previousTrackCommand.enabled = YES;
     commandCenter.nextTrackCommand.enabled = YES;
     
-    NSLog(@"✅ 远程控制已设置");
+    NSLog(@"✅ 远程控制已设置（已保存目标引用）");
 }
 
 // 更新锁屏界面和控制中心信息
@@ -1252,13 +1347,8 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
 - (void)clearNowPlayingInfo {
     [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nil;
     
-    // 禁用远程控制命令
-    MPRemoteCommandCenter *commandCenter = [MPRemoteCommandCenter sharedCommandCenter];
-    commandCenter.playCommand.enabled = NO;
-    commandCenter.pauseCommand.enabled = NO;
-    commandCenter.togglePlayPauseCommand.enabled = NO;
-    commandCenter.previousTrackCommand.enabled = NO;
-    commandCenter.nextTrackCommand.enabled = NO;
+    // 调用移除远程控制方法
+    [self removeRemoteTransportControls];
     
     NSLog(@"✅ 已清除系统播放器信息和远程控制");
 }
@@ -1378,11 +1468,11 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     self.isDragging = YES;
     
     // 添加拖动开始的视觉反馈
-    [UIView animateWithDuration:0.2 
-                          delay:0 
-         usingSpringWithDamping:0.8 
-          initialSpringVelocity:0 
-                        options:UIViewAnimationOptionBeginFromCurrentState 
+    [UIView animateWithDuration:0.2
+                          delay:0
+         usingSpringWithDamping:0.8
+          initialSpringVelocity:0
+                        options:UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
         // 轻微放大和降低透明度
         self.backgroundView.transform = CGAffineTransformMakeScale(1.05, 1.05);
@@ -1417,11 +1507,11 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     self.isDragging = NO;
     
     // 恢复视觉状态
-    [UIView animateWithDuration:0.3 
-                          delay:0 
-         usingSpringWithDamping:0.7 
-          initialSpringVelocity:0 
-                        options:UIViewAnimationOptionBeginFromCurrentState 
+    [UIView animateWithDuration:0.3
+                          delay:0
+         usingSpringWithDamping:0.7
+          initialSpringVelocity:0
+                        options:UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
         self.backgroundView.transform = CGAffineTransformIdentity;
         self.backgroundView.alpha = 1.0;
@@ -1648,11 +1738,11 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
             targetCenter = [self calculateSnapTargetWithCurrentCenter:currentCenter];
         }
         
-        [UIView animateWithDuration:0.6 
-                              delay:0 
-             usingSpringWithDamping:0.6 
-              initialSpringVelocity:0.8 
-                            options:UIViewAnimationOptionBeginFromCurrentState 
+        [UIView animateWithDuration:0.6
+                              delay:0
+             usingSpringWithDamping:0.6
+              initialSpringVelocity:0.8
+                            options:UIViewAnimationOptionBeginFromCurrentState
                          animations:^{
             self.center = targetCenter;
         } completion:^(BOOL finished) {
@@ -1783,7 +1873,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         CGPoint velocity = [gesture velocityInView:self.superview];
         
         NSString *stateString = (gesture.state == UIGestureRecognizerStateBegan) ? @"开始" : @"结束";
-        NSLog(@"🎯 拖动%@ - 位置:(%.1f,%.1f) 位移:(%.1f,%.1f) 速度:(%.1f,%.1f)", 
+        NSLog(@"🎯 拖动%@ - 位置:(%.1f,%.1f) 位移:(%.1f,%.1f) 速度:(%.1f,%.1f)",
               stateString, self.center.x, self.center.y, translation.x, translation.y, velocity.x, velocity.y);
     }
 }
@@ -1858,8 +1948,8 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
 #pragma mark - Drag Configuration Methods
 
 // 配置拖动行为
-- (void)configureDragBehaviorWithEdgeSnapping:(BOOL)enableSnapping 
-                              allowOutOfBounds:(BOOL)allowBounds 
+- (void)configureDragBehaviorWithEdgeSnapping:(BOOL)enableSnapping
+                              allowOutOfBounds:(BOOL)allowBounds
                              enableFullScreen:(BOOL)enableFullScreen {
     self.enableEdgeSnapping = enableSnapping;
     self.allowOutOfBounds = allowBounds;
@@ -1876,9 +1966,9 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         }
     }
     
-    NSLog(@"🎛️ 拖动行为已配置 - 边缘吸附:%@, 允许超界:%@, 全屏拖动:%@", 
-          enableSnapping ? @"是" : @"否", 
-          allowBounds ? @"是" : @"否", 
+    NSLog(@"🎛️ 拖动行为已配置 - 边缘吸附:%@, 允许超界:%@, 全屏拖动:%@",
+          enableSnapping ? @"是" : @"否",
+          allowBounds ? @"是" : @"否",
           enableFullScreen ? @"是" : @"否");
 }
 
@@ -1887,7 +1977,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     self.dragResistanceEdge = MAX(0.1, MIN(1.0, edgeResistance)); // 限制在0.1-1.0之间
     self.dragDecelerationRate = MAX(0.8, MIN(0.98, deceleration)); // 限制在0.8-0.98之间
     
-    NSLog(@"🎛️ 拖动参数已更新 - 边缘阻力:%.2f, 减速率:%.2f", 
+    NSLog(@"🎛️ 拖动参数已更新 - 边缘阻力:%.2f, 减速率:%.2f",
           self.dragResistanceEdge, self.dragDecelerationRate);
 }
 

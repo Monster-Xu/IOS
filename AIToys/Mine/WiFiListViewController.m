@@ -107,7 +107,7 @@
     [[APIManager shared] DELETE:[APIPortConfiguration getDeleteProPertUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         NSDictionary * dic = [NSDictionary dictionaryWithDictionary:result];
         if ([dic[@"code"] integerValue] == 0) {
-            [SVProgressHUD showSuccessWithStatus:@"删除成功"];
+            [SVProgressHUD showSuccessWithStatus:@"Successfully Deleted"];
         }
         // 优化：删除成功后，先从数组中移除，再更新UI，不需要重新加载全部数据
         // 找到并删除该项
