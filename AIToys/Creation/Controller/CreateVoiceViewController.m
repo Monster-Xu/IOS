@@ -222,7 +222,7 @@
     }
     
     // 创建保存按钮
-    UIButton *saveBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    UIButton *saveBtn = [UIButton buttonWithType:UIButtonTypeCustom];
     [saveBtn setTitle:NSLocalizedString(@"Save", @"") forState:UIControlStateNormal];
     [saveBtn setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
     saveBtn.titleLabel.font = [UIFont systemFontOfSize:16];

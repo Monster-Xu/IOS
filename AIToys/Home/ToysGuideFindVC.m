@@ -49,7 +49,7 @@
     
     UIImageView *topImgView = [[UIImageView alloc] init];
 //    topImgView.contentMode = UIViewContentModeScaleToFill;
-    [topImgView sd_setImageWithURL:[NSURL URLWithString:self.model.coverImg] placeholderImage: QD_IMG(@"toys_find_preview")];
+    [topImgView sd_setImageWithURL:[NSURL URLWithString:self.model.coverImg] placeholderImage: QD_IMG(@"")];
 //    topImgView.image = QD_IMG(@"toys_find_preview");
     [self.alertView addSubview:topImgView];
     [topImgView mas_makeConstraints:^(MASConstraintMaker *make) {

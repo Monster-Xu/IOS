@@ -171,7 +171,7 @@
     self.editButton.enabled = NO;
     self.editButton.hidden = NO;
     [self.editButton setImage:[UIImage imageNamed:@"create_edit"] forState:UIControlStateNormal];
-    self.editButton.tintColor = [UIColor lightGrayColor];
+//    self.editButton.tintColor = [UIColor lightGrayColor];
     
     // 重置播放按钮
     self.playButton.enabled = NO;
@@ -209,7 +209,7 @@
     
     // 按钮状态：编辑可用（失败后可以重新编辑），播放禁用
     self.editButton.enabled = YES;
-    self.editButton.tintColor = [UIColor systemBlueColor];
+//    self.editButton.tintColor = [UIColor systemBlueColor];
     
     self.playButton.enabled = NO;
     self.playButton.tintColor = [UIColor lightGrayColor];

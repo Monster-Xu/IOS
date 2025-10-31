@@ -221,7 +221,7 @@
     [self.voiceListTabelView registerClass:[SkeletonTableViewCell class] forCellReuseIdentifier:@"SkeletonTableViewCell"];
     
     // ✅ 添加长按手势
-    [self setupLongPressGesture];
+//    [self setupLongPressGesture];
 }
 
 /// 配置手势 - 使用FD库的方式
@@ -659,7 +659,7 @@
     NSLog(@"🎵 开始播放音色: %@", voice.voiceName);
     
     // 显示音频加载进度弹窗
-    [SVProgressHUD showWithStatus:@"音频加载中..."];
+    [SVProgressHUD showWithStatus:@"Audio loading..."];
     
     // 从网络URL创建音频播放器
     NSURL *audioURL = [NSURL URLWithString:voice.sampleAudioUrl];
@@ -722,7 +722,7 @@
                             NSLog(@"✅ 音频开始播放成功");
                             
                             // 显示播放成功提示
-                            [SVProgressHUD showSuccessWithStatus:@"开始播放"];
+                            [SVProgressHUD showSuccessWithStatus:@"Start playing"];
                             [SVProgressHUD dismissWithDelay:1.0];
                         } else {
                             NSLog(@"❌ 音频播放失败");

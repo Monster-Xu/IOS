@@ -667,7 +667,7 @@
     
     // 标题（放在卡片内部顶部）
     self.themeLabel = [[UILabel alloc] init];
-    self.themeLabel.text = NSLocalizedString(@"Story Theme", @"");
+    self.themeLabel.text = NSLocalizedString(@"Story Name", @"");
     self.themeLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.themeLabel.textColor = [UIColor blackColor];
     [self.themeCardView addSubview:self.themeLabel];
@@ -832,7 +832,7 @@
     
     // 标题（放在卡片内部顶部）
     self.contentLabel = [[UILabel alloc] init];
-    self.contentLabel.text = NSLocalizedString(@"Story Content", @"");
+    self.contentLabel.text = NSLocalizedString(@"Story Description", @"");
     self.contentLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.contentLabel.textColor = [UIColor blackColor];
     [self.contentCardView addSubview:self.contentLabel];
@@ -1079,7 +1079,7 @@
 }
 
 - (void)setupNextButton {
-    self.nextButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.nextButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.nextButton setTitle:NSLocalizedString(@"Next Step", @"") forState:UIControlStateNormal];
     [self.nextButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     self.nextButton.titleLabel.font = [UIFont systemFontOfSize:18 weight:UIFontWeightSemibold];
@@ -1353,10 +1353,10 @@
     
     // 验证故事内容
     if (self.contentTextView.text.length == 0) {
-        return NSLocalizedString(@"Please enter story content", @"");
+        return NSLocalizedString(@"Please enter Story Description", @"");
     }
     if (self.contentTextView.text.length > 2400) {
-        return NSLocalizedString(@"Story content should not exceed 2400 characters", @"");
+        return NSLocalizedString(@"Story Description should not exceed 2400 characters", @"");
     }
     
     // 验证故事类型

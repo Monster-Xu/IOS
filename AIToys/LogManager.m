@@ -15,6 +15,7 @@
 @property (nonatomic, strong) dispatch_queue_t logQueue;
 @property (nonatomic, strong) NSDateFormatter *dateFormatter;
 @property (nonatomic, assign) BOOL isAutoLogging;
+@property (nonatomic, strong) NSMutableDictionary *activeRequests; // 追踪活跃的网络请求
 
 @end
 
@@ -48,6 +49,7 @@
 
 - (void)setupLogSystem {
     _logQueue = dispatch_queue_create("com.app.logQueue", DISPATCH_QUEUE_SERIAL);
+    _activeRequests = [NSMutableDictionary dictionary];
     
     _dateFormatter = [[NSDateFormatter alloc] init];
     [_dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss.SSS"];
@@ -95,7 +97,7 @@
     // 5. 监听通知
     [self observeNotifications];
      
-    //6.crash
+    // 6. 崩溃处理
     [self setupCrashHandler];
 }
 
@@ -142,11 +144,21 @@
 - (void)hookNetworkRequests {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        Class class = [NSURLSessionTask class];
-        
+        // Hook NSURLSessionTask
+        Class taskClass = [NSURLSessionTask class];
         [self swizzleMethod:@selector(resume)
-                  withClass:class
+                  withClass:taskClass
                  newSelector:@selector(log_resume)];
+        
+        // Hook NSURLSession 数据任务
+        Class sessionClass = [NSURLSession class];
+        [self swizzleMethod:@selector(dataTaskWithRequest:completionHandler:)
+                  withClass:sessionClass
+                 newSelector:@selector(log_dataTaskWithRequest:completionHandler:)];
+        
+        [self swizzleMethod:@selector(dataTaskWithURL:completionHandler:)
+                  withClass:sessionClass
+                 newSelector:@selector(log_dataTaskWithURL:completionHandler:)];
     });
 }
 
@@ -309,6 +321,350 @@ void uncaughtExceptionHandler(NSException *exception) {
     
     NSString *message = [NSString stringWithFormat:@"用户操作: %@ | 参数: %@", action, paramsString];
     [self logWithLevel:LogLevelInfo message:message];
+}
+
+#pragma mark - API 和错误日志记录
+
+- (void)logAPIRequest:(NSURLRequest *)request {
+    if (!request) return;
+    
+    NSString *requestId = [NSUUID UUID].UUIDString;
+    NSMutableDictionary *requestInfo = [NSMutableDictionary dictionary];
+    
+    requestInfo[@"requestId"] = requestId;
+    requestInfo[@"url"] = request.URL.absoluteString ?: @"";
+    requestInfo[@"method"] = request.HTTPMethod ?: @"GET";
+    requestInfo[@"timestamp"] = @([[NSDate date] timeIntervalSince1970]);
+    
+    // 记录请求头
+    if (request.allHTTPHeaderFields.count > 0) {
+        NSMutableDictionary *headers = [NSMutableDictionary dictionary];
+        for (NSString *key in request.allHTTPHeaderFields) {
+            // 过滤敏感信息
+            if ([key.lowercaseString containsString:@"authorization"] ||
+                [key.lowercaseString containsString:@"token"] ||
+                [key.lowercaseString containsString:@"password"]) {
+                headers[key] = @"[已隐藏]";
+            } else {
+                headers[key] = request.allHTTPHeaderFields[key];
+            }
+        }
+        requestInfo[@"headers"] = headers;
+    }
+    
+    // 记录请求体
+    if (request.HTTPBody) {
+        NSString *bodyString = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
+        if (bodyString) {
+            // 尝试解析JSON并过滤敏感信息
+            NSError *error;
+            id jsonObject = [NSJSONSerialization JSONObjectWithData:request.HTTPBody options:0 error:&error];
+            if (!error && [jsonObject isKindOfClass:[NSDictionary class]]) {
+                NSMutableDictionary *sanitizedBody = [(NSDictionary *)jsonObject mutableCopy];
+                [self sanitizeParameters:sanitizedBody];
+                requestInfo[@"body"] = sanitizedBody;
+            } else {
+                requestInfo[@"body"] = bodyString.length > 1000 ? [bodyString substringToIndex:1000] : bodyString;
+            }
+        }
+    }
+    
+    // 存储请求信息用于后续匹配响应
+    self.activeRequests[requestId] = requestInfo;
+    
+    NSString *logMessage = [NSString stringWithFormat:@"🚀 API请求开始 [%@] %@ %@", 
+                           requestId, request.HTTPMethod ?: @"GET", request.URL.absoluteString ?: @""];
+    [self logWithLevel:LogLevelInfo message:logMessage];
+    
+    // 记录请求体内容（简化版本用于INFO级别）
+    if (request.HTTPBody && request.HTTPBody.length > 0) {
+        NSString *bodyString = [[NSString alloc] initWithData:request.HTTPBody encoding:NSUTF8StringEncoding];
+        if (bodyString) {
+            NSError *error;
+            id jsonObject = [NSJSONSerialization JSONObjectWithData:request.HTTPBody options:0 error:&error];
+            if (!error && jsonObject) {
+                NSMutableDictionary *displayBody = [(NSDictionary *)jsonObject mutableCopy];
+                [self sanitizeParameters:displayBody];
+                NSData *prettyJsonData = [NSJSONSerialization dataWithJSONObject:displayBody 
+                                                                         options:NSJSONWritingPrettyPrinted 
+                                                                           error:nil];
+                if (prettyJsonData) {
+                    NSString *prettyJsonString = [[NSString alloc] initWithData:prettyJsonData encoding:NSUTF8StringEncoding];
+                    if (prettyJsonString.length <= 800) {
+                        [self logWithLevel:LogLevelInfo message:[NSString stringWithFormat:@"📤 请求数据 [%@]:\n%@", requestId, prettyJsonString]];
+                    } else {
+                        NSString *truncatedJson = [prettyJsonString substringToIndex:800];
+                        [self logWithLevel:LogLevelInfo message:[NSString stringWithFormat:@"📤 请求数据 [%@] (已截断):\n%@\n...[还有 %lu 字符]", 
+                                                               requestId, truncatedJson, (unsigned long)(prettyJsonString.length - 800)]];
+                    }
+                }
+            } else {
+                // 非JSON请求体
+                NSString *truncatedBody = bodyString.length > 500 ? [bodyString substringToIndex:500] : bodyString;
+                [self logWithLevel:LogLevelInfo message:[NSString stringWithFormat:@"📤 请求数据 [%@] (文本):\n%@%@", 
+                                                       requestId, truncatedBody, 
+                                                       bodyString.length > 500 ? @"\n...[已截断]" : @""]];
+            }
+        } else {
+            [self logWithLevel:LogLevelInfo message:[NSString stringWithFormat:@"📤 请求数据 [%@]: [二进制数据，长度: %lu 字节]", 
+                                                   requestId, (unsigned long)request.HTTPBody.length]];
+        }
+    }
+    
+    // 记录详细请求信息（DEBUG级别）
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:requestInfo options:NSJSONWritingPrettyPrinted error:nil];
+    if (jsonData) {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        [self logWithLevel:LogLevelDebug message:[NSString stringWithFormat:@"🔍 请求详情 [%@]: %@", requestId, jsonString]];
+    }
+}
+
+- (void)logAPIResponse:(NSURLResponse *)response data:(NSData *)data error:(NSError *)error {
+    if (!response && !error) return;
+    
+    NSString *requestId = nil;
+    NSString *url = response.URL.absoluteString ?: @"unknown";
+    
+    // 尝试找到对应的请求ID
+    for (NSString *key in self.activeRequests.allKeys) {
+        NSDictionary *requestInfo = self.activeRequests[key];
+        if ([requestInfo[@"url"] isEqualToString:url]) {
+            requestId = key;
+            break;
+        }
+    }
+    
+    if (!requestId) {
+        requestId = [NSUUID UUID].UUIDString;
+    }
+    
+    NSMutableDictionary *responseInfo = [NSMutableDictionary dictionary];
+    responseInfo[@"requestId"] = requestId;
+    responseInfo[@"url"] = url;
+    responseInfo[@"timestamp"] = @([[NSDate date] timeIntervalSince1970]);
+    
+    if (error) {
+        // 网络错误
+        responseInfo[@"success"] = @NO;
+        responseInfo[@"error"] = @{
+            @"code": @(error.code),
+            @"domain": error.domain ?: @"",
+            @"description": error.localizedDescription ?: @"",
+            @"failureReason": error.localizedFailureReason ?: @"",
+            @"recoverySuggestion": error.localizedRecoverySuggestion ?: @""
+        };
+        
+        [self logWithLevel:LogLevelError message:[NSString stringWithFormat:@"❌ API请求失败 [%@] %@ - %@", 
+                                                 requestId, url, error.localizedDescription]];
+    } else if ([response isKindOfClass:[NSHTTPURLResponse class]]) {
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        responseInfo[@"statusCode"] = @(httpResponse.statusCode);
+        responseInfo[@"headers"] = httpResponse.allHeaderFields ?: @{};
+        
+        BOOL isSuccess = httpResponse.statusCode >= 200 && httpResponse.statusCode < 300;
+        responseInfo[@"success"] = @(isSuccess);
+        
+        // 解析响应数据
+        if (data && data.length > 0) {
+            responseInfo[@"dataSize"] = @(data.length);
+            
+            NSString *responseString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            if (responseString) {
+                NSError *jsonError;
+                id jsonObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:&jsonError];
+                
+                if (!jsonError && jsonObject) {
+                    // 记录结构化的JSON数据
+                    responseInfo[@"data"] = jsonObject;
+                    responseInfo[@"dataType"] = @"JSON";
+                    
+                    // 同时保存原始字符串（用于完整记录）
+                    if (responseString.length <= 5000) {
+                        responseInfo[@"rawResponse"] = responseString;
+                    } else {
+                        responseInfo[@"rawResponse"] = [NSString stringWithFormat:@"%@\n...[数据过长，已截断，完整长度: %lu 字符]", 
+                                                      [responseString substringToIndex:5000], 
+                                                      (unsigned long)responseString.length];
+                    }
+                    
+                    // 检查是否为服务器错误响应
+                    if ([jsonObject isKindOfClass:[NSDictionary class]]) {
+                        NSDictionary *jsonDict = (NSDictionary *)jsonObject;
+                        if (jsonDict[@"error"] || jsonDict[@"errors"] || !isSuccess) {
+                            [self logServerError:jsonDict fromAPI:url];
+                        }
+                    }
+                } else {
+                    // 非JSON数据
+                    responseInfo[@"dataType"] = @"Text/Other";
+                    
+                    // 限制响应内容长度，但保存更多内容用于调试
+                    if (responseString.length <= 3000) {
+                        responseInfo[@"rawData"] = responseString;
+                    } else {
+                        responseInfo[@"rawData"] = [NSString stringWithFormat:@"%@\n...[数据过长，已截断，完整长度: %lu 字符]", 
+                                                  [responseString substringToIndex:3000], 
+                                                  (unsigned long)responseString.length];
+                    }
+                }
+            } else {
+                // 无法转换为字符串的二进制数据
+                responseInfo[@"dataType"] = @"Binary";
+                responseInfo[@"rawData"] = [NSString stringWithFormat:@"[二进制数据，长度: %lu 字节]", (unsigned long)data.length];
+            }
+        } else {
+            responseInfo[@"dataSize"] = @0;
+            responseInfo[@"data"] = @"[无响应数据]";
+        }
+        
+        NSString *statusEmoji = isSuccess ? @"✅" : @"❌";
+        NSString *dataInfo = responseInfo[@"dataSize"] ? [NSString stringWithFormat:@" | 数据大小: %@ 字节", responseInfo[@"dataSize"]] : @"";
+        [self logWithLevel:isSuccess ? LogLevelInfo : LogLevelWarning 
+                   message:[NSString stringWithFormat:@"%@ API响应 [%@] %@ - 状态码: %ld%@", 
+                           statusEmoji, requestId, url, (long)httpResponse.statusCode, dataInfo]];
+        
+        // 记录响应数据内容（简化版本用于INFO级别）
+        if (responseInfo[@"data"] && ![responseInfo[@"data"] isEqual:@"[无响应数据]"]) {
+            NSString *dataType = responseInfo[@"dataType"] ?: @"Unknown";
+            if ([dataType isEqualToString:@"JSON"]) {
+                // JSON数据的简化显示
+                NSData *prettyJsonData = [NSJSONSerialization dataWithJSONObject:responseInfo[@"data"] 
+                                                                         options:NSJSONWritingPrettyPrinted 
+                                                                           error:nil];
+                if (prettyJsonData) {
+                    NSString *prettyJsonString = [[NSString alloc] initWithData:prettyJsonData encoding:NSUTF8StringEncoding];
+                    if (prettyJsonString.length <= 1000) {
+                        [self logWithLevel:LogLevelInfo message:[NSString stringWithFormat:@"📦 响应数据 [%@]:\n%@", requestId, prettyJsonString]];
+                    } else {
+                        NSString *truncatedJson = [prettyJsonString substringToIndex:1000];
+                        [self logWithLevel:LogLevelInfo message:[NSString stringWithFormat:@"📦 响应数据 [%@] (已截断):\n%@\n...[还有 %lu 字符]", 
+                                                               requestId, truncatedJson, (unsigned long)(prettyJsonString.length - 1000)]];
+                    }
+                }
+            } else {
+                // 非JSON数据的显示
+                NSString *rawData = responseInfo[@"rawData"] ?: @"[无法显示数据]";
+                [self logWithLevel:LogLevelInfo message:[NSString stringWithFormat:@"📦 响应数据 [%@] (%@):\n%@", requestId, dataType, rawData]];
+            }
+        }
+    }
+    
+    // 记录详细响应信息（DEBUG级别）
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:responseInfo options:NSJSONWritingPrettyPrinted error:nil];
+    if (jsonData) {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        [self logWithLevel:LogLevelDebug message:[NSString stringWithFormat:@"🔍 响应详情 [%@]: %@", requestId, jsonString]];
+    }
+    
+    // 如果有完整的原始响应数据，也记录到DEBUG级别
+    if (responseInfo[@"rawResponse"]) {
+        [self logWithLevel:LogLevelDebug message:[NSString stringWithFormat:@"📄 完整响应内容 [%@]:\n%@", requestId, responseInfo[@"rawResponse"]]];
+    }
+    
+    // 移除已完成的请求
+    if (requestId) {
+        [self.activeRequests removeObjectForKey:requestId];
+    }
+}
+
+- (void)logServerError:(NSDictionary *)errorInfo fromAPI:(NSString *)apiPath {
+    NSMutableDictionary *errorLog = [NSMutableDictionary dictionary];
+    errorLog[@"type"] = @"服务器错误";
+    errorLog[@"api"] = apiPath ?: @"unknown";
+    errorLog[@"timestamp"] = [self.dateFormatter stringFromDate:[NSDate date]];
+    errorLog[@"errorInfo"] = errorInfo;
+    
+    // 提取常见的错误字段
+    NSString *errorCode = nil;
+    NSString *errorMessage = nil;
+    
+    if ([errorInfo isKindOfClass:[NSDictionary class]]) {
+        // 尝试不同的错误格式
+        errorCode = errorInfo[@"code"] ?: errorInfo[@"error_code"] ?: errorInfo[@"errorCode"];
+        errorMessage = errorInfo[@"message"] ?: errorInfo[@"error"] ?: errorInfo[@"msg"] ?: errorInfo[@"error_message"];
+        
+        if ([errorCode isKindOfClass:[NSNumber class]]) {
+            errorCode = [(NSNumber *)errorCode stringValue];
+        }
+    }
+    
+    NSString *logMessage = [NSString stringWithFormat:@"🔥 服务器错误 - API: %@ | 错误码: %@ | 消息: %@", 
+                           apiPath ?: @"unknown", errorCode ?: @"无", errorMessage ?: @"无详细信息"];
+    [self logWithLevel:LogLevelError message:logMessage];
+    
+    // 记录完整错误信息
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:errorLog options:NSJSONWritingPrettyPrinted error:nil];
+    if (jsonData) {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        [self logWithLevel:LogLevelError message:[NSString stringWithFormat:@"服务器错误详情: %@", jsonString]];
+    }
+}
+
+- (void)logSDKError:(NSError *)error fromSDK:(NSString *)sdkName context:(NSDictionary *)context {
+    if (!error) return;
+    
+    NSMutableDictionary *errorLog = [NSMutableDictionary dictionary];
+    errorLog[@"type"] = @"SDK错误";
+    errorLog[@"sdk"] = sdkName ?: @"unknown";
+    errorLog[@"timestamp"] = [self.dateFormatter stringFromDate:[NSDate date]];
+    
+    // 错误基本信息
+    errorLog[@"error"] = @{
+        @"code": @(error.code),
+        @"domain": error.domain ?: @"",
+        @"description": error.localizedDescription ?: @"",
+        @"failureReason": error.localizedFailureReason ?: @"",
+        @"recoverySuggestion": error.localizedRecoverySuggestion ?: @""
+    };
+    
+    // 用户信息
+    if (error.userInfo && error.userInfo.count > 0) {
+        NSMutableDictionary *sanitizedUserInfo = [error.userInfo mutableCopy];
+        [self sanitizeParameters:sanitizedUserInfo];
+        errorLog[@"userInfo"] = sanitizedUserInfo;
+    }
+    
+    // 上下文信息
+    if (context && context.count > 0) {
+        NSMutableDictionary *sanitizedContext = [context mutableCopy];
+        [self sanitizeParameters:sanitizedContext];
+        errorLog[@"context"] = sanitizedContext;
+    }
+    
+    NSString *logMessage = [NSString stringWithFormat:@"⚠️ SDK错误 - %@ | 错误码: %ld | %@", 
+                           sdkName ?: @"未知SDK", (long)error.code, error.localizedDescription ?: @"无描述"];
+    [self logWithLevel:LogLevelError message:logMessage];
+    
+    // 记录完整错误信息
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:errorLog options:NSJSONWritingPrettyPrinted error:nil];
+    if (jsonData) {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        [self logWithLevel:LogLevelError message:[NSString stringWithFormat:@"SDK错误详情: %@", jsonString]];
+    }
+}
+
+// 敏感信息过滤辅助方法
+- (void)sanitizeParameters:(NSMutableDictionary *)parameters {
+    NSArray *sensitiveKeys = @[@"password", @"token", @"secret", @"key", @"authorization", @"auth",
+                              @"credential", @"private", @"secure", @"pwd", @"pass"];
+    
+    for (NSString *key in parameters.allKeys) {
+        for (NSString *sensitiveKey in sensitiveKeys) {
+            if ([key.lowercaseString containsString:sensitiveKey.lowercaseString]) {
+                parameters[key] = @"[已隐藏]";
+                break;
+            }
+        }
+        
+        // 递归处理嵌套字典
+        if ([parameters[key] isKindOfClass:[NSMutableDictionary class]]) {
+            [self sanitizeParameters:parameters[key]];
+        } else if ([parameters[key] isKindOfClass:[NSDictionary class]]) {
+            NSMutableDictionary *mutableDict = [parameters[key] mutableCopy];
+            [self sanitizeParameters:mutableDict];
+            parameters[key] = mutableDict;
+        }
+    }
 }
 
 #pragma mark - 文件操作
@@ -532,43 +888,45 @@ void uncaughtExceptionHandler(NSException *exception) {
     [self log_resume];
     
     if (self.currentRequest) {
-        NSString *url = self.currentRequest.URL.absoluteString;
-        NSString *method = self.currentRequest.HTTPMethod;
-        
-        [[LogManager sharedManager] logInfo:[NSString stringWithFormat:@"网络请求: %@ %@", method, url]];
-        
-        // 监听请求完成
-        [self addObserver:[LogManager sharedManager]
-               forKeyPath:@"state"
-                  options:NSKeyValueObservingOptionNew
-                  context:nil];
+        // 使用新的API请求日志记录方法
+        [[LogManager sharedManager] logAPIRequest:self.currentRequest];
     }
 }
 
 @end
 
-@implementation LogManager (KVO)
+#pragma mark - NSURLSession Category
 
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary *)change
-                       context:(void *)context {
-    if ([object isKindOfClass:[NSURLSessionTask class]]) {
-        NSURLSessionTask *task = (NSURLSessionTask *)object;
+@implementation NSURLSession (AutoLogging)
+
+- (NSURLSessionDataTask *)log_dataTaskWithRequest:(NSURLRequest *)request 
+                                completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler {
+    
+    // 包装completion handler以记录响应
+    void (^wrappedHandler)(NSData *, NSURLResponse *, NSError *) = ^(NSData *data, NSURLResponse *response, NSError *error) {
+        [[LogManager sharedManager] logAPIResponse:response data:data error:error];
         
-        if (task.state == NSURLSessionTaskStateCompleted) {
-            [task removeObserver:self forKeyPath:@"state"];
-            
-            if (task.error) {
-                [[LogManager sharedManager] logError:[NSString stringWithFormat:@"网络请求失败: %@ - %@",
-                                                     task.currentRequest.URL.absoluteString,
-                                                     task.error.localizedDescription]];
-            } else if ([task isKindOfClass:[NSURLSessionDataTask class]]) {
-                [[LogManager sharedManager] logInfo:[NSString stringWithFormat:@"网络请求成功: %@",
-                                                    task.currentRequest.URL.absoluteString]];
-            }
+        if (completionHandler) {
+            completionHandler(data, response, error);
         }
-    }
+    };
+    
+    return [self log_dataTaskWithRequest:request completionHandler:wrappedHandler];
+}
+
+- (NSURLSessionDataTask *)log_dataTaskWithURL:(NSURL *)url 
+                            completionHandler:(void (^)(NSData *data, NSURLResponse *response, NSError *error))completionHandler {
+    
+    // 包装completion handler以记录响应
+    void (^wrappedHandler)(NSData *, NSURLResponse *, NSError *) = ^(NSData *data, NSURLResponse *response, NSError *error) {
+        [[LogManager sharedManager] logAPIResponse:response data:data error:error];
+        
+        if (completionHandler) {
+            completionHandler(data, response, error);
+        }
+    };
+    
+    return [self log_dataTaskWithURL:url completionHandler:wrappedHandler];
 }
 
 @end

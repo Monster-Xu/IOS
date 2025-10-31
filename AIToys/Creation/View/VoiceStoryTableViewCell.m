@@ -105,7 +105,7 @@
     [cardContainerView addSubview:self.subtitleLabel];
     
     // 编辑按钮
-    self.editButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.editButton = [UIButton buttonWithType:UIButtonTypeCustom];
     // 默认使用disable状态的图片
     [self.editButton setImage:[UIImage imageNamed:@"create_disedit"] forState:UIControlStateNormal];
     self.editButton.tintColor = [UIColor systemGrayColor];

@@ -80,7 +80,7 @@
     
     NSArray *arr4 = @[
         @{@"title" : LocalString(@"WiFi列表"),@"value" :@"", @"toVC" : @"WiFiListViewController"},
-        @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @""}
+        @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @"WiFiListViewController"}
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr4]];
     

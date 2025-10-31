@@ -209,10 +209,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     // ✅ 注册骨架屏 Cell
     [self.tableView registerClass:[SkeletonTableViewCell class] forCellReuseIdentifier:kSkeletonCellIdentifier];
     
-    // 长按手势
-    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-    longPress.minimumPressDuration = 0.5;
-    [self.tableView addGestureRecognizer:longPress];
+//    // 长按手势
+//    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+//    longPress.minimumPressDuration = 0.5;
+//    [self.tableView addGestureRecognizer:longPress];
     self.tableView.mj_header = [RYFGifHeader headerWithRefreshingBlock:^{
         [self refreshDataWithSkeleton];
     }];
@@ -1397,7 +1397,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         if (self.currentPlayingIndex == index && self.currentAudioPlayer) {
             if ([self.currentAudioPlayer isPlaying]) {
                 // 当前正在播放，暂停
-                [self.currentAudioPlayer pause];
+                [self.currentAudioPlayer stop];
                 model.isPlaying = NO;
             } else {
                 // 当前暂停，继续播放

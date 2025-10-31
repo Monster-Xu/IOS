@@ -81,6 +81,15 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 @implementation HomeViewController
 
+// 添加数组安全访问方法
+- (id)safeObjectAtIndex:(NSUInteger)index fromArray:(NSArray *)array {
+    if (array && [array isKindOfClass:[NSArray class]] && array.count > index) {
+        return array[index];
+    }
+    NSLog(@"⚠️ 数组安全访问失败: index=%lu, count=%lu", (unsigned long)index, (unsigned long)array.count);
+    return nil;
+}
+
 -(NSMutableArray *)listViewArray{
     if (!_listViewArray) {
         _listViewArray = [NSMutableArray array];
@@ -138,7 +147,12 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 -(void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
     if (self.currentAudioPlayer) {
-        [self.currentAudioPlayer pause];
+        @try {
+            [self.currentAudioPlayer pause];
+        } @catch (NSException *exception) {
+            NSLog(@"⚠️ 音频播放器暂停时发生异常: %@", exception);
+            self.currentAudioPlayer = nil;
+        }
     }
     // 标记音频会话为非激活状态
     self.isAudioSessionActive = NO;
@@ -290,7 +304,12 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.cycleScrollView.pageDotColor = UIColorFromRGBA(0xD8D8D8, 0.6);
     WEAK_SELF
     self.cycleScrollView.clickItemOperationBlock = ^(NSInteger currentIndex) {
-        [weakSelf bannerImgClick:weakSelf.bannerImgArray[currentIndex]];
+        // 安全检查：确保数组不为空且索引有效
+        if (weakSelf.bannerImgArray.count > 0 && currentIndex >= 0 && currentIndex < weakSelf.bannerImgArray.count) {
+            [weakSelf bannerImgClick:weakSelf.bannerImgArray[currentIndex]];
+        } else {
+            NSLog(@"⚠️ 轮播图点击索引越界: index=%ld, count=%lu", (long)currentIndex, (unsigned long)weakSelf.bannerImgArray.count);
+        }
     };
     return headerView;
 }
@@ -575,11 +594,20 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         weakSelf.homeList = [homes mutableCopy];
         if(weakSelf.homeList.count > 0){
             if(!weakSelf.currentHome){
-                weakSelf.currentHome = [ThingSmartHome homeWithHomeId:weakSelf.homeList[0].homeId];
-                [CoreArchive setStr:[NSString stringWithFormat:@"%lld",(long long)weakSelf.homeList[0].homeId] key:KCURRENT_HOME_ID];
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"SwitchHome" object:@(weakSelf.currentHome.homeId)];
-                weakSelf.currentHome.delegate = weakSelf;
-                [weakSelf updateCurrentFamilyProtocol];
+                // 安全检查：确保homeList不为空
+                if (weakSelf.homeList.count > 0) {
+                    weakSelf.currentHome = [ThingSmartHome homeWithHomeId:weakSelf.homeList[0].homeId];
+                    [CoreArchive setStr:[NSString stringWithFormat:@"%lld",(long long)weakSelf.homeList[0].homeId] key:KCURRENT_HOME_ID];
+                    [[NSNotificationCenter defaultCenter] postNotificationName:@"SwitchHome" object:@(weakSelf.currentHome.homeId)];
+                    weakSelf.currentHome.delegate = weakSelf;
+                    [weakSelf updateCurrentFamilyProtocol];
+                } else {
+                    NSLog(@"⚠️ 家庭列表为空，无法初始化当前家庭");
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [weakSelf finalizeDataLoading];
+                    });
+                    return;
+                }
             }
             [weakSelf.currentHome getHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
                 NSLog(@"家庭设备数据请求成功");
@@ -887,7 +915,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
                 // 跳转小程序
                 NSLog(@"deviceId:%@,token:%@",weakSelf.deviceArr[index].devId,kMyUser.accessToken);
-                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":weakSelf.deviceArr[index].devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en"}];
+                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":weakSelf.deviceArr[index].devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@""}];
             };
             cell.manageBlock = ^{
                 HomeDeviceListVC *VC = [HomeDeviceListVC new];
@@ -929,7 +957,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 NSLog(@"deviceId:%@,token:%@",weakSelf.diyDollList[index].Id,kMyUser.accessToken);
                 // 跳转小程序
                 NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
-                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":weakSelf.diyDollList[index].Id,@"BearerId":(kMyUser.accessToken?:@""),@"homeId":(currentHomeId?:@""),@"langType":@"en"}];
+                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":weakSelf.diyDollList[index].Id,@"BearerId":(kMyUser.accessToken?:@""),@"homeId":(currentHomeId?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@""}];
             };
             cell.manageBlock = ^{
                 HomeToysListVC *VC = [HomeToysListVC new];
@@ -1144,12 +1172,25 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }
     if(homeId == self.currentHome.homeId){
         if(self.homeList.count > 0){
-            self.currentHome = [ThingSmartHome homeWithHomeId:self.homeList[0].homeId];
-            self.currentHome.delegate = self;
-            self.lastHardwareCode = nil;
-            [CoreArchive setStr:[NSString stringWithFormat:@"%lld",(long long)self.currentHome.homeId] key:KCURRENT_HOME_ID];
-            [self reloadDeviceData:YES];
-            [self reloadDollData];
+            // 安全检查：确保homeList不为空
+            if (self.homeList.count > 0) {
+                self.currentHome = [ThingSmartHome homeWithHomeId:self.homeList[0].homeId];
+                self.currentHome.delegate = self;
+                self.lastHardwareCode = nil;
+                [CoreArchive setStr:[NSString stringWithFormat:@"%lld",(long long)self.currentHome.homeId] key:KCURRENT_HOME_ID];
+                [self reloadDeviceData:YES];
+                [self reloadDollData];
+            } else {
+                NSLog(@"⚠️ 删除家庭后，家庭列表为空");
+                // 清理当前家庭信息
+                self.currentHome = nil;
+                [CoreArchive setStr:@"" key:KCURRENT_HOME_ID];
+                // 清空设备和公仔数据
+                self.deviceArr = @[];
+                [self.diyDollList removeAllObjects];
+                // 更新UI
+                [self.pageListView.mainTableView reloadData];
+            }
         }
         
     }
@@ -1169,23 +1210,33 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [self getDollDetailListWithId:notification.userInfo[@"DollId"]];
 }
 -(void)getDollDetailListWithId:(NSString * )Id{
-    [SVProgressHUD showWithStatus:@"音频加载中...."];
+    [SVProgressHUD showWithStatus:@"Audio loading..."];
     WEAK_SELF
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
     [param setObject:Id forKey:@"dollModelId"];
     [[APIManager shared] GET:[APIPortConfiguration getdollListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         [SVProgressHUD dismiss];
-        if ([data isKindOfClass:NSArray.class]&&data[0]) {
-//            contentUrl
+        // 添加安全检查
+        if ([data isKindOfClass:NSArray.class] && ((NSArray *)data).count > 0) {
             NSDictionary * dataDic = data[0];
             NSString *contentUrl = dataDic[@"contentUrl"];
-            [weakSelf playNewAudioForAudioURL:contentUrl storyTitle:dataDic[@"contentText"] coverImageURL:dataDic[@"assetCoverImg"]];
-
+            if (contentUrl && contentUrl.length > 0) {
+                [weakSelf playNewAudioForAudioURL:contentUrl 
+                                       storyTitle:dataDic[@"contentText"] 
+                                   coverImageURL:dataDic[@"assetCoverImg"]];
+            } else {
+                NSLog(@"⚠️ 音频URL为空");
+                [SVProgressHUD showErrorWithStatus:@"音频URL为空"];
+            }
+        } else {
+            NSLog(@"⚠️ 返回的数据为空或格式错误");
+            [SVProgressHUD showErrorWithStatus:@"音频数据为空"];
         }
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
-        NSLog(@"%@",msg);
+        [SVProgressHUD dismiss];
+        NSLog(@"❌ 获取音频详情失败: %@", msg);
+        [SVProgressHUD showErrorWithStatus:@"音频加载失败"];
     }];
-    
 }
 #pragma mark - ThingSmartHomeDelegate
 
@@ -1473,7 +1524,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
             NSLog(@"📡 网络启动图API请求成功，返回数据数量: %lu", (unsigned long)dataArr.count);
 
-            if (dataArr.count) {
+            if (dataArr.count > 0) {
                 BannerModel *adModel = [BannerModel mj_objectWithKeyValues:[dataArr firstObject]];
                 NSLog(@"📋 解析到网络启动图模型:");
                 NSLog(@"   ID: %@", adModel.Id);

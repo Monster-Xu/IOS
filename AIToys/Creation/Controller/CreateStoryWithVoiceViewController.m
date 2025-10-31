@@ -130,7 +130,7 @@
     
     // ✅ 离开页面时停止音频播放
     if (self.audioPlayerView && self.audioPlayerView.isPlaying) {
-        [self.audioPlayerView pause];
+        [self.audioPlayerView stop];
         NSLog(@"⏸️ 离开页面，暂停音频播放");
     }
     // ❌ 删除这行错误代码: self.isEditMode = NO;
@@ -141,7 +141,7 @@
     
     // ✅ 页面显示完成后再次更新滚动视图内容大小
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [self updateScrollViewContentSize];
+        [self scheduleScrollViewContentSizeUpdate];
     });
 }
 
@@ -225,7 +225,7 @@
             NSLog(@"🎉 内容显示动画完成");
             // ✅ 动画完成后更新滚动视图内容大小
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self updateScrollViewContentSize];
+                [self scheduleScrollViewContentSizeUpdate];
             });
         }
     }];
@@ -272,7 +272,7 @@
             
             // ✅ 故事内容加载完成后，动态调整高度
             dispatch_async(dispatch_get_main_queue(), ^{
-                [strongSelf adjustStoryViewHeight];
+                [strongSelf adjustStoryViewHeightOptimized];
             });
             
             // ✅ 编辑模式下设置文本变化监听
@@ -587,7 +587,7 @@
     
     // 如果点击的是正在播放的音色，则暂停
     if (self.currentPlayingIndex == index && self.audioPlayerView && self.audioPlayerView.isPlaying) {
-        [self.audioPlayerView pause];
+        [self.audioPlayerView stop];
         return;
     }
     
@@ -616,16 +616,14 @@
     
     // 创建或更新AudioPlayerView
     if (!self.audioPlayerView) {
-        self.audioPlayerView = [[AudioPlayerView alloc] initWithAudioURL:audioURL
-                                                              storyTitle:title
-                                                          coverImageURL:coverImageURL ?: @""];
+        self.audioPlayerView = [[AudioPlayerView alloc] initWithAudioURL:audioURL backgroundPlay:YES];
         self.audioPlayerView.delegate = self;
     }
     
     // ✅ 显示播放器 - 现在在根视图上显示，不在滚动视图中
-    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
-    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
-    [self.audioPlayerView showInView:self.view withFrame:CGRectMake(16, screenHeight-290, screenWidth-32, 70)];
+//    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+//    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+//    [self.audioPlayerView ];
     
     // 开始播放
     [self.audioPlayerView play];
@@ -682,7 +680,7 @@
 - (void)audioPlayerDidClose {
     NSLog(@"❌ 音频播放器关闭");
     [self resetPlayButtonAtIndex:self.currentPlayingIndex];
-    
+    [self.audioPlayerView stop];
     self.currentPlayingIndex = -1;
     self.audioPlayerView = nil;
 }
@@ -726,7 +724,7 @@
     
     // ✅ 延迟计算内容大小，让布局完成后再设置
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self updateScrollViewContentSize];
+        [self scheduleScrollViewContentSizeUpdate];
     });
     
     NSLog(@"✅ 滚动视图设置完成 - 保持原有XIB约束");
@@ -746,8 +744,20 @@
     // 强制布局更新
     [self.contentView layoutIfNeeded];
     
-    // ✅ 动态调整故事内容区域的高度
-    [self adjustStoryViewHeight];
+    // ✅ 优化的动态调整故事内容区域的高度
+    [self adjustStoryViewHeightOptimized];
+    
+    // ✅ 只有在必要时才重新计算音色选择区域的高度
+    if (shouldRecalcVoiceHeight) {
+        [self adjustVoiceSelectionViewHeight];
+    }
+    
+    // 再次强制布局更新，确保约束变化生效
+    [self.contentView layoutIfNeeded];
+    
+    // 延迟更新主滚动视图内容大小，避免重复计算
+    [self scheduleScrollViewContentSizeUpdate];
+
     
     // ✅ 只有在必要时才重新计算音色选择区域的高度
     if (shouldRecalcVoiceHeight) {
@@ -787,8 +797,8 @@
           self.mainScrollView.contentSize.width, self.mainScrollView.contentSize.height, maxY, screenHeight);
 }
 
-/// ✅ 动态调整故事内容区域的高度 - 使用约束
-- (void)adjustStoryViewHeight {
+/// ✅ 优化的动态调整故事内容区域的高度 - 使用约束
+- (void)adjustStoryViewHeightOptimized {
     if (!self.storyViewHeight) {
         NSLog(@"⚠️ storyViewHeight约束未绑定");
         return;
@@ -798,6 +808,12 @@
     NSString *storyContent = self.storyTextField.text ?: @"";
     if (storyContent.length == 0) {
         NSLog(@"📖 故事内容为空，使用默认高度");
+        // 设置最小高度并更新滚动视图
+        CGFloat minHeight = 120.0;
+        if (self.storyViewHeight.constant != minHeight) {
+            self.storyViewHeight.constant = minHeight;
+            [self scheduleScrollViewContentSizeUpdate];
+        }
         return;
     }
     
@@ -828,18 +844,91 @@
     
     CGFloat newHeight = MAX(minHeight, MIN(totalTextHeight, maxHeight));
     
-    // 更新约束常量
-    self.storyViewHeight.constant = newHeight;
+    // ✅ 只有在高度真的变化时才更新约束和滚动视图
+    if (fabs(self.storyViewHeight.constant - newHeight) > 1.0) { // 允许1pt的误差
+        CGFloat oldHeight = self.storyViewHeight.constant;
+        self.storyViewHeight.constant = newHeight;
+        
+        // 动画更新布局
+        [UIView animateWithDuration:0.3 animations:^{
+            [self.contentView layoutIfNeeded];
+        } completion:^(BOOL finished) {
+            if (finished) {
+                // ✅ 布局完成后再更新滚动视图内容大小
+                [self scheduleScrollViewContentSizeUpdate];
+            }
+        }];
+        
+        NSLog(@"📖 动态调整故事内容区域完成:");
+        NSLog(@"   故事内容长度: %ld", (long)storyContent.length);
+        NSLog(@"   计算文本高度: %.1f", requiredTextHeight);
+        NSLog(@"   storyViewHeight约束: %.1f → %.1f", oldHeight, newHeight);
+    } else {
+        NSLog(@"📖 故事视图高度无需调整 (当前: %.1f, 计算: %.1f)", self.storyViewHeight.constant, newHeight);
+    }
+}
+
+/// ✅ 添加延迟调整方法，避免频繁调用 - 优化版
+- (void)scheduleOptimizedStoryHeightAdjustment {
+    // 取消之前的调用
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(adjustStoryViewHeightOptimized) object:nil];
     
-    // 动画更新布局
-    [UIView animateWithDuration:0.3 animations:^{
-        [self.contentView layoutIfNeeded];
-    }];
+    // 延迟调用，避免频繁更新
+    [self performSelector:@selector(adjustStoryViewHeightOptimized) withObject:nil afterDelay:0.2];
+}
+
+/// ✅ 延迟更新滚动视图内容大小 - 只在必要时计算
+- (void)scheduleScrollViewContentSizeUpdate {
+    // 取消之前的调用
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSize) object:nil];
     
-    NSLog(@"📖 动态调整故事内容区域完成:");
-    NSLog(@"   故事内容长度: %ld", (long)storyContent.length);
-    NSLog(@"   计算文本高度: %.1f", requiredTextHeight);
-    NSLog(@"   storyViewHeight约束: %.1f", newHeight);
+    // 延迟调用，避免频繁更新
+    [self performSelector:@selector(updateMainScrollViewContentSize) withObject:nil afterDelay:0.1];
+}
+
+/// ✅ 优化的主滚动视图内容大小更新 - 避免重复计算
+- (void)updateMainScrollViewContentSize {
+    if (!self.contentView || !self.mainScrollView) {
+        return;
+    }
+    
+    // 强制布局更新，确保所有约束变化都已生效
+    [self.contentView layoutIfNeeded];
+    
+    // 计算所有可见子视图的最大底部位置
+    CGFloat maxY = 0;
+    for (UIView *subview in self.contentView.subviews) {
+        if (!subview.hidden && subview.alpha > 0) {
+            CGFloat bottom = CGRectGetMaxY(subview.frame);
+            if (bottom > maxY) {
+                maxY = bottom;
+            }
+        }
+    }
+    
+    // 添加一些底部边距，确保有足够的滚动空间
+    maxY += 50;
+    
+    // 确保内容高度至少比屏幕高度大一些，这样才能滚动
+    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
+    CGFloat contentHeight = MAX(maxY, screenHeight + 50);
+    
+    // ✅ 只有在内容高度真的变化时才更新
+    CGFloat currentContentHeight = self.mainScrollView.contentSize.height;
+    if (fabs(currentContentHeight - contentHeight) > 5.0) { // 允许5pt的误差
+        // 设置内容视图的frame大小
+        CGRect contentFrame = self.contentView.frame;
+        contentFrame.size.height = contentHeight;
+        self.contentView.frame = contentFrame;
+        
+        // 设置ScrollView的内容大小
+        self.mainScrollView.contentSize = CGSizeMake(self.contentView.frame.size.width, contentHeight);
+        
+        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (计算最大Y: %.1f)", 
+              currentContentHeight, contentHeight, maxY);
+    } else {
+        NSLog(@"📏 滚动视图内容大小无需更新 (当前: %.1f, 计算: %.1f)", currentContentHeight, contentHeight);
+    }
 }
 
 /// ✅ 动态调整音色选择区域的高度 - 使用约束
@@ -1070,61 +1159,23 @@
     if (@available(iOS 13.0, *)) {
         self.storyTextField.keyboardAppearance = UIKeyboardAppearanceDefault;
     }
+    
+    // ✅ 添加文本变化监听，用于实时调整高度
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(storyTextDidChange:)
+                                                 name:UITextViewTextDidChangeNotification
+                                               object:self.storyTextField];
 }
 
-/// ✅ 更新滚动视图内容大小 - 只调整故事内容高度（用于文本内容变化时）
-- (void)updateScrollViewContentSizeForStoryOnly {
-    if (!self.contentView) {
-        return;
+/// ✅ 故事文本变化监听器 - 实时调整高度
+- (void)storyTextDidChange:(NSNotification *)notification {
+    if (notification.object == self.storyTextField) {
+        // ✅ 使用优化的延迟调整，避免频繁更新
+        [self scheduleOptimizedStoryHeightAdjustment];
     }
-    
-    // 强制布局更新
-    [self.contentView layoutIfNeeded];
-    
-    // ✅ 只调整故事内容区域的高度，不重新计算音色区域
-    [self adjustStoryViewHeight];
-    
-    // 再次强制布局更新，确保约束变化生效
-    [self.contentView layoutIfNeeded];
-    
-    // 计算所有子视图的最大底部位置
-    CGFloat maxY = 0;
-    for (UIView *subview in self.contentView.subviews) {
-        if (!subview.hidden && subview.alpha > 0) {
-            CGFloat bottom = CGRectGetMaxY(subview.frame);
-            if (bottom > maxY) {
-                maxY = bottom;
-            }
-        }
-    }
-    
-    // 添加一些底部边距，确保有足够的滚动空间
-    maxY += 100;
-    
-    // 确保内容高度至少比屏幕高度大一些，这样才能滚动
-    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
-    CGFloat contentHeight = MAX(maxY, screenHeight + 100);
-    
-    // 设置内容视图的frame大小
-    CGRect contentFrame = self.contentView.frame;
-    contentFrame.size.height = contentHeight;
-    self.contentView.frame = contentFrame;
-    
-    // 设置ScrollView的内容大小
-    self.mainScrollView.contentSize = CGSizeMake(self.contentView.frame.size.width, contentHeight);
-    
-    NSLog(@"📏 滚动视图内容大小已更新（仅故事内容）: %.1f x %.1f", 
-          self.mainScrollView.contentSize.width, self.mainScrollView.contentSize.height);
 }
 
-/// ✅ 添加延迟调整方法，避免频繁调用
-- (void)scheduleStoryHeightAdjustment {
-    // 取消之前的调用
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateScrollViewContentSizeForStoryOnly) object:nil];
-    
-    // 延迟调用，避免频繁更新，只调整故事内容高度
-    [self performSelector:@selector(updateScrollViewContentSizeForStoryOnly) withObject:nil afterDelay:0.1];
-}
+
 
 - (void)setIsEditMode:(BOOL)isEditMode {
     _isEditMode = isEditMode;
@@ -1524,7 +1575,7 @@
 /// 停止音频播放
 - (void)stopAudioPlayback {
     if (self.audioPlayerView) {
-        [self.audioPlayerView hide];
+        [self.audioPlayerView stop];
         self.audioPlayerView = nil;
         self.currentPlayingIndex = -1;
         NSLog(@"🔇 已停止音频播放");
@@ -1605,8 +1656,8 @@
                   (long)self.originalStoryContent.length, (long)currentContent.length);
         }
         
-        // ✅ 使用延迟调整，避免频繁更新
-        [self scheduleStoryHeightAdjustment];
+        // ✅ 使用延迟调整，避免频繁更新，并优化滚动视图计算
+        [self scheduleOptimizedStoryHeightAdjustment];
     }
 }
 
@@ -2003,7 +2054,10 @@
 - (void)dealloc {
     NSLog(@"🔄 CreateStoryWithVoiceViewController dealloc");
     
-    // ✅ 移除通知监听（包括键盘通知）
+    // ✅ 取消所有延迟调用
+    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    
+    // ✅ 移除通知监听（包括键盘通知和文本变化通知）
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     // ✅ 停止音频播放并清理资源

@@ -193,6 +193,9 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     }
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
+    // 清除系统播放器信息和远程控制
+    [self clearNowPlayingInfo];
+    
     NSLog(@"🗑️ AudioPlayerView 已销毁");
 }
 
@@ -264,7 +267,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         [self addSubview:self.closeButton]; // 重要：添加到 self 而不是 containerView
     
     // 上一首按钮
-    self.previousButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.previousButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.previousButton setImage:[UIImage imageNamed:@"上一首"] forState:UIControlStateNormal];
     self.previousButton.tintColor = [UIColor systemBlueColor];
     [self.previousButton addTarget:self action:@selector(previousButtonTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -280,7 +283,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     [self.containerView addSubview:self.playButton];
     
     // 下一首按钮
-    self.nextButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.nextButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self.nextButton setImage:[UIImage imageNamed:@"下一首"] forState:UIControlStateNormal];
     self.nextButton.tintColor = [UIColor systemBlueColor];
     [self.nextButton addTarget:self action:@selector(nextButtonTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -849,6 +852,9 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
             [self removeFromSuperview];
             [self stop];
             
+            // 清除系统播放器信息
+            [self clearNowPlayingInfo];
+            
             if ([self.delegate respondsToSelector:@selector(audioPlayerDidClose)]) {
                 [self.delegate audioPlayerDidClose];
             }
@@ -923,6 +929,9 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
             [self updatePlayButtonImage:NO];
             [self updateProgress];
         }
+        
+        // 清除系统播放器信息
+        [self clearNowPlayingInfo];
         
         // 停止播放时注销实例
         [self unregisterInstance];
@@ -1237,6 +1246,21 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     
     self.nowPlayingInfo = nowPlayingInfo;
     [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nowPlayingInfo;
+}
+
+// 清除锁屏界面和控制中心信息
+- (void)clearNowPlayingInfo {
+    [MPNowPlayingInfoCenter defaultCenter].nowPlayingInfo = nil;
+    
+    // 禁用远程控制命令
+    MPRemoteCommandCenter *commandCenter = [MPRemoteCommandCenter sharedCommandCenter];
+    commandCenter.playCommand.enabled = NO;
+    commandCenter.pauseCommand.enabled = NO;
+    commandCenter.togglePlayPauseCommand.enabled = NO;
+    commandCenter.previousTrackCommand.enabled = NO;
+    commandCenter.nextTrackCommand.enabled = NO;
+    
+    NSLog(@"✅ 已清除系统播放器信息和远程控制");
 }
 
 // 设置音频中断通知
