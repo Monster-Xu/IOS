@@ -28,7 +28,7 @@
 
 // ✅ 编辑模式相关属性
 @property (nonatomic, assign) BOOL isEditingMode; // 是否处于编辑模式
-@property (nonatomic, strong) NSMutableSet<NSNumber *> *selectedIndexes; // 选中的索引集合
+@property (nonatomic, assign) NSInteger selectedIndex; // 选中的索引（单选）
 @property (nonatomic, strong) UIBarButtonItem *editDoneButton; // 完成按钮
 @property (nonatomic, strong) UILongPressGestureRecognizer *longPressGesture; // 长按手势
 
@@ -205,8 +205,8 @@
         [self loadVoiceListWithSkeleton];
     }];
     
-    // ✅ 支持多选模式
-    self.voiceListTabelView.allowsMultipleSelectionDuringEditing = YES;
+    // ✅ 支持单选模式（编辑时）
+    self.voiceListTabelView.allowsMultipleSelectionDuringEditing = NO;
     self.voiceListTabelView.allowsSelectionDuringEditing = YES;
     
     if (@available(iOS 15.0, *)) {
@@ -221,7 +221,7 @@
     [self.voiceListTabelView registerClass:[SkeletonTableViewCell class] forCellReuseIdentifier:@"SkeletonTableViewCell"];
     
     // ✅ 添加长按手势
-//    [self setupLongPressGesture];
+    [self setupLongPressGesture];
 }
 
 /// 配置手势 - 使用FD库的方式
@@ -241,7 +241,7 @@
     
     // ✅ 初始化编辑模式相关属性
     self.isEditingMode = NO;
-    self.selectedIndexes = [NSMutableSet set];
+    self.selectedIndex = -1; // 初始化为-1表示没有选中
     
     // ✅ 初始化左滑删除状态
     self.isSwipeDeleting = NO;
@@ -439,7 +439,7 @@
         [cell configureWithVoiceModel:voice];
         
         // ✅ 更新cell的编辑模式状态
-        BOOL isSelected = [self.selectedIndexes containsObject:@(indexPath.section)];
+        BOOL isSelected = (self.selectedIndex == indexPath.section);
         [cell updateEditingMode:self.isEditingMode isSelected:isSelected];
     }
     
@@ -495,12 +495,12 @@
         return;
     }
     
-    // ✅ 编辑模式下的选择逻辑
+    // ✅ 编辑模式下的选择逻辑（单选）
     if (self.isEditingMode) {
         // ✅ 检查当前项目是否已经被选中
-        if ([self.selectedIndexes containsObject:@(indexPath.section)]) {
+        if (self.selectedIndex == indexPath.section) {
             // 如果已选中，则取消选中
-            [self.selectedIndexes removeObject:@(indexPath.section)];
+            self.selectedIndex = -1;
             [self updateNavigationTitle];
             [self updateDeleteButtonState];
             
@@ -510,20 +510,30 @@
                 [cell updateEditingMode:YES isSelected:NO];
             }
             
-            NSLog(@"❌ 取消选中项目 - section: %ld, 总选中: %ld", (long)indexPath.section, (long)self.selectedIndexes.count);
+            NSLog(@"❌ 取消选中项目 - section: %ld", (long)indexPath.section);
         } else {
-            // 如果未选中，则选中
-            [self.selectedIndexes addObject:@(indexPath.section)];
+            // 如果未选中，则选中（先取消之前的选中）
+            NSInteger previousSelectedIndex = self.selectedIndex;
+            self.selectedIndex = indexPath.section;
             [self updateNavigationTitle];
             [self updateDeleteButtonState];
             
-            // ✅ 更新cell的选中状态
+            // ✅ 更新之前选中的cell状态
+            if (previousSelectedIndex >= 0 && previousSelectedIndex < self.voiceList.count) {
+                NSIndexPath *previousIndexPath = [NSIndexPath indexPathForRow:0 inSection:previousSelectedIndex];
+                VoiceManagementTableViewCell *previousCell = [tableView cellForRowAtIndexPath:previousIndexPath];
+                if ([previousCell isKindOfClass:[VoiceManagementTableViewCell class]]) {
+                    [previousCell updateEditingMode:YES isSelected:NO];
+                }
+            }
+            
+            // ✅ 更新当前选中的cell状态
             VoiceManagementTableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
             if ([cell isKindOfClass:[VoiceManagementTableViewCell class]]) {
                 [cell updateEditingMode:YES isSelected:YES];
             }
             
-            NSLog(@"✅ 选中项目 - section: %ld, 总选中: %ld", (long)indexPath.section, (long)self.selectedIndexes.count);
+            NSLog(@"✅ 选中项目 - section: %ld", (long)indexPath.section);
         }
         
         // ✅ 在自定义编辑模式下，总是取消系统的选中状态
@@ -857,7 +867,7 @@
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户确认删除，调用删除API
-            [self performDeleteVoiceWithId:voice.voiceId atIndexPath:indexPath];
+            [self performDeleteVoiceWithId:voice.voiceId atIndex:indexPath.section];
         } else {
             // 用户取消，关闭左滑菜单
             [self.voiceListTabelView setEditing:NO animated:YES];
@@ -865,49 +875,60 @@
     }];
 }
 
-/// 执行API删除操作
-- (void)performDeleteVoiceWithId:(NSInteger)voiceId atIndexPath:(NSIndexPath *)indexPath {
+/// 执行单个删除操作
+- (void)performDeleteVoiceWithId:(NSInteger)voiceId atIndex:(NSInteger)index {
     
-    NSLog(@"[VoiceManagement] 删除音色 ID: %ld", (long)voiceId);
+    NSLog(@"[VoiceManagement] 删除音色 ID: %ld, 索引: %ld", (long)voiceId, (long)index);
+    
+    // ✅ 显示删除进度
+    [SVProgressHUD showWithStatus:@"Deleting..."];
     
     [[AFStoryAPIManager sharedManager] deleteVoiceWithId:voiceId success:^(APIResponseModel *response) {
         
         NSLog(@"[VoiceManagement] 删除成功");
         
-        // 从本地列表删除
-        if (indexPath.section < self.voiceList.count) {
-            [self.voiceList removeObjectAtIndex:indexPath.section];
-        }
-        
-        // 刷新表格
-        if (self.voiceList.count == 0) {
-            // ✅ 如果删除后没有数据了，重新加载整个表格而不是删除section
-            [self.voiceListTabelView reloadData];
-        } else {
-            // ✅ 还有数据时，删除对应的section
-            [self.voiceListTabelView beginUpdates];
-            [self.voiceListTabelView deleteSections:[NSIndexSet indexSetWithIndex:indexPath.section]
-                                    withRowAnimation:UITableViewRowAnimationFade];
-            [self.voiceListTabelView endUpdates];
-        }
-        
-        // 如果没有数据了，显示空状态
-        if (self.voiceList.count == 0) {
-            self.emptyView.hidden = NO;
-        }
-        
-        // ✅ 更新创建按钮状态
-        [self updateCreateButtonState];
-        
-        // 显示成功提示
-        [self showSuccessAlert:@"Deleted Successfully"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD dismiss];
+            
+            // 从本地列表删除
+            if (index < self.voiceList.count) {
+                [self.voiceList removeObjectAtIndex:index];
+            }
+            
+            // 退出编辑模式
+            [self exitEditingMode];
+            
+            // 刷新表格
+            if (self.voiceList.count == 0) {
+                // ✅ 如果删除后没有数据了，重新加载整个表格
+                [self.voiceListTabelView reloadData];
+                self.emptyView.hidden = NO;
+            } else {
+                // ✅ 还有数据时，删除对应的section
+                [self.voiceListTabelView beginUpdates];
+                [self.voiceListTabelView deleteSections:[NSIndexSet indexSetWithIndex:index]
+                                        withRowAnimation:UITableViewRowAnimationFade];
+                [self.voiceListTabelView endUpdates];
+            }
+            
+            // ✅ 更新创建按钮状态
+            [self updateCreateButtonState];
+            
+            // 显示成功提示
+            [SVProgressHUD showSuccessWithStatus:@"Deleted Successfully"];
+            [SVProgressHUD dismissWithDelay:1.5];
+        });
         
     } failure:^(NSError *error) {
         
         NSLog(@"[VoiceManagement] 删除失败: %@", error.localizedDescription);
         
-        // 显示错误提示
-        [self showErrorAlert:@"Delete Failed" message:error.localizedDescription];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD dismiss];
+            
+            // 显示错误提示
+            [self showErrorAlert:@"Delete Failed" message:error.localizedDescription];
+        });
     }];
 }
 
@@ -1140,7 +1161,7 @@
     NSLog(@"📝 进入编辑模式");
     
     self.isEditingMode = YES;
-    [self.selectedIndexes removeAllObjects];
+    self.selectedIndex = -1; // 重置选中状态
     
     // ✅ 不使用系统的编辑模式，使用自定义编辑模式
     // [self.voiceListTabelView setEditing:YES animated:YES]; // 注释掉系统编辑模式
@@ -1170,7 +1191,7 @@
     NSLog(@"✅ 退出编辑模式");
     
     self.isEditingMode = NO;
-    [self.selectedIndexes removeAllObjects];
+    self.selectedIndex = -1; // 重置选中状态
     
     // ✅ 不使用系统的编辑模式，使用自定义编辑模式
     // [self.voiceListTabelView setEditing:NO animated:YES]; // 注释掉系统编辑模式
@@ -1222,12 +1243,8 @@
 /// 更新导航栏标题显示选中数量
 - (void)updateNavigationTitle {
     if (self.isEditingMode) {
-        NSInteger selectedCount = self.selectedIndexes.count;
-        if (selectedCount > 0) {
-            self.title = [NSString stringWithFormat:@"Selected %ld items", (long)selectedCount];
-        } else {
-            self.title = @"Select Items";
-        }
+        // ✅ 编辑状态下不显示选择的数量，保持原标题
+        self.title = LocalString(@"音色管理");
     } else {
         self.title = LocalString(@"音色管理");
     }
@@ -1238,7 +1255,7 @@
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:section];
     // ✅ 在自定义编辑模式下，不使用系统的选中方法
     // [self.voiceListTabelView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
-    [self.selectedIndexes addObject:@(section)];
+    self.selectedIndex = section;
     [self updateNavigationTitle];
     [self updateDeleteButtonState];
     
@@ -1253,7 +1270,7 @@
 - (void)deselectCellAtSection:(NSInteger)section {
     NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:section];
     [self.voiceListTabelView deselectRowAtIndexPath:indexPath animated:YES];
-    [self.selectedIndexes removeObject:@(section)];
+    self.selectedIndex = -1;
     [self updateNavigationTitle];
     [self updateDeleteButtonState];
     
@@ -1269,7 +1286,7 @@
     for (NSIndexPath *indexPath in self.voiceListTabelView.indexPathsForVisibleRows) {
         VoiceManagementTableViewCell *cell = [self.voiceListTabelView cellForRowAtIndexPath:indexPath];
         if ([cell isKindOfClass:[VoiceManagementTableViewCell class]]) {
-            BOOL isSelected = [self.selectedIndexes containsObject:@(indexPath.section)];
+            BOOL isSelected = (self.selectedIndex == indexPath.section);
             [cell updateEditingMode:self.isEditingMode isSelected:isSelected];
         }
     }
@@ -1279,10 +1296,21 @@
 
 /// 更新底部按钮为编辑模式（删除按钮）
 - (void)updateBottomButtonForEditingMode {
-    [self.createVoiceBtn setTitle:@"Delete Selected Items" forState:UIControlStateNormal];
-    [self.createVoiceBtn setBackgroundColor:[UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0]];
+    [self.createVoiceBtn setTitle:@"Delete Selected Item" forState:UIControlStateNormal];
+    
+    // ✅ 设置红色字体白色底，边框为1的红色
+    [self.createVoiceBtn setTitleColor:[UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0] forState:UIControlStateNormal];
+    [self.createVoiceBtn setBackgroundColor:[UIColor whiteColor]];
+    
+    // ✅ 设置边框
+    self.createVoiceBtn.layer.borderWidth = 1.0;
+    self.createVoiceBtn.layer.borderColor = [UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0].CGColor;
+    
+    // ✅ 设置禁用状态的样式
+    [self.createVoiceBtn setTitleColor:[UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:0.5] forState:UIControlStateDisabled];
+    
     [self.createVoiceBtn removeTarget:self action:@selector(createVoiceBtnClick) forControlEvents:UIControlEventTouchDown];
-    [self.createVoiceBtn addTarget:self action:@selector(deleteSelectedItems) forControlEvents:UIControlEventTouchUpInside];
+    [self.createVoiceBtn addTarget:self action:@selector(deleteSelectedItem) forControlEvents:UIControlEventTouchUpInside];
     
     // ✅ 初始状态禁用删除按钮
     [self updateDeleteButtonState];
@@ -1290,9 +1318,16 @@
 
 /// 更新底部按钮为正常模式（创建按钮）
 - (void)updateBottomButtonForNormalMode {
-    [self.createVoiceBtn removeTarget:self action:@selector(deleteSelectedItems) forControlEvents:UIControlEventTouchUpInside];
+    [self.createVoiceBtn removeTarget:self action:@selector(deleteSelectedItem) forControlEvents:UIControlEventTouchUpInside];
     [self.createVoiceBtn addTarget:self action:@selector(createVoiceBtnClick) forControlEvents:UIControlEventTouchDown];
+    
+    // ✅ 恢复原来的创建按钮样式
     [self.createVoiceBtn setBackgroundColor:[UIColor colorWithRed:0x00/255.0 green:0x7A/255.0 blue:0xFF/255.0 alpha:1.0]];
+    [self.createVoiceBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    
+    // ✅ 移除边框
+    self.createVoiceBtn.layer.borderWidth = 0;
+    self.createVoiceBtn.layer.borderColor = [UIColor clearColor].CGColor;
     
     // ✅ 恢复创建按钮状态
     [self updateCreateButtonState];
@@ -1304,56 +1339,37 @@
         return;
     }
     
-    BOOL hasSelection = self.selectedIndexes.count > 0;
+    BOOL hasSelection = (self.selectedIndex >= 0);
     self.createVoiceBtn.enabled = hasSelection;
     self.createVoiceBtn.alpha = hasSelection ? 1.0 : 0.5;
     
     if (hasSelection) {
-        [self.createVoiceBtn setTitle:[NSString stringWithFormat:@"Delete Selected (%ld)", (long)self.selectedIndexes.count] forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:@"Delete Selected Item" forState:UIControlStateNormal];
     } else {
-        [self.createVoiceBtn setTitle:@"Delete Selected Items" forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:@"Delete Selected Item" forState:UIControlStateNormal];
     }
 }
 
 /// 删除选中的项目
-- (void)deleteSelectedItems {
-    if (self.selectedIndexes.count == 0) {
+- (void)deleteSelectedItem {
+    if (self.selectedIndex < 0 || self.selectedIndex >= self.voiceList.count) {
         return;
     }
     
-    NSLog(@"🗑️ 删除选中项目，数量: %ld", (long)self.selectedIndexes.count);
+    NSLog(@"🗑️ 删除选中项目，索引: %ld", (long)self.selectedIndex);
     
-    // ✅ 检查选中的音色是否都可以删除
-    NSMutableArray *cannotDeleteVoices = [NSMutableArray array];
-    NSMutableArray *selectedVoices = [NSMutableArray array];
+    VoiceModel *voice = self.voiceList[self.selectedIndex];
     
-    for (NSNumber *sectionNumber in self.selectedIndexes) {
-        NSInteger section = sectionNumber.integerValue;
-        if (section < self.voiceList.count) {
-            VoiceModel *voice = self.voiceList[section];
-            [selectedVoices addObject:voice];
-            
-            if (!voice.canDelete) {
-                [cannotDeleteVoices addObject:voice];
-            }
-        }
-    }
-    
-    // ✅ 如果有不能删除的音色，显示提示
-    if (cannotDeleteVoices.count > 0) {
-        NSMutableString *message = [NSMutableString stringWithString:@"The following voices are associated with stories and cannot be deleted:\n"];
-        for (VoiceModel *voice in cannotDeleteVoices) {
-            [message appendFormat:@"• %@\n", voice.voiceName];
-        }
-        [message appendString:@"\nPlease remove the associations first"];
-        
+    // ✅ 检查选中的音色是否可以删除
+    if (!voice.canDelete) {
+        NSString *message = [NSString stringWithFormat:@"Voice \"%@\" is associated with stories and cannot be deleted.\n\nPlease remove the associations first.", voice.voiceName];
         [self showErrorAlert:@"Delete Failed" message:message];
         return;
     }
     
     // ✅ 显示确认删除对话框
-    NSString *title = [NSString stringWithFormat:@"Delete %ld Voices", (long)selectedVoices.count];
-    NSString *message = @"Are you sure you want to delete the selected voices? This action cannot be undone.";
+    NSString *title = @"Delete Voice";
+    NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete voice \"%@\"?\n\nThis action cannot be undone.", voice.voiceName];
     
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
@@ -1362,121 +1378,10 @@
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户确认删除
-            [self performBatchDelete:selectedVoices];
+            [self performDeleteVoiceWithId:voice.voiceId atIndex:self.selectedIndex];
         }
         // 用户取消删除时无需额外操作
     }];
-}
-
-/// 执行批量删除
-- (void)performBatchDelete:(NSArray<VoiceModel *> *)voicesToDelete {
-    NSLog(@"[VoiceManagement] 开始批量删除 %ld 个音色", (long)voicesToDelete.count);
-    
-    // ✅ 显示删除进度
-    [SVProgressHUD showWithStatus:[NSString stringWithFormat:@"Deleting (0/%ld)", (long)voicesToDelete.count]];
-    
-    __block NSInteger completedCount = 0;
-    __block NSInteger successCount = 0;
-    __block NSMutableArray *failedVoices = [NSMutableArray array];
-    
-    // ✅ 逐个删除（可以改为并发删除以提高效率）
-    for (VoiceModel *voice in voicesToDelete) {
-        [[AFStoryAPIManager sharedManager] deleteVoiceWithId:voice.voiceId success:^(APIResponseModel *response) {
-            
-            completedCount++;
-            successCount++;
-            
-            // ✅ 更新进度
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [SVProgressHUD showWithStatus:[NSString stringWithFormat:@"Deleting (%ld/%ld)", (long)completedCount, (long)voicesToDelete.count]];
-                
-                // ✅ 所有删除操作完成
-                if (completedCount == voicesToDelete.count) {
-                    [self handleBatchDeleteCompletion:voicesToDelete successCount:successCount failedVoices:failedVoices];
-                }
-            });
-            
-        } failure:^(NSError *error) {
-            
-            completedCount++;
-            [failedVoices addObject:voice];
-            
-            NSLog(@"[VoiceManagement] 删除音色失败: %@ - %@", voice.voiceName, error.localizedDescription);
-            
-            // ✅ 更新进度
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [SVProgressHUD showWithStatus:[NSString stringWithFormat:@"Deleting (%ld/%ld)", (long)completedCount, (long)voicesToDelete.count]];
-                
-                // ✅ 所有删除操作完成
-                if (completedCount == voicesToDelete.count) {
-                    [self handleBatchDeleteCompletion:voicesToDelete successCount:successCount failedVoices:failedVoices];
-                }
-            });
-        }];
-    }
-}
-
-/// 处理批量删除完成
-- (void)handleBatchDeleteCompletion:(NSArray<VoiceModel *> *)originalVoices 
-                       successCount:(NSInteger)successCount 
-                       failedVoices:(NSArray<VoiceModel *> *)failedVoices {
-    
-    [SVProgressHUD dismiss];
-    
-    // ✅ 从数据源中移除成功删除的音色
-    NSMutableIndexSet *sectionsToDelete = [NSMutableIndexSet indexSet];
-    
-    for (VoiceModel *voice in originalVoices) {
-        if (![failedVoices containsObject:voice]) {
-            // 成功删除的音色，从数据源移除
-            NSInteger index = [self.voiceList indexOfObject:voice];
-            if (index != NSNotFound) {
-                [sectionsToDelete addIndex:index];
-            }
-        }
-    }
-    
-    // ✅ 按降序删除，避免索引混乱
-    [sectionsToDelete enumerateIndexesWithOptions:NSEnumerationReverse usingBlock:^(NSUInteger idx, BOOL * _Nonnull stop) {
-        [self.voiceList removeObjectAtIndex:idx];
-    }];
-    
-    // ✅ 刷新表格
-    if (sectionsToDelete.count > 0) {
-        if (self.voiceList.count == 0) {
-            // ✅ 如果删除后没有数据了，重新加载整个表格而不是删除section
-            [self.voiceListTabelView reloadData];
-        } else {
-            // ✅ 还有数据时，删除对应的sections
-            [self.voiceListTabelView beginUpdates];
-            [self.voiceListTabelView deleteSections:sectionsToDelete withRowAnimation:UITableViewRowAnimationFade];
-            [self.voiceListTabelView endUpdates];
-        }
-    }
-    
-    // ✅ 退出编辑模式
-    [self exitEditingMode];
-    
-    // ✅ 更新空状态
-    if (self.voiceList.count == 0) {
-        self.emptyView.hidden = NO;
-    }
-    
-    // ✅ 更新创建按钮状态
-    [self updateCreateButtonState];
-    
-    // ✅ 显示结果提示
-    NSString *resultMessage;
-    if (failedVoices.count == 0) {
-        resultMessage = [NSString stringWithFormat:@"Successfully deleted %ld voices", (long)successCount];
-        [SVProgressHUD showSuccessWithStatus:resultMessage];
-        [SVProgressHUD dismissWithDelay:2.0];
-    } else {
-        resultMessage = [NSString stringWithFormat:@"Deletion Complete\nSuccess: %ld\nFailed: %ld", (long)successCount, (long)failedVoices.count];
-        [self showErrorAlert:@"Deletion Result" message:resultMessage];
-    }
-    
-    NSLog(@"[VoiceManagement] 批量删除完成 - 成功：%ld，失败：%ld", (long)successCount, (long)failedVoices.count);
 }
 
 @end

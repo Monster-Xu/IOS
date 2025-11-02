@@ -51,8 +51,8 @@
                     <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="JLI-tJ-C58">
                         <rect key="frame" x="0.0" y="156" width="493" height="28"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="克隆中" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kkw-hF-f4W">
-                                <rect key="frame" x="46" y="4.3333333333333428" width="431" height="19.666666666666668"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="克隆中" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kkw-hF-f4W">
+                                <rect key="frame" x="46" y="4.3333333333333428" width="427" height="19.666666666666668"/>
                                 <fontDescription key="fontDescription" name="PingFangSC-Regular" family="PingFang SC" pointSize="14"/>
                                 <color key="textColor" systemColor="systemYellowColor"/>
                                 <nil key="highlightedColor"/>
@@ -63,7 +63,7 @@
                         </subviews>
                         <color key="backgroundColor" red="1" green="0.80000000000000004" blue="0.0" alpha="0.18923305457746478" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstAttribute="trailing" secondItem="kkw-hF-f4W" secondAttribute="trailing" constant="16" id="6Pa-z7-J4p"/>
+                            <constraint firstAttribute="trailing" secondItem="kkw-hF-f4W" secondAttribute="trailing" constant="20" id="6Pa-z7-J4p"/>
                             <constraint firstAttribute="height" constant="28" id="CWu-n5-zsF"/>
                             <constraint firstItem="kVo-yZ-fVC" firstAttribute="centerY" secondItem="JLI-tJ-C58" secondAttribute="centerY" id="Tor-P9-Jgt"/>
                             <constraint firstItem="kkw-hF-f4W" firstAttribute="centerY" secondItem="JLI-tJ-C58" secondAttribute="centerY" id="c6f-Zj-jc2"/>

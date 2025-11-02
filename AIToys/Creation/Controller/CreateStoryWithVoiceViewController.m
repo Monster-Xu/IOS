@@ -203,7 +203,7 @@
     
     // 显示控件
     self.storyThemeView.hidden = NO;
-    self.voiceHeaderView.hidden = NO;
+    self.voiceHeaderView.hidden = YES;  // ✅ 保持插画头部视图隐藏，不参与高度计算
     self.storyView.hidden = NO;
     self.chooseVoiceView.hidden = NO;
     self.saveStoryBtn.hidden = NO;
@@ -757,44 +757,6 @@
     
     // 延迟更新主滚动视图内容大小，避免重复计算
     [self scheduleScrollViewContentSizeUpdate];
-
-    
-    // ✅ 只有在必要时才重新计算音色选择区域的高度
-    if (shouldRecalcVoiceHeight) {
-        [self adjustVoiceSelectionViewHeight];
-    }
-    
-    // 再次强制布局更新，确保约束变化生效
-    [self.contentView layoutIfNeeded];
-    
-    // 计算所有子视图的最大底部位置
-    CGFloat maxY = 0;
-    for (UIView *subview in self.contentView.subviews) {
-        if (!subview.hidden && subview.alpha > 0) {
-            CGFloat bottom = CGRectGetMaxY(subview.frame);
-            if (bottom > maxY) {
-                maxY = bottom;
-            }
-        }
-    }
-    
-    // 添加一些底部边距，确保有足够的滚动空间
-    maxY += 100;
-    
-    // 确保内容高度至少比屏幕高度大一些，这样才能滚动
-    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
-    CGFloat contentHeight = MAX(maxY, screenHeight + 50);
-    
-    // 设置内容视图的frame大小
-    CGRect contentFrame = self.contentView.frame;
-    contentFrame.size.height = contentHeight;
-    self.contentView.frame = contentFrame;
-    
-    // 设置ScrollView的内容大小
-    self.mainScrollView.contentSize = CGSizeMake(self.contentView.frame.size.width, contentHeight);
-    
-    NSLog(@"📏 滚动视图内容大小设置为: %.1f x %.1f (计算最大Y: %.1f, 屏幕高度: %.1f)", 
-          self.mainScrollView.contentSize.width, self.mainScrollView.contentSize.height, maxY, screenHeight);
 }
 
 /// ✅ 优化的动态调整故事内容区域的高度 - 使用约束
@@ -906,12 +868,19 @@
         }
     }
     
-    // 添加一些底部边距，确保有足够的滚动空间
-    maxY += 50;
+    // 添加适量底部边距，确保有足够的滚动空间
+    maxY += 20;  // ✅ 减少底部边距：50 → 20
     
-    // 确保内容高度至少比屏幕高度大一些，这样才能滚动
-    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
-    CGFloat contentHeight = MAX(maxY, screenHeight + 50);
+    // 确保内容高度能够滚动，但不要过高
+    // ✅ 计算实际可用的滚动区域高度（减去导航栏等系统UI）
+    CGFloat availableHeight = self.mainScrollView.frame.size.height;
+    // 如果可用高度为0（布局未完成），使用屏幕高度减去常见的系统UI高度作为估算
+    if (availableHeight <= 0) {
+        CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
+        CGFloat navBarHeight = self.navigationController.navigationBar.frame.size.height;
+        availableHeight = [UIScreen mainScreen].bounds.size.height - statusBarHeight - navBarHeight;
+    }
+    CGFloat contentHeight = MAX(maxY, availableHeight + 10);  // ✅ 只需要少量额外空间确保能滚动
     
     // ✅ 只有在内容高度真的变化时才更新
     CGFloat currentContentHeight = self.mainScrollView.contentSize.height;
@@ -924,8 +893,8 @@
         // 设置ScrollView的内容大小
         self.mainScrollView.contentSize = CGSizeMake(self.contentView.frame.size.width, contentHeight);
         
-        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (计算最大Y: %.1f)", 
-              currentContentHeight, contentHeight, maxY);
+        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (计算最大Y: %.1f, 可用高度: %.1f)", 
+              currentContentHeight, contentHeight, maxY, availableHeight);
     } else {
         NSLog(@"📏 滚动视图内容大小无需更新 (当前: %.1f, 计算: %.1f)", currentContentHeight, contentHeight);
     }

@@ -571,9 +571,10 @@
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
     [super setEditing:editing animated:animated];
     
-    NSLog(@"Cell setEditing: %@, isBatchEditingMode: %@",
+    NSLog(@"🔄 Cell setEditing: %@, isBatchEditingMode: %@, section: %ld",
           editing ? @"YES" : @"NO",
-          self.isBatchEditingMode ? @"YES" : @"NO");
+          self.isBatchEditingMode ? @"YES" : @"NO",
+          (long)[self getCurrentSectionIndex]);
     
     // 清晰的判断逻辑：
     // 1. 批量编辑模式（isBatchEditingMode = YES）：隐藏按钮，显示选择按钮
@@ -583,28 +584,68 @@
     if (self.isBatchEditingMode && editing) {
         // 批量编辑模式：隐藏操作按钮，显示选择按钮
         NSLog(@"📱 批量编辑模式 - 隐藏按钮，显示选择按钮");
-        self.playButton.hidden = YES;
-        self.editButton.hidden = YES;
-        [self.loadingIndicator stopAnimating];  // ✅ 停止加载动画
-        self.loadingIndicator.hidden = YES;     // ✅ 隐藏加载指示器
-        self.chooseButton.hidden = NO; // ✅ 显示选择按钮
+        
+        // 使用动画隐藏/显示
+        [UIView animateWithDuration:animated ? 0.25 : 0 animations:^{
+            self.playButton.alpha = 0;
+            self.editButton.alpha = 0;
+            self.loadingIndicator.alpha = 0;
+            self.chooseButton.alpha = 1;
+        } completion:^(BOOL finished) {
+            self.playButton.hidden = YES;
+            self.editButton.hidden = YES;
+            [self.loadingIndicator stopAnimating];  // ✅ 停止加载动画
+            self.loadingIndicator.hidden = YES;     // ✅ 隐藏加载指示器
+            self.chooseButton.hidden = NO; // ✅ 显示选择按钮
+        }];
         
     } else {
         // 正常模式或左滑删除：显示按钮，隐藏选择按钮
         NSLog(@"📱 正常模式 - 显示按钮，隐藏选择按钮");
-        self.editButton.hidden = NO;
-        self.chooseButton.hidden = YES; // ✅ 隐藏选择按钮
         
-        // ✅ 根据加载状态决定显示播放按钮还是加载指示器
-        if (self.isAudioLoading) {
-            self.playButton.hidden = YES;
-            self.loadingIndicator.hidden = NO;
-            [self.loadingIndicator startAnimating];
-        } else {
-            self.playButton.hidden = NO;
-            self.loadingIndicator.hidden = YES;
-        }
+        // 使用动画隐藏/显示
+        [UIView animateWithDuration:animated ? 0.25 : 0 animations:^{
+            self.editButton.alpha = 1;
+            self.chooseButton.alpha = 0;
+            
+            // ✅ 根据加载状态决定显示播放按钮还是加载指示器
+            if (self.isAudioLoading) {
+                self.playButton.alpha = 0;
+                self.loadingIndicator.alpha = 1;
+            } else {
+                self.playButton.alpha = 1;
+                self.loadingIndicator.alpha = 0;
+            }
+        } completion:^(BOOL finished) {
+            self.editButton.hidden = NO;
+            self.chooseButton.hidden = YES; // ✅ 隐藏选择按钮
+            
+            // ✅ 根据加载状态决定显示播放按钮还是加载指示器
+            if (self.isAudioLoading) {
+                self.playButton.hidden = YES;
+                self.loadingIndicator.hidden = NO;
+                [self.loadingIndicator startAnimating];
+            } else {
+                self.playButton.hidden = NO;
+                self.loadingIndicator.hidden = YES;
+            }
+        }];
     }
+}
+
+// 辅助方法：获取当前cell的section索引（用于调试）
+- (NSInteger)getCurrentSectionIndex {
+    UITableView *tableView = nil;
+    UIView *view = self.superview;
+    while (view && ![view isKindOfClass:[UITableView class]]) {
+        view = view.superview;
+    }
+    if ([view isKindOfClass:[UITableView class]]) {
+        tableView = (UITableView *)view;
+        NSIndexPath *indexPath = [tableView indexPathForCell:self];
+        return indexPath ? indexPath.section : -1;
+    }
+    return -1;
 }
 
 
