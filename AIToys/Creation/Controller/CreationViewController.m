@@ -10,6 +10,7 @@
 #import "VoiceStoryTableViewCell.h"
 #import "VoiceManagementViewController.h"
 #import "VoiceStoryModel.h"
+#import "StoryBoundDoll.h"
 #import "AFStoryAPIManager.h"
 #import "APIRequestModel.h"
 #import "APIResponseModel.h"
@@ -530,8 +531,6 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         
         NSLog(@"[CreationVC] 刷新数据成功，共 %ld 条", (long)response.total);
         
-        // ✅ 隐藏骨架屏
-//        strongSelf.isLoading = NO;
         
         // 更新数据源
         [strongSelf.dataSource removeAllObjects];
@@ -1252,6 +1251,15 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }
     
     VoiceStoryModel *model = self.dataSource[self.selectedIndex];
+    
+    // ✅ 检查故事是否已绑定公仔
+    if ([self checkStoryBoundDoll:model]) {
+        // 已绑定公仔，显示特殊确认弹窗
+        [self showBoundDollDeletionConfirmForModel:model atIndex:self.selectedIndex];
+        return;
+    }
+    
+    // 正常删除确认流程
     NSString *title = @"Confirm Deletion";
     NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete the story '%@'?", model.storyName ?: @"Untitled Story"];
     
@@ -1437,6 +1445,14 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     VoiceStoryModel *model = self.dataSource[index];
     NSLog(@"点击删除第 %ld 个故事: %@", (long)index, model.storyName);
     
+    // ✅ 检查故事是否已绑定公仔
+    if ([self checkStoryBoundDoll:model]) {
+        // 已绑定公仔，显示特殊确认弹窗
+        [self showBoundDollDeletionConfirmForModel:model atIndex:index];
+        return;
+    }
+    
+    // 正常删除确认流程
     NSString *title = @"Confirm Deletion";
     NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete the story '%@'?", model.storyName ?: @"Untitled Story"];
     
@@ -1631,6 +1647,59 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 }
 
 #pragma mark - Helper Methods
+
+/// ✅ 检查故事是否绑定了公仔
+/// @param model 要检查的故事模型
+/// @return YES 如果已绑定公仔，NO 如果未绑定
+- (BOOL)checkStoryBoundDoll:(VoiceStoryModel *)model {
+    // 直接检查 boundDolls 数组是否有数据
+    if (model.boundDolls && model.boundDolls.count > 0) {
+        NSLog(@"⚠️ 故事 '%@' 已绑定公仔", model.storyName);
+        return YES; // 已绑定公仔
+    }
+    
+    NSLog(@"✅ 故事 '%@' 未绑定公仔", model.storyName);
+    return NO; // 未绑定公仔
+}
+
+/// ✅ 显示绑定公仔的删除确认弹窗
+/// @param model 故事模型
+/// @param index 故事索引
+- (void)showBoundDollDeletionConfirmForModel:(VoiceStoryModel *)model atIndex:(NSInteger)index {
+    // 获取第一个公仔的 customName
+    StoryBoundDoll *firstDoll = model.boundDolls.firstObject;
+    NSString *customName = firstDoll.customName ?: @"Unknown Doll";
+    
+    NSLog(@"⚠️ 故事 '%@' 已绑定公仔 '%@'，显示删除确认弹窗", model.storyName, customName);
+    
+    // 构建提示信息
+    NSString *title = @"Delete Bound Story";
+    NSString *message = [NSString stringWithFormat:@"This story is already associated with creative doll '%@'. Please place the doll back on the device to get the latest resources.\n\nAre you sure you want to delete this story?", customName];
+    
+    __weak typeof(self) weakSelf = self;
+    [LGBaseAlertView showAlertWithTitle:title
+                                content:message
+                             cancelBtnStr:@"Cancel"
+                            confirmBtnStr:@"Delete"
+                            confirmBlock:^(BOOL is_value, id obj) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        if (is_value) { // 用户点击了"Delete"按钮
+            NSLog(@"✅ 用户确认删除已绑定公仔的故事");
+            // 根据删除方式调用对应的删除方法
+            if (strongSelf.isSingleEditingMode && index == strongSelf.selectedIndex) {
+                // 单选编辑模式删除
+                [strongSelf performSingleDeleteAtIndex:index];
+            } else {
+                // 左滑删除
+                [strongSelf performSingleDelete:index];
+            }
+        } else {
+            NSLog(@"❌ 用户取消删除已绑定公仔的故事");
+        }
+    }];
+}
 
 - (void)showStoryLimitAlert {
     NSString *title = @"Story Limit Reached";

@@ -40,14 +40,14 @@
         self.sLabel.text = [NSString stringWithFormat:@"%ld ",(long)s];
         self.minutesLabel.hidden = self.minNameLabel.hidden = NO;
         self.horsNameLabel.text = @"h";
-        self.minNameLabel.text = @"min";
+        self.minNameLabel.text = @"mins";
         self.sNamelabel.text = @"s";
         self.sLabel.hidden = self.sNamelabel.hidden = s == 0;
     }else{
         self.sLabel.hidden = self.sNamelabel.hidden = YES;
         if(mins > 0){
             self.hoursLabel.text = [NSString stringWithFormat:@"%ld ",(long)mins];
-            self.horsNameLabel.text = @"min";
+            self.horsNameLabel.text = @"mins";
             self.minutesLabel.text = [NSString stringWithFormat:@"%ld ",(long)s];
             self.minNameLabel.text = @"s";
             self.sLabel.hidden = self.sNamelabel.hidden = YES;

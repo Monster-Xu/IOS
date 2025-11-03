@@ -27,6 +27,10 @@
 //@property(copy, nonatomic) NSString *provinceName;
 //@property(copy, nonatomic) NSString *cityName;
 //@property(copy, nonatomic) NSString *currentCity;//当前城市
+
+// 🔒 安全数组操作方法声明
+- (BOOL)safeInsertObject:(id)object atIndex:(NSUInteger)index toMutableArray:(NSMutableArray *)array;
+
 @end
 
 @implementation CreateFamailyVC
@@ -88,16 +92,38 @@
                         if ([controller isKindOfClass:[FamailyManageVC class]]){
                             //创建要跳转去的控制器
                             FamailySettingVC *VC = [FamailySettingVC new];
+                            if (!VC) {
+                                NSLog(@"⚠️ 创建 FamailySettingVC 失败");
+                                return;
+                            }
+                            
                             VC.homeModel = homeModel;
                             VC.isSignalHome = homes.count == 1;
                             //获取查找出来的控制器index
                             NSInteger index = [vcsMutArr indexOfObject:controller];
-                            //把要跳转去的控制器插入数组
-                            [vcsMutArr insertObject:VC atIndex:index + 1];
-                            //再次给self.navigationController.viewControllers赋值
-                            [weakSelf.navigationController setViewControllers:vcsMutArr];
-                            //跳转去控制器
-                            [weakSelf.navigationController popToViewController:VC animated:YES];
+                            
+                            // 🔒 安全检查：防止 NSNotFound 和索引越界
+                            if (index == NSNotFound) {
+                                NSLog(@"⚠️ 未找到 FamailyManageVC 控制器，无法插入新控制器");
+                                return;
+                            }
+                            
+                            NSInteger insertIndex = index + 1;
+                            if (insertIndex > vcsMutArr.count) {
+                                NSLog(@"⚠️ 插入索引 %ld 超出数组范围 %lu", (long)insertIndex, (unsigned long)vcsMutArr.count);
+                                insertIndex = vcsMutArr.count; // 插入到末尾
+                            }
+                            
+                            // 🔒 安全插入控制器 - 使用自定义安全方法
+                            if ([self safeInsertObject:VC atIndex:insertIndex toMutableArray:vcsMutArr]) {
+                                //再次给self.navigationController.viewControllers赋值
+                                [weakSelf.navigationController setViewControllers:vcsMutArr];
+                                //跳转去控制器
+                                [weakSelf.navigationController popToViewController:VC animated:YES];
+                            } else {
+                                NSLog(@"❌ [CreateFamailyVC] 控制器插入失败，导航操作取消");
+                                return;
+                            }
                         }
                     }
                 } failure:^(NSError *error) {
@@ -158,6 +184,38 @@
         _homeManager = [[ThingSmartHomeManager alloc] init];
     }
     return _homeManager;
+}
+
+#pragma mark - 🔒 安全数组操作方法
+
+// 安全插入对象到可变数组
+- (BOOL)safeInsertObject:(id)object atIndex:(NSUInteger)index toMutableArray:(NSMutableArray *)array {
+    // 参数有效性检查
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ [CreateFamailyVC] 安全插入失败: 数组为nil或不是NSMutableArray类型");
+        return NO;
+    }
+    
+    if (!object) {
+        NSLog(@"⚠️ [CreateFamailyVC] 安全插入失败: 要插入的对象为nil");
+        return NO;
+    }
+    
+    // 索引范围检查
+    if (index > array.count) {
+        NSLog(@"⚠️ [CreateFamailyVC] 安全插入失败: 索引 %lu 超出范围 [0-%lu]", (unsigned long)index, (unsigned long)array.count);
+        return NO;
+    }
+    
+    // 执行插入操作
+    @try {
+        [array insertObject:object atIndex:index];
+        NSLog(@"✅ [CreateFamailyVC] 成功插入对象到索引 %lu", (unsigned long)index);
+        return YES;
+    } @catch (NSException *exception) {
+        NSLog(@"❌ [CreateFamailyVC] 插入对象异常: %@", exception.reason);
+        return NO;
+    }
 }
 
 //- (CLLocationManager *)locationManager {

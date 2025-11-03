@@ -11,6 +11,8 @@
 #import "AFStoryAPIManager.h"
 #import "CreateVoiceViewController.h"
 #import "SelectIllustrationVC.h"
+#import "StoryBoundDoll.h"
+#import "LGBaseAlertView.h"
 
 @interface CreateStoryWithVoiceViewController ()<UITableViewDelegate, UITableViewDataSource, AudioPlayerViewDelegate>
 @property (weak, nonatomic) IBOutlet UIImageView *createImageView;
@@ -869,7 +871,7 @@
     }
     
     // 添加适量底部边距，确保有足够的滚动空间
-    maxY += 20;  // ✅ 减少底部边距：50 → 20
+    maxY += 40;  // ✅ 减少底部边距：50 → 20
     
     // 确保内容高度能够滚动，但不要过高
     // ✅ 计算实际可用的滚动区域高度（减去导航栏等系统UI）
@@ -1090,6 +1092,50 @@
 }
 
 #pragma mark - Helper Methods
+
+/// ✅ 检查故事是否绑定了公仔
+/// @param model 要检查的故事模型
+/// @return YES 如果已绑定公仔，NO 如果未绑定
+- (BOOL)checkStoryBoundDoll:(VoiceStoryModel *)model {
+    // 直接检查 boundDolls 数组是否有数据
+    if (model.boundDolls && model.boundDolls.count > 0) {
+        NSLog(@"⚠️ 故事 '%@' 已绑定公仔", model.storyName);
+        return YES; // 已绑定公仔
+    }
+    
+    NSLog(@"✅ 故事 '%@' 未绑定公仔", model.storyName);
+    return NO; // 未绑定公仔
+}
+
+/// ✅ 显示绑定公仔的删除确认弹窗
+- (void)showBoundDollDeletionConfirm {
+    // 获取第一个公仔的 customName
+    StoryBoundDoll *firstDoll = self.currentStory.boundDolls.firstObject;
+    NSString *customName = firstDoll.customName ?: @"Unknown Doll";
+    
+    NSLog(@"⚠️ 故事 '%@' 已绑定公仔 '%@'，显示删除确认弹窗", self.currentStory.storyName, customName);
+    
+    // 构建提示信息
+    NSString *title = @"Delete Bound Story";
+    NSString *message = [NSString stringWithFormat:@"This story is already associated with creative doll '%@'. Please place the doll back on the device to get the latest resources.\n\nAre you sure you want to delete this story?", customName];
+    
+    __weak typeof(self) weakSelf = self;
+    [LGBaseAlertView showAlertWithTitle:title
+                                content:message
+                             cancelBtnStr:@"Cancel"
+                            confirmBtnStr:@"Delete"
+                            confirmBlock:^(BOOL is_value, id obj) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        if (is_value) { // 用户点击了"Delete"按钮
+            NSLog(@"✅ 用户确认删除已绑定公仔的故事");
+            [strongSelf performDeleteStory];
+        } else {
+            NSLog(@"❌ 用户取消删除已绑定公仔的故事");
+        }
+    }];
+}
 
 - (void)configureStoryTextView {
     // 基础文字配置
@@ -1451,6 +1497,14 @@
         return;
     }
     
+    // ✅ 检查故事是否已绑定公仔
+    if ([self checkStoryBoundDoll:self.currentStory]) {
+        // 已绑定公仔，显示特殊确认弹窗
+        [self showBoundDollDeletionConfirm];
+        return;
+    }
+    
+    // 未绑定公仔，显示正常删除确认对话框
     [self showDeleteConfirmation];
 }
 

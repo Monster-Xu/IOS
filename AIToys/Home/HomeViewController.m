@@ -66,6 +66,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @property(strong, nonatomic) NSMutableArray<HomeDollModel *> *diyDollList;
 @property(strong, nonatomic) NSMutableArray<FindDollModel *> *exploreDollList;
 @property (nonatomic, strong) NSMutableArray <BannerModel *> *bannerImgArray;
+
+// 🔒 新增：用于线程安全的串行队列
+@property (nonatomic, strong) dispatch_queue_t dataQueue;
 @property (nonatomic, copy) NSString *lastHardwareCode;//最新一次toyID
 @property (nonatomic, copy) NSString *homeDisplayMode; // 首页显示模式控制，从propValue获取
 //播放器
@@ -88,6 +91,110 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }
     NSLog(@"⚠️ 数组安全访问失败: index=%lu, count=%lu", (unsigned long)index, (unsigned long)array.count);
     return nil;
+}
+
+// 🔒 新增：安全插入对象到可变数组
+- (void)safeInsertObject:(id)object atIndex:(NSUInteger)index toArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 数组安全插入失败: 数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    if (!object) {
+        NSLog(@"⚠️ 数组安全插入失败: 要插入的对象为nil");
+        return;
+    }
+    
+    if (index > array.count) {
+        NSLog(@"⚠️ 数组安全插入失败: index=%lu 超出范围, count=%lu", (unsigned long)index, (unsigned long)array.count);
+        return;
+    }
+    
+    @try {
+        [array insertObject:object atIndex:index];
+    } @catch (NSException *exception) {
+        NSLog(@"❌ 数组插入异常: %@", exception.reason);
+    }
+}
+
+// 🔒 新增：安全添加对象到可变数组
+- (void)safeAddObject:(id)object toArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 数组安全添加失败: 数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    if (!object) {
+        NSLog(@"⚠️ 数组安全添加失败: 要添加的对象为nil");
+        return;
+    }
+    
+    @try {
+        [array addObject:object];
+    } @catch (NSException *exception) {
+        NSLog(@"❌ 数组添加异常: %@", exception.reason);
+    }
+}
+
+// 🔒 新增：线程安全的数组操作方法
+- (void)safeOperateOnArray:(NSMutableArray *)array withBlock:(void(^)(NSMutableArray *array))block {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 线程安全数组操作失败: 数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @try {
+            if (block) {
+                block(array);
+            }
+        } @catch (NSException *exception) {
+            NSLog(@"❌ 线程安全数组操作异常: %@", exception.reason);
+        }
+    });
+}
+
+// 🔒 新增：批量安全操作数组
+- (void)safeAddObjectsFromArray:(NSArray *)objects toArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 批量添加失败: 目标数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    if (!objects || ![objects isKindOfClass:[NSArray class]]) {
+        NSLog(@"⚠️ 批量添加失败: 源数组为nil或不是NSArray类型");
+        return;
+    }
+    
+    @try {
+        // 逐个检查并添加对象，防止添加nil对象
+        for (id object in objects) {
+            if (object) {
+                [array addObject:object];
+            } else {
+                NSLog(@"⚠️ 跳过添加nil对象到数组");
+            }
+        }
+    } @catch (NSException *exception) {
+        NSLog(@"❌ 批量数组添加异常: %@", exception.reason);
+    }
+}
+- (void)safeRemoveObject:(id)object fromArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 数组安全移除失败: 数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    if (!object) {
+        NSLog(@"⚠️ 数组安全移除失败: 要移除的对象为nil");
+        return;
+    }
+    
+    @try {
+        [array removeObject:object];
+    } @catch (NSException *exception) {
+        NSLog(@"❌ 数组移除异常: %@", exception.reason);
+    }
 }
 
 -(NSMutableArray *)listViewArray{
@@ -186,6 +293,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     // 初始化音频会话状态
     self.isAudioSessionActive = NO;
+    
+    // 🔒 初始化数据操作队列，确保线程安全
+    self.dataQueue = dispatch_queue_create("com.aitoys.home.dataQueue", DISPATCH_QUEUE_SERIAL);
     
     // 添加缓存支持
     [self setupDataCache];
@@ -405,7 +515,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         for (BannerModel *model in self.bannerImgArray) {
             NSDictionary *dict = [model mj_keyValues];
             if (dict) {
-                [dataToCache addObject:dict];
+                [self safeAddObject:dict toArray:dataToCache];
             }
         }
         NSError *error = nil;
@@ -425,7 +535,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         for (FindDollModel *model in self.exploreDollList) {
             NSDictionary *dict = [model mj_keyValues];
             if (dict) {
-                [dataToCache addObject:dict];
+                [self safeAddObject:dict toArray:dataToCache];
             }
         }
         NSError *error = nil;
@@ -446,7 +556,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         for (HomeDollModel *model in self.diyDollList) {
             NSDictionary *dict = [model mj_keyValues];
             if (dict) {
-                [dataToCache addObject:dict];
+                [self safeAddObject:dict toArray:dataToCache];
             }
         }
         NSError *error = nil;
@@ -469,14 +579,27 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     [[APIManager shared] GET:[APIPortConfiguration getHomeBannerListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         NSLog(@"轮播图数据请求成功");
-        [weakSelf.bannerImgArray removeAllObjects];
-        [weakSelf.bannerImgArray addObjectsFromArray:[BannerModel mj_objectArrayWithKeyValuesArray:data]];
         
-        // 缓存数据
-        [weakSelf cacheBannerData];
-        
-        // 立即更新轮播图部分UI
+        // 🔒 线程安全：在主线程中操作数组
         dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf.bannerImgArray removeAllObjects];
+            
+            // 🔒 安全检查：确保数据格式正确
+            if ([data isKindOfClass:[NSArray class]]) {
+                NSArray *bannerModels = [BannerModel mj_objectArrayWithKeyValuesArray:data];
+                if (bannerModels && bannerModels.count > 0) {
+                    [weakSelf.bannerImgArray addObjectsFromArray:bannerModels];
+                } else {
+                    NSLog(@"⚠️ Banner模型转换失败或为空");
+                }
+            } else {
+                NSLog(@"⚠️ Banner数据格式错误: %@", [data class]);
+            }
+            
+            // 缓存数据
+            [weakSelf cacheBannerData];
+            
+            // 更新轮播图UI
             [weakSelf updateBannerUI];
         });
         
@@ -485,7 +608,10 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         // 使用默认数据
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf.bannerImgArray removeAllObjects];
-            [weakSelf.bannerImgArray addObjectsFromArray:[weakSelf createDefaultBannerData]];
+            NSArray *defaultData = [weakSelf createDefaultBannerData];
+            if (defaultData && defaultData.count > 0) {
+                [weakSelf.bannerImgArray addObjectsFromArray:defaultData];
+            }
             [weakSelf updateBannerUI];
         });
     }];
@@ -646,13 +772,28 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 // 分别更新各部分UI的方法
 - (void)updateBannerUI {
+    // 🔒 安全检查：确保在主线程执行UI更新
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self updateBannerUI];
+        });
+        return;
+    }
+    
     if(self.bannerImgArray.count > 0){
         if(!self.cycleScrollView){
             self.pageListView.mainTableView.tableHeaderView = [self setupHeaderView];
         }
         NSMutableArray *imgUrlArr = [NSMutableArray array];
         for (BannerModel *model in self.bannerImgArray) {
-            [imgUrlArr addObject:model.mediaUrl];
+            // 🔒 安全检查：防止nil对象被添加到数组
+            NSString *mediaUrl = model.mediaUrl;
+            if (mediaUrl && mediaUrl.length > 0) {
+                [self safeAddObject:mediaUrl toArray:imgUrlArr];
+            } else {
+                NSLog(@"⚠️ Banner模型的mediaUrl为空，跳过添加");
+                [self safeAddObject:@"" toArray:imgUrlArr]; // 添加空字符串占位，保持索引一致性
+            }
         }
         self.cycleScrollView.imageURLStringsGroup = imgUrlArr;
     }else{
@@ -661,13 +802,29 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 
 - (void)updateDiyDollUI {
-    // 处理我的公仔模块数据
+    // 🔒 安全检查：确保在主线程执行UI更新
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self updateDiyDollUI];
+        });
+        return;
+    }
+    
+    // 🔒 线程安全：处理我的公仔模块数据
     if(![PublicObj isEmptyObject:[CoreArchive strForKey:KCURRENT_HOME_ID]]){
+        // 创建数组副本，避免在遍历时修改原数组导致崩溃
         NSArray *tempArr = [NSArray arrayWithArray:self.diyDollList];
+        NSMutableArray *itemsToRemove = [NSMutableArray array];
+        
         for (HomeDollModel *model in tempArr) {
             if(self.currentHome.homeId != [model.ownerId longLongValue]){
-                [self.diyDollList removeObject:model];
+                [self safeAddObject:model toArray:itemsToRemove];
             }
+        }
+        
+        // 批量移除不匹配的公仔
+        for (HomeDollModel *model in itemsToRemove) {
+            [self safeRemoveObject:model fromArray:self.diyDollList];
         }
     }
     
@@ -683,38 +840,58 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 
 - (void)updateExploreDollUI {
+    // 🔒 安全检查：确保在主线程执行UI更新
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self updateExploreDollUI];
+        });
+        return;
+    }
+    
     [self.titles removeAllObjects];
     [self.imageURLs removeAllObjects];
     [self.listViewArray removeAllObjects];
     
-    for (FindDollModel *item in self.exploreDollList) {
-        NSString *toysName = item.name;
-        if(toysName.length >12){
-            toysName = [NSString stringWithFormat:@"%@...",[item.name substringToIndex:12]];
+    // 🔒 安全遍历：防止在遍历过程中数组被修改
+    NSArray *safeDollList = [NSArray arrayWithArray:self.exploreDollList];
+    
+    for (FindDollModel *item in safeDollList) {
+        NSString *toysName = item.name ?: @""; // 防止name为nil
+        if(toysName.length > 12){
+            toysName = [NSString stringWithFormat:@"%@...",[toysName substringToIndex:12]];
         }
-        [self.titles addObject:toysName];
-        [self.imageURLs addObject:[NSURL URLWithString:item.coverImg]];
+        [self safeAddObject:toysName toArray:self.titles];
+        
+        // 🔒 安全处理URL
+        NSString *coverImgStr = item.coverImg ?: @"";
+        NSURL *coverURL = coverImgStr.length > 0 ? [NSURL URLWithString:coverImgStr] : nil;
+        if (coverURL) {
+            [self safeAddObject:coverURL toArray:self.imageURLs];
+        } else {
+            NSLog(@"⚠️ 封面图片URL为空或无效: %@", item.name);
+            [self safeAddObject:[NSURL URLWithString:@""] toArray:self.imageURLs]; // 添加空URL占位
+        }
     }
     
-    for (FindDollModel *item in self.exploreDollList) {
+    for (FindDollModel *item in safeDollList) {
         HomeExploreToysView *exploreView = [[HomeExploreToysView alloc] init];
         exploreView.model = item;
-        [self.listViewArray addObject:exploreView];
+        [self safeAddObject:exploreView toArray:self.listViewArray];
     }
     
-    self.pageListView.pinCategoryView.imageURLs = self.imageURLs;
-    self.pageListView.pinCategoryView.selectedImageURLs = self.imageURLs;
+    self.pageListView.pinCategoryView.imageURLs = [NSArray arrayWithArray:self.imageURLs];
+    self.pageListView.pinCategoryView.selectedImageURLs = [NSArray arrayWithArray:self.imageURLs];
     self.pageListView.pinCategoryView.loadImageCallback = ^(UIImageView *imageView, NSURL *imageURL) {
         [imageView sd_setImageWithURL:imageURL];
     };
     
     NSMutableArray *imageTypesArr = [NSMutableArray array];
     for (NSObject *obj in self.imageURLs) {
-        [imageTypesArr addObject:@(JXCategoryTitleImageType_TopImage)];
+        [self safeAddObject:@(JXCategoryTitleImageType_TopImage) toArray:imageTypesArr];
     }
     
-    self.pageListView.pinCategoryView.titles = self.titles;
-    self.pageListView.pinCategoryView.imageTypes = imageTypesArr;
+    self.pageListView.pinCategoryView.titles = [NSArray arrayWithArray:self.titles];
+    self.pageListView.pinCategoryView.imageTypes = [NSArray arrayWithArray:imageTypesArr];
     self.pageListView.pinCategoryView.imageNeedLayer = YES;
     self.pageListView.pinCategoryView.imageSize = CGSizeMake(64, 64);
     
@@ -1464,6 +1641,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 // 处理启动图显示控制
 - (void)handleSplashScreenControl {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    // 🔒 安全检查：防止数组越界
+    if (paths.count == 0) {
+        NSLog(@"⚠️ 无法获取文档目录路径");
+        return;
+    }
     NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"loading.png"];
     NSString *modelPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"adModel"];
 
