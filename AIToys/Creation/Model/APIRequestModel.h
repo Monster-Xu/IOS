@@ -112,6 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *voiceName;
 @property (nonatomic, copy, nullable) NSString *avatarUrl;
 @property (nonatomic, copy, nullable) NSString *audioFileUrl;
+@property (nonatomic, assign) NSInteger fileId;
 
 - (instancetype)initWithVoiceId:(NSInteger)voiceId;
 - (BOOL)hasChanges;

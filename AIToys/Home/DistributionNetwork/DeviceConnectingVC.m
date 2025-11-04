@@ -19,6 +19,7 @@
 @property (nonatomic,strong)NSString * token;
 @property (nonatomic, strong)NSTimer *timer;
 @property (nonatomic,strong)NSString * wifiName;
+@property (nonatomic,strong)NSString * wifiPassword;
 
 @end
 
@@ -42,6 +43,7 @@
     NSString *ssid = connectDeviceInfo[@"ssid"];
     NSString *pwd = connectDeviceInfo[@"pwd"];
     self.wifiName = ssid;
+    self.wifiPassword = pwd;
     [ThingSmartBLEWifiActivator sharedInstance].bleWifiDelegate = self;
     [[ThingSmartBLEWifiActivator sharedInstance] pairDeviceWithUUID:uuid token:self.token ssid:ssid pwd:pwd timeout:60];
     [self setupTimer];
@@ -104,6 +106,14 @@
     
     if(!error){
         //配网成功
+        
+        // 保存Wi-Fi密码到本地，以Wi-Fi名称作为key
+        if (self.wifiName && self.wifiPassword) {
+            [[NSUserDefaults standardUserDefaults] setObject:self.wifiPassword forKey:self.wifiName];
+            [[NSUserDefaults standardUserDefaults] synchronize];
+            NSLog(@"Wi-Fi密码已保存: %@ -> %@", self.wifiName, self.wifiPassword);
+        }
+        
         DeviceConnectSuccessViewController * successVC = [[DeviceConnectSuccessViewController alloc]init];
         successVC.wifiName = self.wifiName;
         successVC.deviceModel = deviceModel;

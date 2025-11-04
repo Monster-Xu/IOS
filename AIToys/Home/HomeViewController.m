@@ -43,7 +43,7 @@
 
 static const CGFloat JXPageheightForHeaderInSection = 100;
 
-@interface HomeViewController ()<SDCycleScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,JHCustomMenuDelegate,ThingSmartHomeManagerDelegate,JXPageListViewDelegate,ThingSmartHomeDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate,AudioPlayerViewDelegate>
+@interface HomeViewController ()<SDCycleScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,JHCustomMenuDelegate,ThingSmartHomeManagerDelegate,JXPageListViewDelegate,ThingSmartHomeDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate,AudioPlayerViewDelegate,ThingMiniAppWidgetProtocol>
 @property (weak, nonatomic) IBOutlet UIView *topView;
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UIView *containerView;
@@ -349,6 +349,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                                              selector:@selector(handleAudioSessionInterruption:)
                                                  name:AVAudioSessionInterruptionNotification 
                                                object:nil];
+    
+    // 🎵 调试：延迟检查音频播放状态
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self logCurrentAudioPlaybackStatus];
+    });
 }
 
 - (void)setupDataCache {
@@ -1469,7 +1474,20 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
                 // 跳转小程序
                 NSLog(@"deviceId:%@,token:%@",weakSelf.deviceArr[index].devId,kMyUser.accessToken);
-                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":weakSelf.deviceArr[index].devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@""}];
+                
+                // 获取当前音频播放状态信息
+                NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
+                    @"deviceId": weakSelf.deviceArr[index].devId,
+                    @"BearerId": (kMyUser.accessToken ?: @""),
+                    @"langType": @"en",
+                    @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
+                    @"envtype": @"dev"
+                }];
+                
+                // 添加音频播放状态参数
+                [weakSelf addAudioPlaybackInfoToParams:params];
+                
+                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:params];
             };
             cell.manageBlock = ^{
                 HomeDeviceListVC *VC = [HomeDeviceListVC new];
@@ -1511,7 +1529,21 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 NSLog(@"deviceId:%@,token:%@",weakSelf.diyDollList[index].Id,kMyUser.accessToken);
                 // 跳转小程序
                 NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
-                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":weakSelf.diyDollList[index].Id,@"BearerId":(kMyUser.accessToken?:@""),@"homeId":(currentHomeId?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@""}];
+                
+                // 获取当前音频播放状态信息
+                NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
+                    @"dollId": weakSelf.diyDollList[index].Id,
+                    @"BearerId": (kMyUser.accessToken ?: @""),
+                    @"homeId": (currentHomeId ?: @""),
+                    @"langType": @"en",
+                    @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
+                    @"envtype": @"dev"
+                }];
+                
+                // 添加音频播放状态参数
+                [weakSelf addAudioPlaybackInfoToParams:params];
+                
+                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:params];
             };
             cell.manageBlock = ^{
                 HomeToysListVC *VC = [HomeToysListVC new];
@@ -1892,7 +1924,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 //        WCQRCodeScanningVC *WBVC = [[WCQRCodeScanningVC alloc] init];
 //        WBVC.scanResultBlock = ^(NSString *result) {
 //            // 通过二维码打开小程序
-//            [[ThingMiniAppClient coreClient] openMiniAppByQrcode:result params:@{@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en"}];
+//            // 创建基础参数
+//            NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
+//                @"BearerId": (kMyUser.accessToken ?: @""),
+//                @"langType": @"en"
+//            }];
+//            
+//            // 添加音频播放状态参数
+//            [weakSelf addAudioPlaybackInfoToParams:params];
+//            
+//            [[ThingMiniAppClient coreClient] openMiniAppByQrcode:result params:params];
 //        };
 //        [self QRCodeScanVC:WBVC];
     }
@@ -2172,6 +2213,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.isAudioSessionActive = YES;
     
     NSLog(@"✅ 开始播放音频: %@", Url);
+    
+    // 🎵 延迟日志音频播放状态（给播放器时间初始化）
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self logCurrentAudioPlaybackStatus];
+    });
 }
 
 // 检查并从系统状态恢复音频播放器
@@ -2230,10 +2276,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 - (void)audioPlayerDidStartPlaying {
     NSLog(@"▶️ 音频播放开始");
     self.isAudioSessionActive = YES;
+    
+    // 🎵 播放开始时记录音频状态
+    [self logCurrentAudioPlaybackStatus];
 }
 
 - (void)audioPlayerDidPause {
     NSLog(@"⏸️ 音频播放暂停");
+    
+    // 🎵 暂停时记录音频状态
+    [self logCurrentAudioPlaybackStatus];
 }
 
 - (void)audioPlayerDidFinish {
@@ -2258,12 +2310,23 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     } else {
         NSLog(@"✅ 音频播放完成，会话已释放，媒体控制中心已清理");
     }
+    
+    // 🎵 播放完成时记录最终状态
+    [self logCurrentAudioPlaybackStatus];
 }
 
 - (void)audioPlayerDidUpdateProgress:(CGFloat)progress currentTime:(NSTimeInterval)currentTime totalTime:(NSTimeInterval)totalTime {
     // 可以用来更新UI进度等
     if (currentTime>=60) {
         [self.currentAudioPlayer pause];
+    }
+    
+    // 🎵 可选：定期记录播放进度（为了避免日志过多，这里先注释掉）
+    // 每10秒记录一次播放进度
+    static NSTimeInterval lastLogTime = 0;
+    if (currentTime - lastLogTime >= 10.0) {
+        NSLog(@"🎵 播放进度更新: %.1f/%.1f秒 (%.1f%%)", currentTime, totalTime, progress * 100);
+        lastLogTime = currentTime;
     }
 }
 
@@ -2290,6 +2353,101 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     } else {
         NSLog(@"✅ 音频会话已释放，媒体控制中心已清理");
     }
+    
+    // 🎵 关闭时记录最终状态
+    [self logCurrentAudioPlaybackStatus];
+}
+
+#pragma mark - 音频播放状态获取方法
+
+// 🎵 获取当前音频播放状态信息
+- (void)addAudioPlaybackInfoToParams:(NSMutableDictionary *)params {
+    if (!params) {
+        NSLog(@"⚠️ 参数字典为空，无法添加音频播放信息");
+        return;
+    }
+    
+    // 设置默认值
+    [params setObject:@"" forKey:@"currentAudioId"];
+    [params setObject:@(0) forKey:@"milliseconds"];
+    [params setObject:@(NO) forKey:@"isPlay"];
+    
+    // 检查是否有正在播放的音频
+    if (self.currentAudioPlayer && self.currentAudioURL) {
+        // 设置当前播放的音频URL作为ID
+        [params setObject:self.currentAudioURL forKey:@"currentAudioId"];
+        
+        // 获取已播放的时间（转换为毫秒）
+        NSTimeInterval currentTimeInSeconds = 0;
+        BOOL isCurrentlyPlaying = NO;
+        
+        @try {
+            // 尝试获取当前播放时间和播放状态
+            currentTimeInSeconds = [self.currentAudioPlayer getCurrentPlaybackTime];
+            isCurrentlyPlaying = [self.currentAudioPlayer isPlaying];
+            
+            // 转换为毫秒
+            NSInteger milliseconds = (NSInteger)(currentTimeInSeconds * 1000);
+            [params setObject:@(milliseconds) forKey:@"milliseconds"];
+            [params setObject:@(isCurrentlyPlaying) forKey:@"isPlay"];
+            
+            NSLog(@"🎵 添加音频播放状态到小程序参数:");
+            NSLog(@"   currentAudioId: %@", self.currentAudioURL);
+            NSLog(@"   milliseconds: %ld", (long)milliseconds);
+            NSLog(@"   isPlay: %@", isCurrentlyPlaying ? @"YES" : @"NO");
+            NSLog(@"   currentTime: %.2f seconds", currentTimeInSeconds);
+            
+        } @catch (NSException *exception) {
+            NSLog(@"⚠️ 获取音频播放状态时发生异常: %@", exception.reason);
+            // 保持默认值
+        }
+    } else {
+        NSLog(@"🎵 当前没有音频播放器或音频URL，使用默认值");
+    }
+}
+
+// 🎵 获取音频播放状态的详细信息（用于调试）
+- (NSDictionary *)getCurrentAudioPlaybackInfo {
+    if (!self.currentAudioPlayer || !self.currentAudioURL) {
+        return @{
+            @"hasPlayer": @(NO),
+            @"currentAudioId": @"",
+            @"milliseconds": @(0),
+            @"isPlay": @(NO),
+            @"storyTitle": @""
+        };
+    }
+    
+    NSTimeInterval currentTime = 0;
+    BOOL isPlaying = NO;
+    
+    @try {
+        currentTime = [self.currentAudioPlayer getCurrentPlaybackTime];
+        isPlaying = [self.currentAudioPlayer isPlaying];
+    } @catch (NSException *exception) {
+        NSLog(@"⚠️ 获取音频播放信息时发生异常: %@", exception.reason);
+    }
+    
+    return @{
+        @"hasPlayer": @(YES),
+        @"currentAudioId": self.currentAudioURL ?: @"",
+        @"milliseconds": @((NSInteger)(currentTime * 1000)),
+        @"isPlay": @(isPlaying),
+        @"storyTitle": self.currentStoryTitle ?: @"",
+        @"currentTimeSeconds": @(currentTime)
+    };
+}
+
+// 🎵 打印当前音频播放状态（调试用）
+- (void)logCurrentAudioPlaybackStatus {
+    NSDictionary *info = [self getCurrentAudioPlaybackInfo];
+    NSLog(@"🎵 当前音频播放状态:");
+    NSLog(@"   hasPlayer: %@", info[@"hasPlayer"]);
+    NSLog(@"   currentAudioId: %@", info[@"currentAudioId"]);
+    NSLog(@"   milliseconds: %@", info[@"milliseconds"]);
+    NSLog(@"   isPlay: %@", info[@"isPlay"]);
+    NSLog(@"   storyTitle: %@", info[@"storyTitle"]);
+    NSLog(@"   currentTimeSeconds: %@", info[@"currentTimeSeconds"]);
 }
 
 #pragma mark - 音频会话中断处理
@@ -2331,5 +2489,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         }
     }
 }
-
+-(void)dismissWidgetDialog:(UIView *)view{
+    
+}
 @end

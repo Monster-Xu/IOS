@@ -976,6 +976,22 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     return self.audioPlayer.isPlaying;
 }
 
+// 🎵 获取当前播放时间（秒）
+- (NSTimeInterval)getCurrentPlaybackTime {
+    if (!self.audioPlayer) {
+        return 0;
+    }
+    return self.audioPlayer.currentTime;
+}
+
+// 🎵 获取总播放时长（秒）
+- (NSTimeInterval)getTotalDuration {
+    if (!self.audioPlayer) {
+        return 0;
+    }
+    return self.audioPlayer.duration;
+}
+
 #pragma mark - Private Methods
 
 - (void)updatePlayButtonImage:(BOOL)isPlaying {

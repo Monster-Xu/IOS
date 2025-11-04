@@ -25,6 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
 // 根据设计图新增的属性
 @property (nonatomic, strong) UIImageView *coverImageView;
 @property (nonatomic, strong) UILabel *titleLabel;
+@property (nonatomic, strong) UIView *subtitleContainerView; // 副标题容器视图
 @property (nonatomic, strong) UILabel *subtitleLabel;
 @property (nonatomic, strong) UIButton *editButton;
 @property (nonatomic, strong) UIImageView *badgeImageView;

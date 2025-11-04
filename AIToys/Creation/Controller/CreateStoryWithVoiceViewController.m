@@ -191,7 +191,7 @@
 /// 显示所有内容视图（带动画）
 - (void)showAllContentViewsWithAnimation {
     NSLog(@"✨ 显示所有内容控件");
-    
+    [self scrollToBottomAfterDataLoaded];
     // 隐藏加载指示器
     [self hideCustomLoadingView];
     
@@ -439,6 +439,8 @@
                     [strongSelf.voiceTabelView reloadData];
                     NSLog(@"✅ 最终确认音色选中状态显示完成");
                 }
+                
+                
             });
         });
     });
@@ -689,6 +691,46 @@
 
 #pragma mark - ScrollView Setup
 
+/// ✅ 编辑模式下数据加载完成后滚动到底部
+- (void)scrollToBottomAfterDataLoaded {
+    NSLog(@"📱 编辑模式：准备滚动到页面底部");
+    
+    if (!self.mainScrollView) {
+        NSLog(@"⚠️ 主滚动视图未初始化，无法滚动");
+        return;
+    }
+    
+    // 延迟一点时间，确保所有布局和内容大小计算都已完成
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // 强制更新布局
+        [self.contentView layoutIfNeeded];
+        
+        // 确保滚动视图内容大小是最新的
+        [self updateMainScrollViewContentSize];
+        
+        // 再延迟一点，确保内容大小更新完成
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            CGSize contentSize = self.mainScrollView.contentSize;
+            CGSize boundsSize = self.mainScrollView.bounds.size;
+            
+            // 如果内容高度大于可视区域高度，才需要滚动
+            if (contentSize.height > boundsSize.height) {
+                // 计算底部偏移量
+                CGFloat bottomOffset = contentSize.height - boundsSize.height;
+                CGPoint bottomPoint = CGPointMake(0, bottomOffset);
+                
+                NSLog(@"📱 开始滚动到底部：内容高度=%.1f, 可视高度=%.1f, 偏移量=%.1f", 
+                      contentSize.height, boundsSize.height, bottomOffset);
+                
+                // 带动画滚动到底部
+                [self.mainScrollView setContentOffset:bottomPoint animated:YES];
+            } else {
+                NSLog(@"📱 内容未超出可视区域，无需滚动");
+            }
+        });
+    });
+}
+
 /// ✅ 设置主滚动视图 - 将整个view包装到ScrollView中
 - (void)setupScrollView {
     // 获取当前view的父视图
@@ -895,7 +937,7 @@
         // 设置ScrollView的内容大小
         self.mainScrollView.contentSize = CGSizeMake(self.contentView.frame.size.width, contentHeight);
         
-        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (计算最大Y: %.1f, 可用高度: %.1f)", 
+        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (计算最大Y: %.1f, 可用高度: %.1f)",
               currentContentHeight, contentHeight, maxY, availableHeight);
     } else {
         NSLog(@"📏 滚动视图内容大小无需更新 (当前: %.1f, 计算: %.1f)", currentContentHeight, contentHeight);

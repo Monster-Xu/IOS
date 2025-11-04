@@ -52,6 +52,12 @@ NS_ASSUME_NONNULL_BEGIN
 // 是否正在播放
 - (BOOL)isPlaying;
 
+// 🎵 新增：获取当前播放时间（秒）
+- (NSTimeInterval)getCurrentPlaybackTime;
+
+// 🎵 新增：获取总播放时长（秒）
+- (NSTimeInterval)getTotalDuration;
+
 // 新增后台播放相关方法
 - (void)setupBackgroundAudioSession;
 - (void)setupRemoteTransportControls;

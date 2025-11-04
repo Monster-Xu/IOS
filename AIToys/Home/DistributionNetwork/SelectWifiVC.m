@@ -9,6 +9,7 @@
 #import "SelectWifCell.h"
 #import "WifiManuallyInputCell.h"
 #import "ConnectWifiVC.h"
+#import "DeviceConnectingVC.h"
 
 @interface SelectWifiVC ()<UITableViewDataSource,UITableViewDelegate,ThingSmartBLEWifiActivatorDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -139,14 +140,63 @@
 
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
-    ConnectWifiVC *VC = [ConnectWifiVC new];
-    VC.UUID = self.UUID;
-    VC.homeId = self.homeId;
-    if(indexPath.section == 0){
-        NSDictionary *dic = self.wifiArr[indexPath.row];
-        VC.ssid = dic[@"ssid"];
-    }
-    [self.navigationController pushViewController:VC animated:YES];
+    
+    [SVProgressHUD showWithStatus:@"检索此wifi是否已连接"];
+    NSMutableDictionary *param = [NSMutableDictionary dictionary];
+    [param setValue:@"connectedWifi" forKey:@"propKey"];
+    
+    [[APIManager shared] GET:[APIPortConfiguration getAppPropertyByKeyUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+        [SVProgressHUD dismiss];
+        NSDictionary * dic = [NSDictionary dictionaryWithDictionary:result];
+        // 修复：正确获取数据路径 - 从 dic[@"data"][@"list"] 获取
+        if([dic[@"code"] integerValue] == 0){
+            NSDictionary * dataDict = dic[@"data"];
+            // 修复：检查dataDict是否有效且不为空
+            if(dataDict && ![dataDict isKindOfClass:[NSNull class]] && [dataDict count] > 0){
+                if ([dataDict[@"propValue"] isEqual:self.wifiArr[indexPath.row][@"ssid"]]) {
+                    NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+                    dict[@"uuid"] = self.UUID;
+                    dict[@"ssid"] = self.wifiArr[indexPath.row][@"ssid"];
+                    
+                    // 从本地获取已保存的Wi-Fi密码
+                    NSString *savedPassword = [[NSUserDefaults standardUserDefaults] stringForKey:self.wifiArr[indexPath.row][@"ssid"]];
+                    dict[@"pwd"] = savedPassword ?: @"";
+                    NSLog(@"从本地获取密码: %@ -> %@", self.wifiArr[indexPath.row][@"ssid"], savedPassword ?: @"未找到");
+                        DeviceConnectingVC *VC = [DeviceConnectingVC new];
+                        VC.connectDeviceInfo = dict;
+                        [self.navigationController pushViewController:VC animated:YES];
+                }else{
+                    ConnectWifiVC *VC = [ConnectWifiVC new];
+                    VC.UUID = self.UUID;
+                    VC.homeId = self.homeId;
+                    if(indexPath.section == 0){
+                        NSDictionary *dic = self.wifiArr[indexPath.row];
+                        VC.ssid = dic[@"ssid"];
+                        
+                    }
+                    [self.navigationController pushViewController:VC animated:YES];
+                }
+                
+            }else{
+                ConnectWifiVC *VC = [ConnectWifiVC new];
+                VC.UUID = self.UUID;
+                VC.homeId = self.homeId;
+                if(indexPath.section == 0){
+                    NSDictionary *dic = self.wifiArr[indexPath.row];
+                    VC.ssid = dic[@"ssid"];
+            
+                }
+                [self.navigationController pushViewController:VC animated:YES];
+            }
+            
+        }
+
+    } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+        NSLog(@"加载数据失败: %@", msg);
+        [SVProgressHUD dismiss];
+    }];
+    
+    
 }
 
 /*

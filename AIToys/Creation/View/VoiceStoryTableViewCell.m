@@ -93,16 +93,19 @@
     self.titleLabel.numberOfLines = 2;
     [cardContainerView addSubview:self.titleLabel];
     
+    // 副标题容器视图（用于边框）
+    self.subtitleContainerView = [[UIView alloc] init];
+    self.subtitleContainerView.layer.borderWidth = 0.5;
+    self.subtitleContainerView.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    self.subtitleContainerView.layer.cornerRadius = 4;
+    self.subtitleContainerView.clipsToBounds = YES;
+    [cardContainerView addSubview:self.subtitleContainerView];
+    
     // 副标题
     self.subtitleLabel = [[UILabel alloc] init];
-    self.subtitleLabel.borderWidth = 1;
-    self.subtitleLabel.borderColor = [UIColor lightGrayColor];
-    self.subtitleLabel.cornerRadius = 4;
-    self.subtitleLabel.clipsToBounds = YES;
     self.subtitleLabel.textAlignment = NSTextAlignmentCenter;
     self.subtitleLabel.font = [UIFont systemFontOfSize:9];
-    
-    [cardContainerView addSubview:self.subtitleLabel];
+    [self.subtitleContainerView addSubview:self.subtitleLabel];
     
     // 编辑按钮
     self.editButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -182,8 +185,8 @@
         make.right.equalTo(self.editButton.mas_left).offset(-8);
     }];
     
-     // 副标题 - 标题下方
-     [self.subtitleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+     // 副标题容器 - 标题下方
+     [self.subtitleContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
          make.left.equalTo(self.titleLabel);
          make.bottom.equalTo(self.coverImageView.mas_bottom).offset(0);
          make.height.mas_equalTo(15);
@@ -193,6 +196,14 @@
          
          // 设置最大宽度约束（屏幕宽度-200）
          make.width.lessThanOrEqualTo(@([UIScreen mainScreen].bounds.size.width - 200));
+     }];
+     
+     // 副标题文字 - 容器内部，左右内边距为2
+     [self.subtitleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+         make.left.equalTo(self.subtitleContainerView).offset(3);
+         make.right.equalTo(self.subtitleContainerView).offset(-3);
+         make.top.equalTo(self.subtitleContainerView);
+         make.bottom.equalTo(self.subtitleContainerView);
      }];
     
     // 状态视图 - 卡片底部，左右各12边距

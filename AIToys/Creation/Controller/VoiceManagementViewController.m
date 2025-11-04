@@ -449,7 +449,7 @@
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     // ✅ 加载中时使用固定高度
     if (self.isLoading) {
-        return 76;
+        return 82;
     }
     
     // ✅ 根据音色状态动态调整高度
@@ -458,12 +458,12 @@
         
         // 如果需要显示statusView，则高度增加35px
         if ([VoiceManagementTableViewCell needsStatusViewForVoice:voice]) {
-            return 76 + 35; // 111px
+            return 82 + 25; // 107px
         }
     }
     
     // 默认高度
-    return 76;
+    return 82;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {

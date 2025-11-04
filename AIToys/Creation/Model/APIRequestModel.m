@@ -306,6 +306,9 @@
     if (self.audioFileUrl) {
         dict[@"audioFileUrl"] = self.audioFileUrl;
     }
+    if (self.fileId) {
+        dict[@"fileId"] = @(self.fileId);
+    }
     
     return [dict copy];
 }
