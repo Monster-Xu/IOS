@@ -165,10 +165,10 @@
                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.49502090669999999" colorSpace="custom" customColorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="声音处理.gif" translatesAutoresizingMaskIntoConstraints="NO" id="8Ch-bC-hAE">
-                            <rect key="frame" x="108.66666666666669" y="230" width="144" height="144"/>
+                        <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="声音处理0000" translatesAutoresizingMaskIntoConstraints="NO" id="8Ch-bC-hAE">
+                            <rect key="frame" x="108.66666666666669" y="304" width="144" height="70"/>
                             <constraints>
-                                <constraint firstAttribute="height" constant="144" id="PUS-9W-NDB"/>
+                                <constraint firstAttribute="height" constant="70" id="PUS-9W-NDB"/>
                                 <constraint firstAttribute="width" constant="144" id="Ys5-yb-q8k"/>
                             </constraints>
                         </imageView>
@@ -257,7 +257,7 @@
         <image name="create_ad" width="24" height="24"/>
         <image name="create_voiceCreate" width="20" height="20"/>
         <image name="create_voiceclone" width="64" height="64"/>
-        <image name="声音处理.gif" width="2000" height="2000"/>
+        <image name="声音处理0000" width="400" height="400"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

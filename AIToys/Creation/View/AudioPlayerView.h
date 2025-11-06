@@ -17,6 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)audioPlayerDidFinish;
 - (void)audioPlayerDidClose;
 - (void)audioPlayerDidUpdateProgress:(CGFloat)progress currentTime:(NSTimeInterval)currentTime totalTime:(NSTimeInterval)totalTime;
+
+// 上一首/下一首按钮点击回调
+- (void)audioPlayerDidTapPrevious;
+- (void)audioPlayerDidTapNext;
 @end
 
 @interface AudioPlayerView : UIView
@@ -52,6 +56,12 @@ NS_ASSUME_NONNULL_BEGIN
 // 是否正在播放
 - (BOOL)isPlaying;
 
+// 🎵 新增：获取当前播放时间（秒）
+- (NSTimeInterval)getCurrentPlaybackTime;
+
+// 🎵 新增：获取总播放时长（秒）
+- (NSTimeInterval)getTotalDuration;
+
 // 新增后台播放相关方法
 - (void)setupBackgroundAudioSession;
 - (void)setupRemoteTransportControls;
@@ -62,6 +72,13 @@ NS_ASSUME_NONNULL_BEGIN
                               allowOutOfBounds:(BOOL)allowBounds 
                              enableFullScreen:(BOOL)enableFullScreen;
 - (void)setDragParameters:(CGFloat)edgeResistance decelerationRate:(CGFloat)deceleration;
+
+// 显示提示信息方法
+- (void)showToastMessage:(NSString *)message;
+
+//// 自定义上一首/下一首的提示信息
+//- (void)setPreviousButtonMessage:(NSString *)message;
+//- (void)setNextButtonMessage:(NSString *)message;
 @end
 
 NS_ASSUME_NONNULL_END

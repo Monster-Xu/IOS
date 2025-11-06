@@ -6,6 +6,7 @@
 //
 
 #import "BaseViewController.h"
+#import "VoiceStoryModel.h" // 导入以使用StoryStatus枚举
 
 NS_ASSUME_NONNULL_BEGIN
 

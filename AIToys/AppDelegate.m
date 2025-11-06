@@ -19,6 +19,8 @@
 #import "AnalyticsManager.h"
 #import "LogManager.h"
 #import <AVFoundation/AVFoundation.h>
+#import <UMCommon/UMCommon.h>
+#import <UMCommonLog/UMCommonLogHeaders.h>
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
 
@@ -61,17 +63,23 @@
     self.window.backgroundColor = [UIColor whiteColor];
     [self setUpRootVC];
     [self.window makeKeyAndVisible];
+    // 配置音频会话（应用启动时设置一次）
+    NSError *audioError = nil;
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&audioError];
+    if (audioError) {
+        NSLog(@"AppDelegate: 音频会话设置失败: %@", audioError.localizedDescription);
+    }
+    
+    //友盟相关
+    [UMConfigure initWithAppkey:@"6908c3d08560e34872dd8dcf" channel:@"App Store"];
+    [UMConfigure setLogEnabled:YES];
+    [UMCommonLogManager setUpUMCommonLogManager];
+    
     //启动广告图
     [self loadAD];
+    
     return [[ThingModuleManager sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
-    
-    
-    // 配置音频会话（应用启动时设置一次）
-        NSError *error = nil;
-        [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&error];
-        if (error) {
-            NSLog(@"AppDelegate: 音频会话设置失败: %@", error.localizedDescription);
-        };
+
 }
 
 //涂鸦消息推送
@@ -115,7 +123,19 @@
     NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL isDir = FALSE;
     BOOL isExit = [fileManager fileExistsAtPath:filePath isDirectory:&isDir];
-    BannerModel *adModel = [NSKeyedUnarchiver unarchiveObjectWithFile:modelPath];
+    
+    // 安全地反序列化模型数据
+    BannerModel *adModel = nil;
+    @try {
+        if ([fileManager fileExistsAtPath:modelPath]) {
+            adModel = [NSKeyedUnarchiver unarchiveObjectWithFile:modelPath];
+        }
+    } @catch (NSException *exception) {
+        NSLog(@"⚠️ [AppDelegate] 广告模型反序列化失败: %@", exception.reason);
+        // 清除损坏的缓存文件
+        [fileManager removeItemAtPath:modelPath error:nil];
+    }
+    
     //url是否已被缓存
     if (isExit && adModel){
         WEAK_SELF
@@ -148,33 +168,47 @@
 
         NSLog(@"📡 [AppDelegate] 网络启动图API请求成功，返回数据数量: %lu", (unsigned long)dataArr.count);
 
-        if (dataArr.count)
+        if (dataArr.count > 0)
         {
-            BannerModel *adModel = [BannerModel mj_objectWithKeyValues:[dataArr firstObject]];
-            NSLog(@"📋 [AppDelegate] 解析到网络启动图: %@", adModel.imageUrl);
-            [NSKeyedArchiver archiveRootObject: adModel toFile:modelPath];
-            //异步下载并缓存以供下次直接读取
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                if (adModel.imageUrl.length>0) {
-                    NSLog(@"🔄 [AppDelegate] 开始下载网络启动图进行缓存更新");
-                    NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:adModel.imageUrl]];
-                    if (data) {
-                        UIImage *image = [UIImage imageWithData:data];
-                        if (image) {
-                            BOOL success = [UIImagePNGRepresentation(image) writeToFile:filePath atomically:YES];
-                            if (success) {
-                                NSLog(@"✅ [AppDelegate] 网络启动图缓存更新成功 (%.2f KB)", (double)data.length / 1024.0);
-                            } else {
-                                NSLog(@"❌ [AppDelegate] 网络启动图缓存写入失败");
-                            }
-                        } else {
-                            NSLog(@"❌ [AppDelegate] 网络启动图数据转换失败");
-                        }
-                    } else {
-                        NSLog(@"❌ [AppDelegate] 网络启动图下载失败");
+            NSDictionary *firstObject = [dataArr firstObject];
+            if ([firstObject isKindOfClass:[NSDictionary class]]) {
+                BannerModel *adModel = [BannerModel mj_objectWithKeyValues:firstObject];
+                if (adModel) {
+                    NSLog(@"📋 [AppDelegate] 解析到网络启动图: %@", adModel.imageUrl);
+                    // 安全地序列化模型数据
+                    @try {
+                        [NSKeyedArchiver archiveRootObject:adModel toFile:modelPath];
+                    } @catch (NSException *exception) {
+                        NSLog(@"⚠️ [AppDelegate] 广告模型序列化失败: %@", exception.reason);
                     }
+                    //异步下载并缓存以供下次直接读取
+                    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+                        if (adModel.imageUrl.length>0) {
+                            NSLog(@"🔄 [AppDelegate] 开始下载网络启动图进行缓存更新");
+                            NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:adModel.imageUrl]];
+                            if (data) {
+                                UIImage *image = [UIImage imageWithData:data];
+                                if (image) {
+                                    BOOL success = [UIImagePNGRepresentation(image) writeToFile:filePath atomically:YES];
+                                    if (success) {
+                                        NSLog(@"✅ [AppDelegate] 网络启动图缓存更新成功 (%.2f KB)", (double)data.length / 1024.0);
+                                    } else {
+                                        NSLog(@"❌ [AppDelegate] 网络启动图缓存写入失败");
+                                    }
+                                } else {
+                                    NSLog(@"❌ [AppDelegate] 网络启动图数据转换失败");
+                                }
+                            } else {
+                                NSLog(@"❌ [AppDelegate] 网络启动图下载失败");
+                            }
+                        }
+                    });
+                } else {
+                    NSLog(@"⚠️ [AppDelegate] 广告模型解析失败");
                 }
-            });
+            } else {
+                NSLog(@"⚠️ [AppDelegate] 网络启动图数据格式错误");
+            }
         }else{
             NSLog(@"⚠️ [AppDelegate] 网络启动图数据为空，5秒后清理旧缓存");
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -274,5 +308,14 @@
                 break;
         }
     }
+}
+//iOS9以上使用以下方法
+- (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+    if ([MobClick handleUrl:url]) {
+        return YES;
+    }
+    //其它第三方处理
+    return YES;
 }
 @end

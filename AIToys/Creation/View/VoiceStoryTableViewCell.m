@@ -72,18 +72,32 @@
     self.statusView.hidden = YES;
     [cardContainerView addSubview:self.statusView];
     
+    // 失败状态图标
+    self.failureImageView = [[UIImageView alloc] init];
+    self.failureImageView.image = [UIImage imageNamed:@"失败"]; // 请替换为实际的失败图标名称
+    self.failureImageView.contentMode = UIViewContentModeScaleAspectFit;
+    self.failureImageView.hidden = YES; // 默认隐藏
+    [self.statusView addSubview:self.failureImageView];
+    
     self.statusLabel = [[UILabel alloc] init];
     self.statusLabel.font = [UIFont systemFontOfSize:14]; // 更小的字体
     self.statusLabel.textAlignment = NSTextAlignmentLeft;
     self.statusLabel.numberOfLines = 2; // 允许两行显示
     [self.statusView addSubview:self.statusLabel];
     
-    // 使用Masonry设置statusLabel约束
+    // 使用Masonry设置failureImageView约束 - 距离statusView左侧16px
+    [self.failureImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.statusView).offset(16);
+        make.centerY.equalTo(self.statusView);
+        make.width.height.mas_equalTo(16); // 设置图标大小为16x16
+    }];
+    
+    // 使用Masonry设置statusLabel约束 - 根据是否显示失败图标调整位置
     [self.statusLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.statusView).offset(4);
-        make.right.equalTo(self.statusView).offset(-4);
         make.top.equalTo(self.statusView).offset(3);
         make.bottom.equalTo(self.statusView).offset(-3);
+        make.right.equalTo(self.statusView).offset(-4);
+        // 左侧约束将在状态配置方法中动态设置
     }];
     
     // 标题
@@ -93,16 +107,19 @@
     self.titleLabel.numberOfLines = 2;
     [cardContainerView addSubview:self.titleLabel];
     
+    // 副标题容器视图（用于边框）
+    self.subtitleContainerView = [[UIView alloc] init];
+    self.subtitleContainerView.layer.borderWidth = 0.5;
+    self.subtitleContainerView.layer.borderColor = [UIColor lightGrayColor].CGColor;
+    self.subtitleContainerView.layer.cornerRadius = 4;
+    self.subtitleContainerView.clipsToBounds = YES;
+    [cardContainerView addSubview:self.subtitleContainerView];
+    
     // 副标题
     self.subtitleLabel = [[UILabel alloc] init];
-    self.subtitleLabel.borderWidth = 1;
-    self.subtitleLabel.borderColor = [UIColor lightGrayColor];
-    self.subtitleLabel.cornerRadius = 4;
-    self.subtitleLabel.clipsToBounds = YES;
     self.subtitleLabel.textAlignment = NSTextAlignmentCenter;
     self.subtitleLabel.font = [UIFont systemFontOfSize:9];
-    
-    [cardContainerView addSubview:self.subtitleLabel];
+    [self.subtitleContainerView addSubview:self.subtitleLabel];
     
     // 编辑按钮
     self.editButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -182,8 +199,8 @@
         make.right.equalTo(self.editButton.mas_left).offset(-8);
     }];
     
-     // 副标题 - 标题下方
-     [self.subtitleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+     // 副标题容器 - 标题下方
+     [self.subtitleContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
          make.left.equalTo(self.titleLabel);
          make.bottom.equalTo(self.coverImageView.mas_bottom).offset(0);
          make.height.mas_equalTo(15);
@@ -194,6 +211,14 @@
          // 设置最大宽度约束（屏幕宽度-200）
          make.width.lessThanOrEqualTo(@([UIScreen mainScreen].bounds.size.width - 200));
      }];
+     
+     // 副标题文字 - 容器内部，左右内边距为2
+     [self.subtitleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+         make.left.equalTo(self.subtitleContainerView).offset(3);
+         make.right.equalTo(self.subtitleContainerView).offset(-3);
+         make.top.equalTo(self.subtitleContainerView);
+         make.bottom.equalTo(self.subtitleContainerView);
+     }];
     
     // 状态视图 - 卡片底部，左右各12边距
     [self.statusView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -201,6 +226,26 @@
         make.right.equalTo(cardContainer).offset(-12);
         make.bottom.equalTo(cardContainer).offset(-12);
         make.height.mas_equalTo(28);
+    }];
+}
+
+#pragma mark - Private Methods
+
+/// 更新statusLabel的约束，根据是否显示失败图标
+- (void)updateStatusLabelConstraints:(BOOL)showFailureIcon {
+    // 移除之前的左侧约束
+    [self.statusLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.statusView).offset(3);
+        make.bottom.equalTo(self.statusView).offset(-3);
+        make.right.equalTo(self.statusView).offset(-4);
+        
+        if (showFailureIcon) {
+            // 如果显示失败图标，statusLabel左侧距离失败图标12px
+            make.left.equalTo(self.failureImageView.mas_right).offset(12);
+        } else {
+            // 如果不显示失败图标，statusLabel左侧距离statusView 4px
+            make.left.equalTo(self.statusView).offset(4);
+        }
     }];
 }
 
@@ -282,7 +327,14 @@
     self.statusView.hidden = NO;
     self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.95 blue:0.8 alpha:1.0]; // 浅橙色
     self.statusView.layer.cornerRadius = 4;
-    self.statusLabel.text = @"  Story Generation...";
+    
+    // 隐藏失败图标
+    self.failureImageView.hidden = YES;
+    
+    // 更新statusLabel约束（不显示失败图标）
+    [self updateStatusLabelConstraints:NO];
+    
+    self.statusLabel.text = self.model.statusDesc;
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
     
     // 确保显示副标题
@@ -316,7 +368,14 @@
     self.statusView.hidden = NO;
     self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.95 blue:0.8 alpha:1.0]; // 浅橙色
     self.statusView.layer.cornerRadius = 4;
-    self.statusLabel.text = @"  Audio Generation...";
+    
+    // 隐藏失败图标
+    self.failureImageView.hidden = YES;
+    
+    // 更新statusLabel约束（不显示失败图标）
+    [self updateStatusLabelConstraints:NO];
+    
+    self.statusLabel.text = self.model.statusDesc;
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
     
     // 设置声音信息 - 确保显示音色名称
@@ -347,6 +406,10 @@
 - (void)configureStatus2State {
     // status = 2: 编辑和点击跳转到 CreateStoryWithVoiceVC，播放按钮不可用
     self.statusView.hidden = YES;
+    
+    // 隐藏失败图标
+    self.failureImageView.hidden = YES;
+    
     self.subtitleLabel.hidden = NO;
     
     // 设置声音信息
@@ -377,7 +440,14 @@
     // status = 3: 编辑和点击跳转到 CreateStoryVC，播放按钮不可用
     self.statusView.hidden = NO;
     self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.9 blue:0.9 alpha:1.0]; // 浅红色
-    self.statusLabel.text = @"   Failed, Try Again";
+    
+    // 显示失败图标
+    self.failureImageView.hidden = NO;
+    
+    // 更新statusLabel约束以适应失败图标
+    [self updateStatusLabelConstraints:YES];
+    
+    self.statusLabel.text = self.model.statusDesc;
     self.statusLabel.textColor = [UIColor systemRedColor];
     
     // 确保显示副标题
@@ -410,6 +480,10 @@
 - (void)configureStatus5State {
     // status = 5: 编辑和点击跳转到 CreateStoryWithVoiceVC，播放按钮可用
     self.statusView.hidden = YES;
+    
+    // 隐藏失败图标
+    self.failureImageView.hidden = YES;
+    
     self.subtitleLabel.hidden = NO;
     
     // 设置声音信息
@@ -443,7 +517,17 @@
 
 - (void)configureStatus6State {
     // status = 6: 编辑和点击跳转到 CreateStoryWithVoiceVC，播放按钮不可用
-    self.statusView.hidden = YES;
+    self.statusView.hidden = NO;
+    self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.9 blue:0.9 alpha:1.0]; // 浅红色
+    
+    // 显示失败图标
+    self.failureImageView.hidden = NO;
+    
+    // 更新statusLabel约束以适应失败图标
+    [self updateStatusLabelConstraints:YES];
+    
+    self.statusLabel.text = self.model.statusDesc;
+    self.statusLabel.textColor = [UIColor systemRedColor];
     self.subtitleLabel.hidden = NO;
     
     // 设置声音信息
@@ -571,9 +655,10 @@
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
     [super setEditing:editing animated:animated];
     
-    NSLog(@"Cell setEditing: %@, isBatchEditingMode: %@",
+    NSLog(@"🔄 Cell setEditing: %@, isBatchEditingMode: %@, section: %ld",
           editing ? @"YES" : @"NO",
-          self.isBatchEditingMode ? @"YES" : @"NO");
+          self.isBatchEditingMode ? @"YES" : @"NO",
+          (long)[self getCurrentSectionIndex]);
     
     // 清晰的判断逻辑：
     // 1. 批量编辑模式（isBatchEditingMode = YES）：隐藏按钮，显示选择按钮
@@ -583,28 +668,68 @@
     if (self.isBatchEditingMode && editing) {
         // 批量编辑模式：隐藏操作按钮，显示选择按钮
         NSLog(@"📱 批量编辑模式 - 隐藏按钮，显示选择按钮");
-        self.playButton.hidden = YES;
-        self.editButton.hidden = YES;
-        [self.loadingIndicator stopAnimating];  // ✅ 停止加载动画
-        self.loadingIndicator.hidden = YES;     // ✅ 隐藏加载指示器
-        self.chooseButton.hidden = NO; // ✅ 显示选择按钮
+        
+        // 使用动画隐藏/显示
+        [UIView animateWithDuration:animated ? 0.25 : 0 animations:^{
+            self.playButton.alpha = 0;
+            self.editButton.alpha = 0;
+            self.loadingIndicator.alpha = 0;
+            self.chooseButton.alpha = 1;
+        } completion:^(BOOL finished) {
+            self.playButton.hidden = YES;
+            self.editButton.hidden = YES;
+            [self.loadingIndicator stopAnimating];  // ✅ 停止加载动画
+            self.loadingIndicator.hidden = YES;     // ✅ 隐藏加载指示器
+            self.chooseButton.hidden = NO; // ✅ 显示选择按钮
+        }];
         
     } else {
         // 正常模式或左滑删除：显示按钮，隐藏选择按钮
         NSLog(@"📱 正常模式 - 显示按钮，隐藏选择按钮");
-        self.editButton.hidden = NO;
-        self.chooseButton.hidden = YES; // ✅ 隐藏选择按钮
         
-        // ✅ 根据加载状态决定显示播放按钮还是加载指示器
-        if (self.isAudioLoading) {
-            self.playButton.hidden = YES;
-            self.loadingIndicator.hidden = NO;
-            [self.loadingIndicator startAnimating];
-        } else {
-            self.playButton.hidden = NO;
-            self.loadingIndicator.hidden = YES;
-        }
+        // 使用动画隐藏/显示
+        [UIView animateWithDuration:animated ? 0.25 : 0 animations:^{
+            self.editButton.alpha = 1;
+            self.chooseButton.alpha = 0;
+            
+            // ✅ 根据加载状态决定显示播放按钮还是加载指示器
+            if (self.isAudioLoading) {
+                self.playButton.alpha = 0;
+                self.loadingIndicator.alpha = 1;
+            } else {
+                self.playButton.alpha = 1;
+                self.loadingIndicator.alpha = 0;
+            }
+        } completion:^(BOOL finished) {
+            self.editButton.hidden = NO;
+            self.chooseButton.hidden = YES; // ✅ 隐藏选择按钮
+            
+            // ✅ 根据加载状态决定显示播放按钮还是加载指示器
+            if (self.isAudioLoading) {
+                self.playButton.hidden = YES;
+                self.loadingIndicator.hidden = NO;
+                [self.loadingIndicator startAnimating];
+            } else {
+                self.playButton.hidden = NO;
+                self.loadingIndicator.hidden = YES;
+            }
+        }];
     }
+}
+
+// 辅助方法：获取当前cell的section索引（用于调试）
+- (NSInteger)getCurrentSectionIndex {
+    UITableView *tableView = nil;
+    UIView *view = self.superview;
+    while (view && ![view isKindOfClass:[UITableView class]]) {
+        view = view.superview;
+    }
+    if ([view isKindOfClass:[UITableView class]]) {
+        tableView = (UITableView *)view;
+        NSIndexPath *indexPath = [tableView indexPathForCell:self];
+        return indexPath ? indexPath.section : -1;
+    }
+    return -1;
 }
 
 
@@ -643,6 +768,9 @@
     
     // ✅ 重置音频加载状态
     [self showAudioLoading:NO];
+    
+    // ✅ 重置失败图标状态
+    self.failureImageView.hidden = YES;
     
     // 重置按钮状态
     self.playButton.hidden = NO;

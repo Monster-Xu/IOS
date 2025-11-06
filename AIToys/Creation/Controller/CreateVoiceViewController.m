@@ -122,6 +122,10 @@
 @property (nonatomic, copy) NSString *originalStoryContent;
 @property (nonatomic, copy) NSString *originalIllustrationUrl;
 
+// ✅ 声音数据加载状态
+@property (nonatomic, assign) BOOL isLoadingVoiceData;
+@property (nonatomic, strong) VoiceModel *currentVoiceData;  // 从API加载的最新数据
+
 // 录音进度条
 @property (nonatomic, strong) CAShapeLayer *progressLayer;
 @property (nonatomic, strong) CAShapeLayer *backgroundLayer;
@@ -137,12 +141,13 @@
 @implementation CreateVoiceViewController
 
 -(void)viewWillAppear:(BOOL)animated{
-    // ✅ 如果是编辑模式，填充现有数据
+    [super viewWillAppear:animated];
+    
+    // ✅ 如果是编辑模式，从API加载最新的声音数据
     if (self.isEditMode && self.editingVoice) {
-        [self populateEditingData];
-    }else{
+        [self loadVoiceDataFromAPI];
+    } else {
         self.faildView.hidden = YES;
-        
     }
 }
 - (void)viewDidLoad {
@@ -336,21 +341,111 @@
 
 
 
-#pragma mark - ✅ 编辑模式数据填充
+#pragma mark - ✅ 编辑模式数据加载和填充
 
-/// 填充编辑模式的数据
-- (void)populateEditingData {
-    if (!self.editingVoice) {
+/// ✅ 从API加载声音数据
+- (void)loadVoiceDataFromAPI {
+    if (!self.editingVoice || self.editingVoice.voiceId <= 0) {
+        NSLog(@"⚠️ 编辑模式但声音ID无效");
+        [self showAlert:@"Voice ID is invalid"];
         return;
     }
     
-    VoiceModel *voice = self.editingVoice;
-    if (voice.cloneStatus!=3) {
-        self.faildView.hidden = YES;
+    if (self.isLoadingVoiceData) {
+        NSLog(@"⚠️ 声音数据正在加载中，跳过重复请求");
+        return;
+    }
+    
+    NSLog(@"📡 开始从API加载声音数据，voiceId: %ld", (long)self.editingVoice.voiceId);
+    
+    self.isLoadingVoiceData = YES;
+    [SVProgressHUD showWithStatus:@"Loading voice data..."];
+    
+    __weak typeof(self) weakSelf = self;
+    [[AFStoryAPIManager sharedManager] getVoiceDetailWithId:self.editingVoice.voiceId
+                                                    success:^(VoiceModel *voice) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
         
-    }else{
+        NSLog(@"✅ 声音数据加载成功");
+        NSLog(@"   声音ID: %ld", (long)voice.voiceId);
+        NSLog(@"   声音名称: %@", voice.voiceName);
+        NSLog(@"   克隆状态: %ld", (long)voice.cloneStatus);
+        NSLog(@"   头像URL: %@", voice.avatarUrl);
+        NSLog(@"   示例文本: %@", voice.sampleText);
+        NSLog(@"   示例音频: %@", voice.sampleAudioUrl);
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            strongSelf.isLoadingVoiceData = NO;
+            [SVProgressHUD dismiss];
+            
+            // 保存最新的声音数据
+            strongSelf.currentVoiceData = voice;
+            
+            // 使用API返回的最新数据填充UI
+            [strongSelf populateEditingDataWithVoice:voice];
+        });
+        
+    } failure:^(NSError *error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        NSLog(@"❌ 声音数据加载失败: %@", error.localizedDescription);
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            strongSelf.isLoadingVoiceData = NO;
+            [SVProgressHUD dismiss];
+            
+            // 加载失败时的处理
+//            [strongSelf handleVoiceDataLoadFailure:error];
+        });
+    }];
+}
+
+/// ✅ 处理声音数据加载失败
+- (void)handleVoiceDataLoadFailure:(NSError *)error {
+    NSString *errorMessage;
+    
+    if (error.code == -1009) {
+        errorMessage = @"Network connection failed, please check network and try again";
+    } else if (error.code == 404) {
+        errorMessage = @"Voice not found, may have been deleted";
+    } else if (error.code == 401) {
+        errorMessage = @"Authentication failed, please log in again";
+    } else {
+        errorMessage = [NSString stringWithFormat:@"Failed to load voice data: %@", error.localizedDescription];
+    }
+    
+    [LGBaseAlertView showAlertWithTitle:@"Loading Failed"
+                                content:errorMessage
+                           cancelBtnStr:@"Back"
+                          confirmBtnStr:@"Retry"
+                           confirmBlock:^(BOOL isValue, id obj) {
+        if (isValue) {
+            // 用户选择重试
+            [self loadVoiceDataFromAPI];
+        } else {
+            // 用户选择返回
+            [self.navigationController popViewControllerAnimated:YES];
+        }
+    }];
+}
+
+/// 填充编辑模式的数据（使用API返回的数据）
+- (void)populateEditingDataWithVoice:(VoiceModel *)voice {
+    if (!voice) {
+        NSLog(@"⚠️ 声音数据为空，无法填充UI");
+        return;
+    }
+    
+    NSLog(@"🔄 开始填充编辑模式数据");
+    
+    // 根据克隆状态设置失败视图显示/隐藏
+    if (voice.cloneStatus == VoiceCloneStatusFailed) {
         self.topConstraint.constant = 52;
         self.faildView.hidden = NO;
+    } else {
+        self.faildView.hidden = YES;
     }
     
     // ✅ 首先保存原始数据用于变更比较
@@ -360,6 +455,7 @@
     if (voice.voiceName && voice.voiceName.length > 0) {
         self.voiceNameTextView.text = voice.voiceName;
         self.voiceName = voice.voiceName;
+        NSLog(@"   ✏️ 填充音色名称: %@", voice.voiceName);
     }
     
     // 2. 填充头像图片
@@ -367,6 +463,7 @@
         self.selectedAvatarUrl = voice.avatarUrl;
         [self.chooseImageBtn sd_setImageWithURL:[NSURL URLWithString:voice.avatarUrl] forState:UIControlStateNormal];
         self.deletPickImageBtn.hidden = NO;
+        NSLog(@"   🖼️ 填充头像图片: %@", voice.avatarUrl);
     }
     
     // 3. 处理音频数据
@@ -375,17 +472,51 @@
     // 4. 根据状态调整UI
     [self adjustUIForEditingVoiceStatus:voice];
     
-    // 5. 标记有未保存的更改（因为是编辑现有数据）
-    self.hasUnsavedChanges = NO; // 编辑模式初始不标记为未保存
+    // 5. 标记无未保存的更改（因为是刚加载的数据）
+    self.hasUnsavedChanges = NO;
+    
+    NSLog(@"✅ 编辑模式数据填充完成");
 }
+
+#pragma mark - ✅ 编辑模式数据填充（原有方法保持兼容）
+
+/// 填充编辑模式的数据
+- (void)populateEditingData {
+    NSLog(@"⚠️ 使用旧版本 populateEditingData 方法，建议使用 API 加载");
+    
+    if (!self.editingVoice) {
+        return;
+    }
+    
+    // 使用传入的 VoiceModel 填充数据（兼容旧版本调用）
+    [self populateEditingDataWithVoice:self.editingVoice];
+}
+
 
 /// ✅ 记录原始值用于变更比较
 - (void)recordOriginalValues:(VoiceModel *)voice {
+    if (!voice) {
+        NSLog(@"⚠️ 声音数据为空，无法记录原始值");
+        
+        // 设置默认值避免空指针异常
+        self.originalVoiceName = @"";
+        self.originalAvatarUrl = @"";
+        self.originalSampleText = @"";
+        self.originalSampleAudioUrl = @"";
+        return;
+    }
+    
     // 记录音色相关原始值
     self.originalVoiceName = voice.voiceName ?: @"";
     self.originalAvatarUrl = voice.avatarUrl ?: @"";
     self.originalSampleText = voice.sampleText ?: @"";
     self.originalSampleAudioUrl = voice.sampleAudioUrl ?: @"";
+    
+    NSLog(@"📋 已记录原始值:");
+    NSLog(@"   原始音色名称: %@", self.originalVoiceName);
+    NSLog(@"   原始头像URL: %@", self.originalAvatarUrl);
+    NSLog(@"   原始示例文本: %@", self.originalSampleText);
+    NSLog(@"   原始音频URL: %@", self.originalSampleAudioUrl);
 }
 
 /// 处理编辑音色的音频数据
@@ -417,11 +548,9 @@
 
 /// 处理克隆成功音色的音频数据
 - (void)handleSuccessVoiceAudio:(VoiceModel *)voice {
-    // 显示示例文本
+    // 显示示例文本 - 使用 placeholder 样式显示数据
     if (voice.sampleText && voice.sampleText.length > 0) {
-        self.voiceTextLabel.text = voice.sampleText;
-        self.placeholderLabel.hidden = YES;
-        [self updateVoiceTextLabelHeight:voice.sampleText];
+        [self displayTextWithPlaceholderStyle:voice.sampleText];
     }
     
     // 标记已有音频（假设克隆成功表示有音频文件）
@@ -438,26 +567,42 @@
     // 失败或待处理状态，用户需要重新录音
     self.speekLabel.text = NSLocalizedString(@"Hold to start recording", @"");
     
-    // 如果有示例文本，也可以显示
+    // 如果有示例文本，也使用 placeholder 样式显示
     if (voice.sampleText && voice.sampleText.length > 0) {
-        self.voiceTextLabel.text = voice.sampleText;
-        self.placeholderLabel.hidden = YES;
-        [self updateVoiceTextLabelHeight:voice.sampleText];
+        [self displayTextWithPlaceholderStyle:voice.sampleText];
     }
 }
 
 /// 根据音色状态调整UI
 - (void)adjustUIForEditingVoiceStatus:(VoiceModel *)voice {
+    if (!voice) {
+        NSLog(@"⚠️ 声音数据为空，无法调整UI状态");
+        return;
+    }
+    
+    NSLog(@"🔧 根据音色状态调整UI，状态: %ld", (long)voice.cloneStatus);
+    
     switch (voice.cloneStatus) {
         case VoiceCloneStatusSuccess:
             // 成功状态：不允许重新录音，显示完成状态
+            NSLog(@"   🟢 成功状态，设置成功状态UI");
             [self setupSuccessStateUI];
             break;
             
         case VoiceCloneStatusFailed:
+            NSLog(@"   🔴 失败状态，允许重新录音");
+            break;
+            
         case VoiceCloneStatusPending:
+            NSLog(@"   🟡 待处理状态，允许重新录音");
+            break;
+            
+        case VoiceCloneStatusCloning:
+            NSLog(@"   🔵 克隆中状态，不应该进入编辑模式");
+            break;
+            
         default:
-            // 其他状态允许录音
+            NSLog(@"   ⚪ 未知状态: %ld，默认允许录音", (long)voice.cloneStatus);
             break;
     }
 }
@@ -725,8 +870,17 @@
 
 /// 处理编辑音色保存
 - (void)handleEditVoiceSave {
-    // 编辑模式的保存逻辑
-    VoiceModel *voice = self.editingVoice;
+    // ✅ 使用从API加载的最新数据进行操作
+    VoiceModel *voice = self.currentVoiceData ?: self.editingVoice;
+    
+    if (!voice) {
+        NSLog(@"❌ 没有可用的声音数据进行保存");
+        [self showAlert:@"No voice data available for saving"];
+        return;
+    }
+    
+    NSLog(@"💾 开始处理编辑音色保存");
+    NSLog(@"   使用声音数据: voiceId=%ld, 状态=%ld", (long)voice.voiceId, (long)voice.cloneStatus);
     
     // Step 1: 验证编辑参数
     NSString *validationError = [self validateEditVoiceParameters];
@@ -780,13 +934,16 @@
         return @"Please select illustration avatar";
     }
     
-    // ✅ 对于编辑模式，音频验证根据状态而定
+    // ✅ 对于编辑模式，音频验证根据状态而定，使用最新的API数据
+    VoiceModel *currentVoice = self.currentVoiceData ?: self.editingVoice;
+    
     BOOL hasNewRecording = (self.audioFileURL != nil);
     BOOL hasExistingAudio = (self.uploadedAudioFileUrl && self.uploadedAudioFileUrl.length > 0);
     
     // ✅ 如果是成功状态的音色，不需要重新录音
-    if (self.editingVoice && self.editingVoice.cloneStatus == VoiceCloneStatusSuccess) {
+    if (currentVoice && currentVoice.cloneStatus == VoiceCloneStatusSuccess) {
         // 成功状态只需要验证基本信息，不需要音频
+        NSLog(@"✅ 成功状态音色编辑，跳过音频验证");
     } else {
         // 其他状态需要音频
         if (!hasNewRecording && !hasExistingAudio) {
@@ -940,7 +1097,7 @@
                 errorMessage = [NSString stringWithFormat:@"Update failed: %@", error.localizedDescription];
             }
             
-            [self showAlert:errorMessage];
+//            [self showAlert:errorMessage];
         });
     }];
 }
@@ -1005,7 +1162,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             self.isUploading = NO;
             [SVProgressHUD dismiss];
-            [self showAlert:[NSString stringWithFormat:@"Upload failed: %@", error.localizedDescription]];
+//            [self showAlert:[NSString stringWithFormat:@"Upload failed: %@", error.localizedDescription]];
         });
     }];
 }
@@ -1043,6 +1200,7 @@
     BOOL hasNewRecording = [changes[@"hasNewRecording"] boolValue];
     if (hasNewRecording && self.uploadedAudioFileUrl) {
         updateRequest.audioFileUrl = self.uploadedAudioFileUrl;
+        updateRequest.FileId = self.uploadedFileId;
         NSLog(@"   🎤 更新音频文件: %@", self.uploadedAudioFileUrl);
         NSLog(@"   📁 文件ID: %ld", (long)self.uploadedFileId);
     }
@@ -1097,7 +1255,7 @@
                 errorMessage = [NSString stringWithFormat:@"更新失败: %@", error.localizedDescription];
             }
             
-            [self showAlert:errorMessage];
+//            [self showAlert:errorMessage];
         });
     }];
 }
@@ -1184,7 +1342,7 @@
                 errorMessage = [NSString stringWithFormat:@"Story update failed: %@", error.localizedDescription];
             }
             
-            [self showAlert:errorMessage];
+//            [self showAlert:errorMessage];
         });
     }];
 }
@@ -1321,7 +1479,7 @@
                 errorMessage = [NSString stringWithFormat:@"Update failed: %@", error.localizedDescription];
             }
             
-            [self showAlert:errorMessage];
+//            [self showAlert:errorMessage];
         });
     }];
 }
@@ -1408,7 +1566,7 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.isUploading = NO;
                 [SVProgressHUD dismiss];
-                [self showAlert:[NSString stringWithFormat:@"Upload failed: %@", error.localizedDescription]];
+//                [self showAlert:[NSString stringWithFormat:@"Upload failed: %@", error.localizedDescription]];
             });
         }];
     
@@ -1485,7 +1643,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             self.isCloningVoice = NO;
             [SVProgressHUD dismiss];
-            [self showAlert:[NSString stringWithFormat:@"Failed to create voice: %@", error.localizedDescription]];
+//            [self showAlert:[NSString stringWithFormat:@"Failed to create voice: %@", error.localizedDescription]];
         });
     }];
 }
@@ -1608,8 +1766,9 @@
 #pragma mark - Speech Recognition & Recording
 
 - (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
-    // ✅ 如果是编辑成功状态的音色，不允许录音
-    if (self.isEditMode && self.editingVoice && self.editingVoice.cloneStatus == VoiceCloneStatusSuccess) {
+    // ✅ 如果是编辑成功状态的音色，不允许录音（使用最新API数据判断）
+    VoiceModel *currentVoice = self.currentVoiceData ?: self.editingVoice;
+    if (self.isEditMode && currentVoice && currentVoice.cloneStatus == VoiceCloneStatusSuccess) {
         NSLog(@"⚠️ 成功状态的音色不允许重新录音");
         return;
     }
@@ -1627,8 +1786,9 @@
 - (void)startRecording {
     NSLog(@"🎤 startRecording 被调用");
     
-    // ✅ 如果是编辑成功状态的音色，不允许录音
-    if (self.isEditMode && self.editingVoice && self.editingVoice.cloneStatus == VoiceCloneStatusSuccess) {
+    // ✅ 如果是编辑成功状态的音色，不允许录音（使用最新API数据判断）
+    VoiceModel *currentVoice = self.currentVoiceData ?: self.editingVoice;
+    if (self.isEditMode && currentVoice && currentVoice.cloneStatus == VoiceCloneStatusSuccess) {
         NSLog(@"⚠️ 成功状态的音色不允许重新录音");
         return;
     }
@@ -2103,6 +2263,54 @@
 
 #pragma mark - Helper Methods
 
+/// ✅ 以 placeholder 样式显示文本（用于回显数据）
+- (void)displayTextWithPlaceholderStyle:(NSString *)text {
+    if (!text || text.length == 0) {
+        // 文本为空时显示默认 placeholder
+        [self showDefaultPlaceholder];
+        return;
+    }
+    
+    // 清空主 label 的文本
+    self.voiceTextLabel.text = @"";
+    
+    // 在 placeholder label 中显示回显的文本
+    self.placeholderLabel.text = text;
+    self.placeholderLabel.hidden = NO;
+    
+    // 更新高度以适应回显的文本
+    [self updateVoiceTextLabelHeight:text];
+    
+    NSLog(@"📝 以 placeholder 样式显示回显文本: %@", text);
+}
+
+/// ✅ 显示默认的 placeholder 文本
+- (void)showDefaultPlaceholder {
+    self.voiceTextLabel.text = @"";
+    self.placeholderLabel.text = @"Lila found a lost puppy in the rain, shivering under a bench. She took it home, but her mom said they couldn't keep pets. Heartbroken, Lila put up 'Found' posters. The next day, an old lady knocked—she was the puppy's owner! Grateful, she gave Lila a handwritten recipe for her famous cookies. Now Lila visits weekly, and the puppy wags its tail every time she arrives.";
+    self.placeholderLabel.hidden = NO;
+    
+    // 使用默认文本计算高度
+    [self updateVoiceTextLabelHeight:self.placeholderLabel.text];
+}
+
+/// ✅ 以正常样式显示文本（用于识别结果等实时内容）
+- (void)displayTextWithNormalStyle:(NSString *)text {
+    if (!text || text.length == 0) {
+        [self showDefaultPlaceholder];
+        return;
+    }
+    
+    // 在主 label 中显示文本
+    self.voiceTextLabel.text = text;
+    self.placeholderLabel.hidden = YES;
+    
+    // 更新高度
+    [self updateVoiceTextLabelHeight:text];
+    
+    NSLog(@"📝 以正常样式显示文本: %@", text);
+}
+
 /// ✅ 显示声音处理动画
 - (void)showSoundProcessingAnimation {
     // 禁用录音按钮的所有手势，避免在处理动画期间重新录音
@@ -2316,6 +2524,10 @@
 
 - (void)dealloc {
     NSLog(@"🗑️ CreateVoiceViewController dealloc");
+    
+    // 清理API加载状态
+    self.isLoadingVoiceData = NO;
+    self.currentVoiceData = nil;
     
     // 安全停止计时器
     if (self.recordTimer) {

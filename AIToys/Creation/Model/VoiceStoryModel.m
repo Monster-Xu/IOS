@@ -6,6 +6,7 @@
 //
 
 #import "VoiceStoryModel.h"
+#import "StoryBoundDoll.h"
 
 @implementation VoiceStoryModel
 
@@ -101,6 +102,18 @@
 
 - (BOOL)hasFailed {
     return [self.status isEqualToString:@"failed"];
+}
+
+#pragma mark - Bound Dolls Convenience Methods
+
+/// 获取主要绑定的公仔（第一个公仔）
+- (nullable StoryBoundDoll *)primaryBoundDoll {
+    return self.boundDolls.firstObject;
+}
+
+/// 是否有绑定的公仔
+- (BOOL)hasBoundDolls {
+    return self.boundDolls && self.boundDolls.count > 0;
 }
 
 @end

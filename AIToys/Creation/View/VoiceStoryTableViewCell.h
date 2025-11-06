@@ -25,10 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
 // 根据设计图新增的属性
 @property (nonatomic, strong) UIImageView *coverImageView;
 @property (nonatomic, strong) UILabel *titleLabel;
+@property (nonatomic, strong) UIView *subtitleContainerView; // 副标题容器视图
 @property (nonatomic, strong) UILabel *subtitleLabel;
 @property (nonatomic, strong) UIButton *editButton;
 @property (nonatomic, strong) UIImageView *badgeImageView;
 @property (nonatomic, strong) UIView *statusView;
+@property (nonatomic, strong) UIImageView *failureImageView; // 失败状态图标
 
 // ⭐️ 关键属性：明确标记是否为批量编辑模式
 @property (nonatomic, assign) BOOL isBatchEditingMode;

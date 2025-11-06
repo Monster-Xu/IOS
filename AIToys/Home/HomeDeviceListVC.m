@@ -36,6 +36,12 @@
 @property (nonatomic,copy)NSString *selectDeviceId;
 //修改之前的数据
 @property (nonatomic, strong) NSArray <ThingSmartDeviceModel *>*historyArr;
+
+// 🔒 安全数组操作方法声明
+- (BOOL)safeInsertObject:(id)object atIndex:(NSUInteger)index toMutableArray:(NSMutableArray *)array;
+- (id)safeObjectAtIndex:(NSUInteger)index fromArray:(NSArray *)array;
+- (BOOL)safeRemoveObjectAtIndex:(NSUInteger)index fromMutableArray:(NSMutableArray *)array;
+
 @end
 
 @implementation HomeDeviceListVC
@@ -163,18 +169,33 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     HomeDeviceItem *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cell" forIndexPath:indexPath];
-    cell.model =  self.dataArr[indexPath.row];
+    
+    // 🔒 安全获取设备模型
+    ThingSmartDeviceModel *deviceModel = [self safeObjectAtIndex:indexPath.row fromArray:self.dataArr];
+    if (!deviceModel) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 获取cell数据失败，索引: %ld", (long)indexPath.row);
+        return cell; // 返回空cell，避免崩溃
+    }
+    
+    cell.model = deviceModel;
     cell.index = indexPath.row;
     cell.isEdit = self.isEdit;
-    cell.isSel = [self.dataArr[indexPath.row].devId isEqualToString:self.selectDeviceId];;
+    cell.isSel = [deviceModel.devId isEqualToString:self.selectDeviceId];
     return cell;
 }
 
 -(void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
+    // 🔒 安全获取设备模型
+    ThingSmartDeviceModel *deviceModel = [self safeObjectAtIndex:indexPath.row fromArray:self.dataArr];
+    if (!deviceModel) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 点击事件获取设备失败，索引: %ld", (long)indexPath.row);
+        return;
+    }
+    
     if(_isEdit){
         NSString *oldSelectDeviceId = self.selectDeviceId;
-        self.selectDeviceId = self.dataArr[indexPath.row].devId;
+        self.selectDeviceId = deviceModel.devId;
 
         // 优化：只刷新相关的cell，而不是整个collection view
         NSMutableArray *indexPaths = [NSMutableArray array];
@@ -185,7 +206,8 @@
         // 添加之前选中的cell（如果存在）
         if (oldSelectDeviceId) {
             for (NSInteger i = 0; i < self.dataArr.count; i++) {
-                if ([self.dataArr[i].devId isEqualToString:oldSelectDeviceId]) {
+                ThingSmartDeviceModel *model = [self safeObjectAtIndex:i fromArray:self.dataArr];
+                if (model && [model.devId isEqualToString:oldSelectDeviceId]) {
                     [indexPaths addObject:[NSIndexPath indexPathForItem:i inSection:0]];
                     break;
                 }
@@ -195,11 +217,11 @@
         [self.collectionView reloadItemsAtIndexPaths:indexPaths];
     }else{
         //跳转小程序
-        NSLog(@"[HomeDeviceListVC] 用户点击设备 - deviceId: %@, productId: %@", self.dataArr[indexPath.row].devId, self.dataArr[indexPath.row].productId);
+        NSLog(@"[HomeDeviceListVC] 用户点击设备 - deviceId: %@, productId: %@", deviceModel.devId, deviceModel.productId);
         // 埋点上报：我的设备点击
-        [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:self.dataArr[indexPath.row].devId pid:self.dataArr[indexPath.row].productId];
+        [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:deviceModel.devId pid:deviceModel.productId];
 
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.dataArr[indexPath.row].devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en"}];
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype":@"dev"}];
     }
 }
 
@@ -288,17 +310,48 @@
 
 -(void)updateDataSource
 {
+    // 🔒 安全检查：确保 indexPath 和 moveIndexPath 有效
+    if (!self.indexPath || !self.moveIndexPath) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 拖拽排序失败: indexPath 或 moveIndexPath 为nil");
+        return;
+    }
+    
+    if (self.indexPath.row >= self.dataArr.count) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 拖拽排序失败: 源索引 %ld 超出数组范围 %lu", (long)self.indexPath.row, (unsigned long)self.dataArr.count);
+        return;
+    }
+    
     self.isMoved = YES;
-    //取出源item数据
-    id objc =  [self.dataArr objectAtIndex:self.indexPath.row];
-    //从资源数组中移除该数据,不能直接删除某个数据，因为有可能有相同的数据，一下子删除了多个数据源，造成clash
-    //    [[self.numArray objectAtIndex:self.indexPath.section] removeObject:objc];
     
-    //删除指定位置的数据，这样就只删除一个，不会重复删除
+    // 🔒 安全获取要移动的对象
+    id objc = [self safeObjectAtIndex:self.indexPath.row fromArray:self.dataArr];
+    if (!objc) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 拖拽排序失败: 无法获取源对象");
+        return;
+    }
     
-    [self.dataArr removeObjectAtIndex:self.indexPath.row];
-    //将数据插入到资源数组中的目标位置上
-    [self.dataArr insertObject:objc atIndex:self.moveIndexPath.row];
+    // 🔒 安全移除源位置的对象
+    if (![self safeRemoveObjectAtIndex:self.indexPath.row fromMutableArray:self.dataArr]) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 拖拽排序失败: 无法移除源对象");
+        return;
+    }
+    
+    // 🔒 安全插入到目标位置
+    // 注意：移除元素后，如果目标索引大于源索引，需要调整目标索引
+    NSUInteger targetIndex = self.moveIndexPath.row;
+    if (targetIndex > self.indexPath.row) {
+        targetIndex = targetIndex - 1; // 因为前面移除了一个元素，索引需要减1
+    }
+    
+    if (![self safeInsertObject:objc atIndex:targetIndex toMutableArray:self.dataArr]) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 拖拽排序失败: 无法插入到目标位置，尝试恢复数据");
+        // 尝试恢复数据：重新插入到原位置
+        [self safeInsertObject:objc atIndex:self.indexPath.row toMutableArray:self.dataArr];
+        self.isMoved = NO;
+        return;
+    }
+    
+    NSLog(@"✅ [HomeDeviceListVC] 拖拽排序成功: 从索引 %ld 移动到 %lu", (long)self.indexPath.row, (unsigned long)targetIndex);
 }
 
 //删除设备
@@ -314,16 +367,29 @@
             [device resetFactory:^{
                 NSLog(@"remove success");
                 [SVProgressHUD showSuccessWithStatus:LocalString(@"删除成功")];
-                NSInteger temp = 0;
-                for (int i = 0; i<self.dataArr.count; i++) {
-                    if([weakSelf.selectDeviceId isEqualToString:self.dataArr[i].devId]){
-                        temp = i;
+                
+                // 🔒 安全查找并删除设备
+                NSInteger targetIndex = NSNotFound;
+                for (NSInteger i = 0; i < weakSelf.dataArr.count; i++) {
+                    ThingSmartDeviceModel *deviceModel = [weakSelf safeObjectAtIndex:i fromArray:weakSelf.dataArr];
+                    if (deviceModel && [weakSelf.selectDeviceId isEqualToString:deviceModel.devId]) {
+                        targetIndex = i;
                         break;
                     }
                 }
-                [weakSelf.dataArr removeObjectAtIndex:temp];
-                weakSelf.historyArr = weakSelf.dataArr;
-                [weakSelf.collectionView reloadData];
+                
+                if (targetIndex != NSNotFound) {
+                    if ([weakSelf safeRemoveObjectAtIndex:targetIndex fromMutableArray:weakSelf.dataArr]) {
+                        weakSelf.historyArr = [weakSelf.dataArr copy];
+                        [weakSelf.collectionView reloadData];
+                        NSLog(@"✅ [HomeDeviceListVC] 设备删除成功");
+                    } else {
+                        NSLog(@"⚠️ [HomeDeviceListVC] 数组删除失败");
+                    }
+                } else {
+                    NSLog(@"⚠️ [HomeDeviceListVC] 未找到要删除的设备");
+                }
+                
                 //删除设备不退出编辑状态
 //                [weakSelf dealViewEditStatus:NO];
             } failure:^(NSError *error) {
@@ -341,21 +407,54 @@
         return;
     }
     
-    id objc;
-    NSInteger temp = 0;
-    for (int i = 0; i<self.dataArr.count; i++) {
-        if([self.selectDeviceId isEqualToString:self.dataArr[i].devId]){
-            temp = i;
-            objc = self.dataArr[i];
+    // 🔒 安全查找要置顶的设备
+    id objc = nil;
+    NSInteger targetIndex = NSNotFound;
+    
+    for (NSInteger i = 0; i < self.dataArr.count; i++) {
+        ThingSmartDeviceModel *device = [self safeObjectAtIndex:i fromArray:self.dataArr];
+        if (device && [self.selectDeviceId isEqualToString:device.devId]) {
+            targetIndex = i;
+            objc = device;
             break;
         }
     }
-    [self.dataArr removeObjectAtIndex:temp];
     
-    //将数据插入到资源数组中的目标位置上
-    [self.dataArr insertObject:objc atIndex:0];
+    // 🔒 验证找到的设备
+    if (targetIndex == NSNotFound || !objc) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 置顶失败: 未找到选中的设备 %@", self.selectDeviceId);
+        [SVProgressHUD showErrorWithStatus:LocalString(@"设备不存在，无法置顶")];
+        return;
+    }
+    
+    // 🔒 如果已经在顶部，无需操作
+    if (targetIndex == 0) {
+        NSLog(@"ℹ️ [HomeDeviceListVC] 设备已在顶部，无需置顶");
+        [SVProgressHUD showInfoWithStatus:LocalString(@"设备已在顶部")];
+        return;
+    }
+    
+    // 🔒 安全移除原位置的设备
+    if (![self safeRemoveObjectAtIndex:targetIndex fromMutableArray:self.dataArr]) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 置顶失败: 无法移除设备");
+        [SVProgressHUD showErrorWithStatus:LocalString(@"操作失败，请重试")];
+        return;
+    }
+    
+    // 🔒 安全插入到顶部
+    if (![self safeInsertObject:objc atIndex:0 toMutableArray:self.dataArr]) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 置顶失败: 无法插入到顶部，尝试恢复");
+        // 尝试恢复：重新插入到原位置
+        [self safeInsertObject:objc atIndex:targetIndex toMutableArray:self.dataArr];
+        [SVProgressHUD showErrorWithStatus:LocalString(@"操作失败，请重试")];
+        return;
+    }
+    
     [self.collectionView reloadData];
     self.isMoved = YES;
+    
+    NSLog(@"✅ [HomeDeviceListVC] 设备置顶成功: %@", self.selectDeviceId);
+    [SVProgressHUD showSuccessWithStatus:LocalString(@"置顶成功")];
 }
 
 //设备排序接口
@@ -363,10 +462,16 @@
     NSMutableArray *orderList = [NSMutableArray array];
     //device's bizType = @"6" group's bizType = @"5".
     for (NSInteger i = self.dataArr.count-1; i>=0; i--) {
-        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        [dic setObject:self.dataArr[i].devId forKey:@"bizId"];
-        [dic setObject:@"6" forKey:@"bizType"];
-        [orderList addObject:dic];
+        // 🔒 安全获取设备模型
+        ThingSmartDeviceModel *deviceModel = [self safeObjectAtIndex:i fromArray:self.dataArr];
+        if (deviceModel && deviceModel.devId) {
+            NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+            [dic setObject:deviceModel.devId forKey:@"bizId"];
+            [dic setObject:@"6" forKey:@"bizType"];
+            [orderList addObject:dic];
+        } else {
+            NSLog(@"⚠️ [HomeDeviceListVC] 排序时跳过无效设备，索引: %ld", (long)i);
+        }
     }
 //    for (ThingSmartDeviceModel *model in self.dataArr) {
 //        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
@@ -389,15 +494,78 @@
     }];
 }
 
+#pragma mark - 🔒 安全数组操作方法
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
+// 安全插入对象到可变数组
+- (BOOL)safeInsertObject:(id)object atIndex:(NSUInteger)index toMutableArray:(NSMutableArray *)array {
+    // 参数有效性检查
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 安全插入失败: 数组为nil或不是NSMutableArray类型");
+        return NO;
+    }
+    
+    if (!object) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 安全插入失败: 要插入的对象为nil");
+        return NO;
+    }
+    
+    // 索引范围检查
+    if (index > array.count) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 安全插入失败: 索引 %lu 超出范围 [0-%lu]", (unsigned long)index, (unsigned long)array.count);
+        return NO;
+    }
+    
+    // 执行插入操作
+    @try {
+        [array insertObject:object atIndex:index];
+        NSLog(@"✅ [HomeDeviceListVC] 成功插入对象到索引 %lu", (unsigned long)index);
+        return YES;
+    } @catch (NSException *exception) {
+        NSLog(@"❌ [HomeDeviceListVC] 插入对象异常: %@", exception.reason);
+        return NO;
+    }
 }
-*/
+
+// 安全获取数组中的对象
+- (id)safeObjectAtIndex:(NSUInteger)index fromArray:(NSArray *)array {
+    if (!array || ![array isKindOfClass:[NSArray class]]) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 安全获取失败: 数组为nil或不是NSArray类型");
+        return nil;
+    }
+    
+    if (index >= array.count) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 安全获取失败: 索引 %lu 超出范围 [0-%lu)", (unsigned long)index, (unsigned long)array.count);
+        return nil;
+    }
+    
+    @try {
+        return array[index];
+    } @catch (NSException *exception) {
+        NSLog(@"❌ [HomeDeviceListVC] 获取对象异常: %@", exception.reason);
+        return nil;
+    }
+}
+
+// 安全移除数组中指定索引的对象
+- (BOOL)safeRemoveObjectAtIndex:(NSUInteger)index fromMutableArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 安全移除失败: 数组为nil或不是NSMutableArray类型");
+        return NO;
+    }
+    
+    if (index >= array.count) {
+        NSLog(@"⚠️ [HomeDeviceListVC] 安全移除失败: 索引 %lu 超出范围 [0-%lu)", (unsigned long)index, (unsigned long)array.count);
+        return NO;
+    }
+    
+    @try {
+        [array removeObjectAtIndex:index];
+        NSLog(@"✅ [HomeDeviceListVC] 成功移除索引 %lu 的对象", (unsigned long)index);
+        return YES;
+    } @catch (NSException *exception) {
+        NSLog(@"❌ [HomeDeviceListVC] 移除对象异常: %@", exception.reason);
+        return NO;
+    }
+}
 
 @end

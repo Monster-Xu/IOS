@@ -24,6 +24,8 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    
+    // ✅ 设置圆角
     self.contentView.layer.cornerRadius = 20;
     self.contentView.clipsToBounds = YES;
     
@@ -38,6 +40,8 @@
     [super setSelected:selected animated:animated];
     // Configure the view for the selected state
 }
+
+
 
 #pragma mark - 初始化UI
 
@@ -64,6 +68,8 @@
     self.isEditingMode = NO;
     self.isSelected = NO;
 }
+
+
 
 #pragma mark - 数据绑定
 
@@ -167,11 +173,28 @@
     // 隐藏状态视图
     self.statusView.hidden = YES;
     
+    // ✅ 重置失败图标状态
+    if (self.faildImgView) {
+        self.faildImgView.hidden = YES;
+    }
+    
+    // ✅ 重置statusLabel约束到默认状态
+    if (self.statusLabelLeadingConstraint) {
+        self.statusLabelLeadingConstraint.constant = 16; // 默认间距
+    }
+    
+    // ✅ 重置statusLabel的文本显示属性到默认状态
+    if (self.statusLabel) {
+        self.statusLabel.text = @"";
+        self.statusLabel.numberOfLines = 1;
+        self.statusLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+        self.statusLabel.adjustsFontSizeToFitWidth = NO;
+    }
+    
     // 重置编辑按钮
     self.editButton.enabled = NO;
     self.editButton.hidden = NO;
     [self.editButton setImage:[UIImage imageNamed:@"create_edit"] forState:UIControlStateNormal];
-//    self.editButton.tintColor = [UIColor lightGrayColor];
     
     // 重置播放按钮
     self.playButton.enabled = NO;
@@ -185,6 +208,8 @@
         self.chooseButton.hidden = !self.isEditingMode;
         [self updateChooseButtonState];
     }
+    
+    NSLog(@"🔄 按钮状态和statusView已重置");
 }
 
 /// 配置克隆失败状态
@@ -204,17 +229,26 @@
     self.statusLabel.text = LocalString(@"声音克隆失败，请重新开始录音");
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:1.0]; // 红色文字
     
-    // ✅ 当显示失败图标时，statusLabel的左边距由XIB中的约束控制（通常会自动调整）
-    // 如果需要特别设置，可以调整约束常量
+    // ✅ 设置label的文本显示属性，防止与图标重合
+    self.statusLabel.numberOfLines = 1; // 确保只显示一行
+    self.statusLabel.lineBreakMode = NSLineBreakByTruncatingTail; // 尾部截断，显示省略号
+    self.statusLabel.adjustsFontSizeToFitWidth = NO; // 不自动调整字体大小
+    
+    // ✅ 失败状态：设置statusLabel相对于失败图标的约束
+    if (self.statusLabelLeadingConstraint) {
+        // statusLabel应该在失败图标右侧，保持12px间距
+        self.statusLabelLeadingConstraint.constant = 42;
+        NSLog(@"🔧 失败状态：设置statusLabel左边距 = 12px");
+    }
     
     // 按钮状态：编辑可用（失败后可以重新编辑），播放禁用
     self.editButton.enabled = YES;
-//    self.editButton.tintColor = [UIColor systemBlueColor];
     
     self.playButton.enabled = NO;
     self.playButton.tintColor = [UIColor lightGrayColor];
+    
+    NSLog(@"🔴 失败状态配置完成");
 }
-
 /// 配置克隆中状态
 - (void)configureCloningState {
     NSLog(@"🟡 音色状态: 克隆中");
@@ -232,14 +266,22 @@
     self.statusLabel.text = LocalString(@"声音克隆中");
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.8 blue:0.0 alpha:1.0]; // 黄色文字
     
-    // ✅ 设置statusLabel左边距为16px（当隐藏失败图标时）
+    // ✅ 设置label的文本显示属性
+    self.statusLabel.numberOfLines = 1; // 确保只显示一行
+    self.statusLabel.lineBreakMode = NSLineBreakByTruncatingTail; // 尾部截断，显示省略号
+    self.statusLabel.adjustsFontSizeToFitWidth = NO; // 不自动调整字体大小
+    
+    // ✅ 克隆中状态：statusLabel左边距应该直接到statusView的边距（约16px）
     if (self.statusLabelLeadingConstraint) {
-        self.statusLabelLeadingConstraint.constant = 16;
+        self.statusLabelLeadingConstraint.constant = 16;  // 直接到statusView左边的间距
+        NSLog(@"🔧 克隆中状态：设置statusLabel左边距 = 16px");
     }
     
     // 按钮状态：编辑和播放都禁用（克隆中不能操作）
     self.editButton.hidden = YES;
     self.playButton.hidden = YES;
+    
+    NSLog(@"🟡 克隆中状态配置完成");
 }
 
 
@@ -255,7 +297,7 @@
         self.editButton.hidden = YES;
         self.playButton.hidden = YES;
         self.chooseButton.hidden = NO;
-        [self updateChooseButtonState];
+        NSLog(@"⚪ 编辑模式下的正常状态配置完成");
         return;
     }
     
@@ -297,11 +339,6 @@
     }
 }
 
-/// 更新状态标签（保留原方法以兼容）
-- (void)updateStatusLabel:(NSString *)status color:(UIColor *)color {
-    NSLog(@"📋 音色状态更新: %@", status);
-}
-
 #pragma mark - 类方法
 
 /// 判断指定音色是否需要显示statusView（用于动态调整cell高度）
@@ -330,22 +367,6 @@
     [self.avatarImageView sd_setImageWithURL:url
                             placeholderImage:[UIImage imageNamed:@"默认头像"]
                                    completed:^(UIImage * _Nullable image, NSError * _Nullable error, SDImageCacheType cacheType, NSURL * _Nullable imageURL) {
-        if (error) {
-            NSLog(@"⚠️ 头像加载失败: %@", error.localizedDescription);
-        } else {
-            // 根据缓存类型记录日志
-            switch (cacheType) {
-                case SDImageCacheTypeNone:
-                    NSLog(@"📥 头像从网络加载: %@", urlString);
-                    break;
-                case SDImageCacheTypeMemory:
-                    NSLog(@"💾 头像从内存缓存加载: %@", urlString);
-                    break;
-                case SDImageCacheTypeDisk:
-                    NSLog(@"💿 头像从磁盘缓存加载: %@", urlString);
-                    break;
-            }
-        }
     }];
 }
 
@@ -373,11 +394,12 @@
 
 /// 更新编辑模式状态
 - (void)updateEditingMode:(BOOL)isEditingMode isSelected:(BOOL)isSelected {
+    NSLog(@"📝 Cell编辑模式状态更新开始 - 编辑模式: %@ -> %@, 选中状态: %@ -> %@", 
+          self.isEditingMode ? @"是" : @"否", isEditingMode ? @"是" : @"否",
+          self.isSelected ? @"是" : @"否", isSelected ? @"是" : @"否");
+    
     self.isEditingMode = isEditingMode;
     self.isSelected = isSelected;
-    
-    NSLog(@"📝 Cell编辑模式状态更新 - 编辑模式: %@, 选中状态: %@", 
-          isEditingMode ? @"是" : @"否", isSelected ? @"是" : @"否");
     
     // 更新按钮显示状态
     if (isEditingMode) {
@@ -385,11 +407,13 @@
         self.editButton.hidden = YES;
         self.playButton.hidden = YES;
         self.chooseButton.hidden = NO;
+        NSLog(@"📝 编辑模式：显示选择按钮，隐藏编辑播放按钮");
     } else {
         // 正常模式：显示编辑和播放按钮，隐藏选择按钮
         self.editButton.hidden = NO;
         self.playButton.hidden = NO;
         self.chooseButton.hidden = YES;
+        NSLog(@"📝 正常模式：显示编辑播放按钮，隐藏选择按钮");
     }
     
     // 更新选择按钮状态
@@ -397,25 +421,40 @@
     
     // 如果退出编辑模式且有音色数据，重新配置按钮状态
     if (!isEditingMode && self.voiceModel) {
+        NSLog(@"📝 退出编辑模式，重新配置按钮状态");
         [self updateUIForVoiceStatus:self.voiceModel];
     }
+    
+    NSLog(@"📝 Cell编辑模式状态更新完成");
 }
 
 /// 更新选择按钮的图片状态
 - (void)updateChooseButtonState {
+    NSLog(@"🔍 开始更新选择按钮状态 - chooseButton存在: %@, 选中状态: %@", 
+          self.chooseButton ? @"是" : @"否", self.isSelected ? @"是" : @"否");
+    
     if (!self.chooseButton) {
+        NSLog(@"❌ chooseButton为空，无法更新状态");
         return;
     }
     
     if (self.isSelected) {
         // 选中状态：显示choose_sel图片
-        [self.chooseButton setImage:[UIImage imageNamed:@"choose_sel"] forState:UIControlStateNormal];
+        UIImage *selectedImage = [UIImage imageNamed:@"choose_sel"];
+        NSLog(@"🔍 选中状态图片存在: %@", selectedImage ? @"是" : @"否");
+        [self.chooseButton setImage:selectedImage forState:UIControlStateNormal];
         NSLog(@"✅ 选择按钮状态: 已选中");
     } else {
         // 未选中状态：显示choose_normal图片
-        [self.chooseButton setImage:[UIImage imageNamed:@"choose_normal"] forState:UIControlStateNormal];
+        UIImage *normalImage = [UIImage imageNamed:@"choose_normal"];
+        NSLog(@"🔍 未选中状态图片存在: %@", normalImage ? @"是" : @"否");
+        [self.chooseButton setImage:normalImage forState:UIControlStateNormal];
         NSLog(@"⭕ 选择按钮状态: 未选中");
     }
+    
+    // 强制刷新按钮显示
+    [self.chooseButton setNeedsLayout];
+    [self.chooseButton layoutIfNeeded];
 }
 
 /// 选择按钮点击事件
@@ -423,8 +462,30 @@
     NSLog(@"✅ 选择按钮被点击 - 音色: %@, 当前状态: %@", 
           self.voiceModel.voiceName, self.isSelected ? @"已选中" : @"未选中");
     
-    // 选择按钮的点击会通过tableView的didSelectRowAtIndexPath处理
-    // 这里不需要额外处理，点击会自动触发cell的选中/取消选中
+    // ✅ 选择按钮点击需要手动触发cell的点击事件
+    // 获取当前cell在tableView中的indexPath
+    UITableView *tableView = nil;
+    UIView *superview = self.superview;
+    while (superview && ![superview isKindOfClass:[UITableView class]]) {
+        superview = superview.superview;
+    }
+    
+    if ([superview isKindOfClass:[UITableView class]]) {
+        tableView = (UITableView *)superview;
+        NSIndexPath *indexPath = [tableView indexPathForCell:self];
+        
+        if (indexPath) {
+            NSLog(@"🔄 手动触发cell选中事件 - section: %ld", (long)indexPath.section);
+            // 手动调用tableView的didSelectRowAtIndexPath
+            if ([tableView.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)]) {
+                [tableView.delegate tableView:tableView didSelectRowAtIndexPath:indexPath];
+            }
+        } else {
+            NSLog(@"❌ 无法获取cell的indexPath");
+        }
+    } else {
+        NSLog(@"❌ 无法找到父级tableView");
+    }
 }
 
 #pragma mark - 重用准备
@@ -451,6 +512,22 @@
     [self resetButtonsState];
     
     NSLog(@"🔄 Cell准备重用，状态已重置");
+}
+
+
+
+#pragma mark - ✅ 圆角设置管理
+
+/// 重写setEditing方法，在需要时重新设置圆角
+- (void)setEditing:(BOOL)editing animated:(BOOL)animated {
+    [super setEditing:editing animated:animated];
+    
+    // ✅ 如果圆角丢失，重新设置
+    if (self.contentView.layer.cornerRadius != 20) {
+        self.contentView.layer.cornerRadius = 20;
+        self.contentView.clipsToBounds = YES;
+        NSLog(@"✂️ Cell编辑状态改变，重新设置圆角");
+    }
 }
 
 @end

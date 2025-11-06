@@ -56,11 +56,11 @@
         timeStr = [NSString stringWithFormat:@"%ld h ",(long)hrs];
     }
     if (mins > 0){
-        timeStr = [timeStr stringByAppendingFormat:@"%ld min ",(long)mins];
+        timeStr = [timeStr stringByAppendingFormat:@"%ld mins ",(long)mins];
     }
-    if (s > 0){
-        timeStr = [timeStr stringByAppendingFormat:@"%ld s ",(long)s];
-    }
+//    if (s > 0){
+//        timeStr = [timeStr stringByAppendingFormat:@"%ld s ",(long)s];
+//    }
     if(timeStr.length == 0)
     {
         timeStr = @"0 s";

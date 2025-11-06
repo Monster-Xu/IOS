@@ -10,14 +10,14 @@
 "创作" = "Creation";
 "我的" = "Mine";
 "登录" = "Login";
-"注册" = "Register";
+"注册" = "Sign up";
 "专注蒙氏教育，发掘孩子独特天赋" = "Talen spark, make big story";
 "获取验证码" = "Get Verification Code";
 "账号已存在，是否立即登录?" = "Account already exists. Log in now?";
 "登录中..." = "Logging in...";
 "请输入正确的邮箱地址" = "Please enter a valid email address";
 "请输入名称" = "Please enter name";
-"账号" = "Account";
+"账号" = "Email address";
 "输入验证码" = "Enter Verification Code";
 "收不到验证码?" = "Didn't receive the code?";
 "收不到验证码" = "Didn't receive the code";
@@ -26,8 +26,8 @@
 "重新发送" = "Resend";
 "设置密码" = "Set Password";
 "密码" = "Password";
-"输入密码" = "Enter Password";
-"再次输入密码" = "Re-enter password";
+"输入密码" = "Create a password";
+"再次输入密码" = "Confirm your password";
 "密码支持6-20位，必须包含字母和数字" = "Password must be 6-20 characters, including both letters and numbers";
 "密码不一致" = "Passwords do not match";
 "忘记密码" = "Forgot Password";
@@ -44,10 +44,10 @@
 "我的公仔" = "My Talens";
 "DIY公仔" = "Creative Talens";
 "探索公仔" = "New Arrivals";
-"故事" = "Stories";
-"时长" = "Duration";
+"故事" = "Episodes";
+"时长" = "Running Time";
 "试听一下" = "Preview";
-"还没有故事机，快添加一个吧！" = "No StoryPal yet, add one now!";
+"还没有故事机，快添加一个吧！" = "No Talenpal Player  yet, add one now!";
 "还没有公仔，快添加一个吧！" = "No available Talens yet, add one now!";
 "添加故事机" = "Talenpal Player";
 "添加设备" = "Add Device";
@@ -58,7 +58,7 @@
 "发现新公仔" = "New Talens Added";
 "设备管理" =  "My Devices";
 "知道了" = "Got it";
-"删除设备" = "Delete Talens";
+"删除设备" = "Delete Device";
 "删除公仔" = "Delete Buddy";
 "置顶" = "Pin to Top";
 "管理" = "Management";
@@ -88,7 +88,7 @@
 "删除家庭" = "Delete Home";
 "邀请成员" = "Invite Member";
 "名称" = "Name";
-"头像" = "Profile Photo";
+"头像" = "Profile Picture";
 "关联账号" = "Account";
 "家庭角色" = "Family Role";
 "删除" = "Delete";
@@ -150,7 +150,6 @@
 "隐私政策管理" = "Privacy Policy Management";
 "清理缓存" = "Clear Cache";
 "退出登录" = "Log Out";
-"头像" = "Profile Photo";
 "昵称" = "Nickname";
 "请输入昵称" = "Please enter nickname";
 "邮箱" = "Email Address";
@@ -168,7 +167,7 @@
 "Wi-Fi名称" = "Wi-Fi Name";
 "Wi-Fi密码" = "Wi-Fi Password";
 "请选择2.4Ghz的Wi-Fi，并输入密码" = "Select 2.4 GHz Wi-Fi Network and enter password.";
-"如果你的Wi-Fi是5G的，请选择一个2.4G的Wi-Fi" = "If your Wi-Fi is 5GHz, please set it to be 2.4GHz";
+"如果你的Wi-Fi是5G的，请选择一个2.4G的Wi-Fi" = "If your Wi-Fi is 5 GHz, please set it to be 2.4 GHz Common router setting method.";
 "常见路由器设置方法" = "Common router setting method";
 "还有设备待添加，是否退出?" = "Devices pending setup. Exit anyway?";
 "继续添加" = "Continue Setup";
@@ -220,6 +219,7 @@
 "检查更新" = "Check for Updates";
 "修改成功" = "Edit successfully";
 "删除成功" = "Remove success";
+"公仔删除成功" = "Talens deleted successfully";
 "请选择设备" = "Please choose device!";
 "操作成功" = "Sort device success";
 "账号已删除，请重新登录" = "Account has been deleted, please log in again";

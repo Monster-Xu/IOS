@@ -31,9 +31,9 @@
 #define KCURRENT_HOME_ID @"KCURRENT_HOME_ID"
 #endif
 
-static NSString * const successMsg = @"操作成功";
-static NSString * const failureMsg = @"数据异常";
-static NSString * const netErrorMsg = @"网络异常";
+static NSString * const successMsg = @"Operation successful";
+static NSString * const failureMsg = @"Data anomaly";
+static NSString * const netErrorMsg = @"Network abnormality";
 
 // 常量定义
 static NSTimeInterval const kDefaultTimeoutInterval = 30.0;

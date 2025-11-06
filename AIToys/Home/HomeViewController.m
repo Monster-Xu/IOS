@@ -43,7 +43,7 @@
 
 static const CGFloat JXPageheightForHeaderInSection = 100;
 
-@interface HomeViewController ()<SDCycleScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,JHCustomMenuDelegate,ThingSmartHomeManagerDelegate,JXPageListViewDelegate,ThingSmartHomeDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate,AudioPlayerViewDelegate>
+@interface HomeViewController ()<SDCycleScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,JHCustomMenuDelegate,ThingSmartHomeManagerDelegate,JXPageListViewDelegate,ThingSmartHomeDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate,AudioPlayerViewDelegate,ThingMiniAppWidgetProtocol>
 @property (weak, nonatomic) IBOutlet UIView *topView;
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UIView *containerView;
@@ -66,8 +66,17 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @property(strong, nonatomic) NSMutableArray<HomeDollModel *> *diyDollList;
 @property(strong, nonatomic) NSMutableArray<FindDollModel *> *exploreDollList;
 @property (nonatomic, strong) NSMutableArray <BannerModel *> *bannerImgArray;
+
+// 🔒 新增：用于线程安全的串行队列
+@property (nonatomic, strong) dispatch_queue_t dataQueue;
 @property (nonatomic, copy) NSString *lastHardwareCode;//最新一次toyID
 @property (nonatomic, copy) NSString *homeDisplayMode; // 首页显示模式控制，从propValue获取
+
+// 🔧 新增：数据加载状态管理
+@property (nonatomic, assign) BOOL hasInitialDataLoaded; // 标记是否已经完成初始数据加载
+@property (nonatomic, assign) BOOL isDataLoading; // 标记是否正在加载数据
+@property (nonatomic, assign) BOOL isAnimationActive; // 标记骨架屏动画是否激活
+
 //播放器
 @property (nonatomic, strong) AudioPlayerView *currentAudioPlayer;
 @property (nonatomic, assign) BOOL isAudioSessionActive; // 标记音频会话是否激活
@@ -88,6 +97,110 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }
     NSLog(@"⚠️ 数组安全访问失败: index=%lu, count=%lu", (unsigned long)index, (unsigned long)array.count);
     return nil;
+}
+
+// 🔒 新增：安全插入对象到可变数组
+- (void)safeInsertObject:(id)object atIndex:(NSUInteger)index toArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 数组安全插入失败: 数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    if (!object) {
+        NSLog(@"⚠️ 数组安全插入失败: 要插入的对象为nil");
+        return;
+    }
+    
+    if (index > array.count) {
+        NSLog(@"⚠️ 数组安全插入失败: index=%lu 超出范围, count=%lu", (unsigned long)index, (unsigned long)array.count);
+        return;
+    }
+    
+    @try {
+        [array insertObject:object atIndex:index];
+    } @catch (NSException *exception) {
+        NSLog(@"❌ 数组插入异常: %@", exception.reason);
+    }
+}
+
+// 🔒 新增：安全添加对象到可变数组
+- (void)safeAddObject:(id)object toArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 数组安全添加失败: 数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    if (!object) {
+        NSLog(@"⚠️ 数组安全添加失败: 要添加的对象为nil");
+        return;
+    }
+    
+    @try {
+        [array addObject:object];
+    } @catch (NSException *exception) {
+        NSLog(@"❌ 数组添加异常: %@", exception.reason);
+    }
+}
+
+// 🔒 新增：线程安全的数组操作方法
+- (void)safeOperateOnArray:(NSMutableArray *)array withBlock:(void(^)(NSMutableArray *array))block {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 线程安全数组操作失败: 数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        @try {
+            if (block) {
+                block(array);
+            }
+        } @catch (NSException *exception) {
+            NSLog(@"❌ 线程安全数组操作异常: %@", exception.reason);
+        }
+    });
+}
+
+// 🔒 新增：批量安全操作数组
+- (void)safeAddObjectsFromArray:(NSArray *)objects toArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 批量添加失败: 目标数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    if (!objects || ![objects isKindOfClass:[NSArray class]]) {
+        NSLog(@"⚠️ 批量添加失败: 源数组为nil或不是NSArray类型");
+        return;
+    }
+    
+    @try {
+        // 逐个检查并添加对象，防止添加nil对象
+        for (id object in objects) {
+            if (object) {
+                [array addObject:object];
+            } else {
+                NSLog(@"⚠️ 跳过添加nil对象到数组");
+            }
+        }
+    } @catch (NSException *exception) {
+        NSLog(@"❌ 批量数组添加异常: %@", exception.reason);
+    }
+}
+- (void)safeRemoveObject:(id)object fromArray:(NSMutableArray *)array {
+    if (!array || ![array isKindOfClass:[NSMutableArray class]]) {
+        NSLog(@"⚠️ 数组安全移除失败: 数组为nil或不是NSMutableArray类型");
+        return;
+    }
+    
+    if (!object) {
+        NSLog(@"⚠️ 数组安全移除失败: 要移除的对象为nil");
+        return;
+    }
+    
+    @try {
+        [array removeObject:object];
+    } @catch (NSException *exception) {
+        NSLog(@"❌ 数组移除异常: %@", exception.reason);
+    }
 }
 
 -(NSMutableArray *)listViewArray{
@@ -120,8 +233,15 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self getData];
     [self becomeFirstResponder];// 激活第一响应者
+    
+    // 🔧 优化：确保界面立即显示，避免闪动
+    if (!self.topView.isHidden) {
+        self.topView.hidden = NO; // 确保界面可见
+    }
+    
+    // 🔧 优化：智能数据刷新策略
+    [self smartDataRefresh];
     
     // 检查系统媒体播放状态，如果有播放但没有当前播放器，则恢复显示
     [self checkAndRestoreAudioPlayerFromSystemState];
@@ -157,6 +277,24 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     // 标记音频会话为非激活状态
     self.isAudioSessionActive = NO;
 }
+
+// 🔧 新增：viewDidAppear优化
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    
+    // 确保界面完全准备好后再进行必要的UI调整
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // 检查是否需要调整表格视图
+        if (self.pageListView.mainTableView.contentOffset.y < 0) {
+            [self.pageListView.mainTableView setContentOffset:CGPointZero animated:NO];
+        }
+        
+        // 确保顶部视图可见
+        if (self.topView.isHidden && self.hasInitialDataLoaded) {
+            self.topView.hidden = NO;
+        }
+    });
+}
 - (void)dealloc{
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"HomeDeviceRefresh" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:AVAudioSessionInterruptionNotification object:nil];
@@ -187,6 +325,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     // 初始化音频会话状态
     self.isAudioSessionActive = NO;
     
+    // 🔒 初始化数据操作队列，确保线程安全
+    self.dataQueue = dispatch_queue_create("com.aitoys.home.dataQueue", DISPATCH_QUEUE_SERIAL);
+    
     // 添加缓存支持
     [self setupDataCache];
     
@@ -208,6 +349,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                                              selector:@selector(handleAudioSessionInterruption:)
                                                  name:AVAudioSessionInterruptionNotification 
                                                object:nil];
+    
+    // 🎵 调试：延迟检查音频播放状态
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self logCurrentAudioPlaybackStatus];
+    });
 }
 
 - (void)setupDataCache {
@@ -334,6 +480,251 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 //请求数据（优化版本）
 - (void)getData{
+    // 强制刷新所有数据
+    [self getDataWithForceRefresh:YES];
+}
+
+// 🔧 新增：智能数据刷新策略
+- (void)smartDataRefresh {
+    // 如果正在加载数据，避免重复请求
+    if (self.isDataLoading) {
+        NSLog(@"📊 数据正在加载中，跳过重复请求");
+        return;
+    }
+    
+    // 立即显示界面，避免闪动
+    self.topView.hidden = NO;
+    
+    // 检查是否有缓存数据可以立即显示
+    if (self.hasInitialDataLoaded && [self hasValidCachedData]) {
+        NSLog(@"📊 使用缓存数据立即显示界面");
+        
+        // 立即刷新UI显示缓存数据
+        [self refreshUIWithCurrentData];
+        
+        // 在后台静默更新数据
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self performBackgroundUpdate];
+        });
+    } else {
+        // 没有缓存数据，需要首次加载
+        NSLog(@"📊 首次加载或缓存数据无效，开始加载");
+        [self getDataWithForceRefresh:NO];
+    }
+}
+
+// 🔧 新增：检查是否有有效的缓存数据
+- (BOOL)hasValidCachedData {
+    // 检查关键数据是否存在
+    BOOL hasBannerData = self.bannerImgArray.count > 0;
+    BOOL hasExploreData = self.exploreDollList.count > 0;
+    BOOL hasValidHome = self.currentHome != nil;
+    
+    return hasBannerData || hasExploreData || hasValidHome;
+}
+
+// 🔧 新增：立即刷新UI显示当前数据
+- (void)refreshUIWithCurrentData {
+    // 立即更新轮播图
+    if (self.bannerImgArray.count > 0) {
+        [self updateBannerUI];
+    }
+    
+    // 立即更新探索公仔数据
+    if (self.exploreDollList.count > 0) {
+        [self updateExploreDollUI];
+    }
+    
+    // 立即刷新表格
+    [self.pageListView.mainTableView reloadData];
+    
+    NSLog(@"✅ UI已使用缓存数据立即刷新");
+}
+
+// 🔧 新增：后台静默更新数据
+- (void)performBackgroundUpdate {
+    NSLog(@"🔄 开始后台静默更新数据");
+    
+    WEAK_SELF
+    // 设置静默更新标记
+    BOOL originalLoadingState = self.isDataLoading;
+    self.isDataLoading = YES;
+    
+    // 创建一个更新组来协调多个请求
+    dispatch_group_t updateGroup = dispatch_group_create();
+    
+    // 轻量级更新轮播图
+    dispatch_group_enter(updateGroup);
+    [self updateBannerDataInBackground:^{
+        dispatch_group_leave(updateGroup);
+    }];
+    
+    // 轻量级更新设备数据
+    if (self.currentHome) {
+        dispatch_group_enter(updateGroup);
+        [self updateDeviceDataInBackground:^{
+            dispatch_group_leave(updateGroup);
+        }];
+    }
+    
+    // 所有更新完成后的处理
+    dispatch_group_notify(updateGroup, dispatch_get_main_queue(), ^{
+        weakSelf.isDataLoading = originalLoadingState;
+        NSLog(@"✅ 后台静默更新完成");
+        
+        // 如果有数据变化，温和地更新UI
+        [weakSelf updateUIGently];
+    });
+}
+
+// 🔧 新增：后台更新轮播图数据
+- (void)updateBannerDataInBackground:(void(^)(void))completion {
+    NSMutableDictionary *param = [NSMutableDictionary dictionary];
+    [param setObject:@"sort" forKey:@"sortField"];
+    [param setObject:@(1) forKey:@"sortAsc"];
+    
+    WEAK_SELF
+    [[APIManager shared] GET:[APIPortConfiguration getHomeBannerListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if ([data isKindOfClass:[NSArray class]]) {
+                NSArray *bannerModels = [BannerModel mj_objectArrayWithKeyValuesArray:data];
+                if (bannerModels && bannerModels.count > 0) {
+                    // 比较数据是否有变化
+                    if (![weakSelf isBannerDataEqual:bannerModels]) {
+                        [weakSelf.bannerImgArray removeAllObjects];
+                        [weakSelf.bannerImgArray addObjectsFromArray:bannerModels];
+                        [weakSelf cacheBannerData];
+                        NSLog(@"🔄 轮播图数据已更新");
+                    }
+                }
+            }
+            if (completion) completion();
+        });
+    } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+        NSLog(@"后台轮播图更新失败: %@", msg);
+        if (completion) completion();
+    }];
+}
+
+// 🔧 新增：后台更新设备数据
+- (void)updateDeviceDataInBackground:(void(^)(void))completion {
+    if (!self.currentHome) {
+        if (completion) completion();
+        return;
+    }
+    
+    WEAK_SELF
+    [self.currentHome getHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
+        if(weakSelf.currentHome){
+            NSArray *newDeviceArr = [weakSelf.currentHome.deviceList sortedArrayUsingComparator:^NSComparisonResult(ThingSmartDeviceModel *obj1, ThingSmartDeviceModel *obj2) {
+                return obj1.homeDisplayOrder - obj2.homeDisplayOrder;
+            }];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // 比较设备数据是否有变化
+                if (![weakSelf isDeviceArrayEqual:weakSelf.deviceArr newArray:newDeviceArr]) {
+                    weakSelf.deviceArr = newDeviceArr;
+                    NSLog(@"🔄 设备数据已更新");
+                }
+                if (completion) completion();
+            });
+        } else {
+            if (completion) completion();
+        }
+    } failure:^(NSError *error) {
+        NSLog(@"后台设备数据更新失败: %@", error.localizedDescription);
+        if (completion) completion();
+    }];
+}
+
+// 🔧 新增：比较轮播图数据是否相等
+- (BOOL)isBannerDataEqual:(NSArray<BannerModel *> *)newBanners {
+    if (self.bannerImgArray.count != newBanners.count) {
+        return NO;
+    }
+    
+    for (NSInteger i = 0; i < self.bannerImgArray.count; i++) {
+        BannerModel *oldBanner = self.bannerImgArray[i];
+        BannerModel *newBanner = newBanners[i];
+        
+        if (![oldBanner.Id isEqualToString:newBanner.Id] ||
+            ![oldBanner.mediaUrl isEqualToString:newBanner.mediaUrl]) {
+            return NO;
+        }
+    }
+    
+    return YES;
+}
+
+// 🔧 新增：温和地更新UI（避免闪动）
+- (void)updateUIGently {
+    // 使用淡入淡出动画更新轮播图
+    [UIView transitionWithView:self.cycleScrollView
+                      duration:0.3
+                       options:UIViewAnimationOptionTransitionCrossDissolve
+                    animations:^{
+                        [self updateBannerUI];
+                    } completion:nil];
+    
+    // 温和地刷新表格数据
+    [UIView performWithoutAnimation:^{
+        // 只刷新设备相关的section
+        NSIndexSet *sections = [NSIndexSet indexSetWithIndex:0];
+        [self.pageListView.mainTableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+    }];
+}
+
+// 🔧 新增：按需加载数据的优化方法
+- (void)getDataIfNeeded {
+    // 如果正在加载数据，避免重复请求
+    if (self.isDataLoading) {
+        NSLog(@"📊 数据正在加载中，跳过重复请求");
+        return;
+    }
+    
+    // 如果已经有初始数据且不是首次加载，则使用缓存数据并进行轻量级更新
+    if (self.hasInitialDataLoaded) {
+        NSLog(@"📊 使用已有数据，进行轻量级更新");
+        [self performLightweightUpdate];
+        return;
+    }
+    
+    // 首次加载或强制刷新
+    [self getDataWithForceRefresh:NO];
+}
+
+// 🔧 新增：统一的数据加载方法
+- (void)getDataWithForceRefresh:(BOOL)forceRefresh {
+    WEAK_SELF
+    
+    if (self.isDataLoading && !forceRefresh) {
+        NSLog(@"📊 数据加载中，跳过请求");
+        return;
+    }
+    
+    self.isDataLoading = YES;
+    
+    // 只有在强制刷新或首次加载时才显示骨架屏动画
+    if (forceRefresh || !self.hasInitialDataLoaded) {
+        // 如果骨架屏动画没有激活，则启动动画
+        if (!self.isAnimationActive) {
+            [self.pageListView.mainTableView tab_startAnimationWithCompletion:^{
+                // 动画启动完成后再开始数据请求
+                [weakSelf performDataLoading];
+            }];
+            self.isAnimationActive = YES;
+        } else {
+            // 动画已经激活，直接加载数据
+            [self performDataLoading];
+        }
+    } else {
+        // 不需要动画，直接加载
+        [self performDataLoading];
+    }
+}
+
+// 🔧 新增：执行实际的数据加载
+- (void)performDataLoading {
     WEAK_SELF
     
     // 异步加载用户权限，不阻塞主要数据加载
@@ -352,6 +743,55 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [self loadExploreDollData];
     [self loadDisplayModeConfig];
     [self loadHomeAndDeviceData];
+}
+
+// 🔧 新增：轻量级更新（只更新必要的数据）
+- (void)performLightweightUpdate {
+    // 只更新设备状态和公仔数据，不重新加载轮播图等静态内容
+    WEAK_SELF
+    
+    // 检查设备数据是否需要更新
+    if (self.currentHome) {
+        [self.currentHome getHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
+            if(weakSelf.currentHome){
+                NSArray *newDeviceArr = [weakSelf.currentHome.deviceList sortedArrayUsingComparator:^NSComparisonResult(ThingSmartDeviceModel *obj1, ThingSmartDeviceModel *obj2) {
+                    return obj1.homeDisplayOrder - obj2.homeDisplayOrder;
+                }];
+                
+                // 只有设备数据发生变化时才更新UI
+                if (![weakSelf isDeviceArrayEqual:weakSelf.deviceArr newArray:newDeviceArr]) {
+                    weakSelf.deviceArr = newDeviceArr;
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [weakSelf updateDeviceUI];
+                    });
+                }
+            }
+        } failure:^(NSError *error) {
+            NSLog(@"轻量级设备数据更新失败: %@", error.localizedDescription);
+        }];
+    }
+}
+
+// 🔧 新增：比较设备数组是否相等
+- (BOOL)isDeviceArrayEqual:(NSArray<ThingSmartDeviceModel *> *)oldArray newArray:(NSArray<ThingSmartDeviceModel *> *)newArray {
+    if (oldArray.count != newArray.count) {
+        return NO;
+    }
+    
+    for (NSInteger i = 0; i < oldArray.count; i++) {
+        ThingSmartDeviceModel *oldDevice = oldArray[i];
+        ThingSmartDeviceModel *newDevice = newArray[i];
+        
+        // 比较关键属性
+        if (![oldDevice.devId isEqualToString:newDevice.devId] ||
+            ![oldDevice.name isEqualToString:newDevice.name] ||
+            oldDevice.isOnline != newDevice.isOnline ||
+            oldDevice.homeDisplayOrder != newDevice.homeDisplayOrder) {
+            return NO;
+        }
+    }
+    
+    return YES;
 }
 
 #pragma mark - 数据缓存管理（简化版本）
@@ -405,7 +845,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         for (BannerModel *model in self.bannerImgArray) {
             NSDictionary *dict = [model mj_keyValues];
             if (dict) {
-                [dataToCache addObject:dict];
+                [self safeAddObject:dict toArray:dataToCache];
             }
         }
         NSError *error = nil;
@@ -425,7 +865,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         for (FindDollModel *model in self.exploreDollList) {
             NSDictionary *dict = [model mj_keyValues];
             if (dict) {
-                [dataToCache addObject:dict];
+                [self safeAddObject:dict toArray:dataToCache];
             }
         }
         NSError *error = nil;
@@ -446,7 +886,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         for (HomeDollModel *model in self.diyDollList) {
             NSDictionary *dict = [model mj_keyValues];
             if (dict) {
-                [dataToCache addObject:dict];
+                [self safeAddObject:dict toArray:dataToCache];
             }
         }
         NSError *error = nil;
@@ -469,23 +909,35 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     [[APIManager shared] GET:[APIPortConfiguration getHomeBannerListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         NSLog(@"轮播图数据请求成功");
-        [weakSelf.bannerImgArray removeAllObjects];
-        [weakSelf.bannerImgArray addObjectsFromArray:[BannerModel mj_objectArrayWithKeyValuesArray:data]];
         
-        // 缓存数据
-        [weakSelf cacheBannerData];
-        
-        // 立即更新轮播图部分UI
+        // 🔒 线程安全：在主线程中操作数组
         dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf.bannerImgArray removeAllObjects];
+            
+            // 🔒 安全检查：确保数据格式正确
+            if ([data isKindOfClass:[NSArray class]]) {
+                NSArray *bannerModels = [BannerModel mj_objectArrayWithKeyValuesArray:data];
+                if (bannerModels && bannerModels.count > 0) {
+                    [weakSelf.bannerImgArray addObjectsFromArray:bannerModels];
+                } else {
+                    NSLog(@"⚠️ Banner模型转换失败或为空");
+                }
+            } else {
+                NSLog(@"⚠️ Banner数据格式错误: %@", [data class]);
+            }
+            
+            // 缓存数据
+            [weakSelf cacheBannerData];
+            
+            // 更新轮播图UI
             [weakSelf updateBannerUI];
         });
         
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
         NSLog(@"轮播图请求失败: %@", msg);
-        // 使用默认数据
+        // 不使用默认数据，保持空状态
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf.bannerImgArray removeAllObjects];
-            [weakSelf.bannerImgArray addObjectsFromArray:[weakSelf createDefaultBannerData]];
             [weakSelf updateBannerUI];
         });
     }];
@@ -549,10 +1001,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
         NSLog(@"探索公仔请求失败: %@", msg);
-        // 使用默认数据
+        // 不使用默认数据，保持空状态
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf.exploreDollList removeAllObjects];
-            [weakSelf.exploreDollList addObjectsFromArray:[weakSelf createDefaultExploreDollData]];
             [weakSelf updateExploreDollUI];
         });
     }];
@@ -646,75 +1097,157 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 // 分别更新各部分UI的方法
 - (void)updateBannerUI {
+    // 🔒 安全检查：确保在主线程执行UI更新
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self updateBannerUI];
+        });
+        return;
+    }
+    
+    // 🔧 优化：避免不必要的UI更新
+    static NSArray *lastBannerUrls = nil;
+    NSMutableArray *currentBannerUrls = [NSMutableArray array];
+    
     if(self.bannerImgArray.count > 0){
+        // 收集当前的URL列表
+        for (BannerModel *model in self.bannerImgArray) {
+            NSString *mediaUrl = model.mediaUrl ?: @"";
+            [currentBannerUrls addObject:mediaUrl];
+        }
+        
+        // 检查是否需要更新
+        if ([currentBannerUrls isEqualToArray:lastBannerUrls]) {
+            NSLog(@"🔧 轮播图数据未变化，跳过UI更新");
+            return;
+        }
+        
+        // 更新记录
+        lastBannerUrls = [currentBannerUrls copy];
+        
         if(!self.cycleScrollView){
             self.pageListView.mainTableView.tableHeaderView = [self setupHeaderView];
         }
+        
         NSMutableArray *imgUrlArr = [NSMutableArray array];
         for (BannerModel *model in self.bannerImgArray) {
-            [imgUrlArr addObject:model.mediaUrl];
+            // 🔒 安全检查：防止nil对象被添加到数组
+            NSString *mediaUrl = model.mediaUrl;
+            if (mediaUrl && mediaUrl.length > 0) {
+                [self safeAddObject:mediaUrl toArray:imgUrlArr];
+            } else {
+                NSLog(@"⚠️ Banner模型的mediaUrl为空，跳过添加");
+                [self safeAddObject:@"" toArray:imgUrlArr]; // 添加空字符串占位，保持索引一致性
+            }
         }
-        self.cycleScrollView.imageURLStringsGroup = imgUrlArr;
+        
+        // 🔧 优化：平滑更新轮播图
+        if (![self.cycleScrollView.imageURLStringsGroup isEqualToArray:imgUrlArr]) {
+            self.cycleScrollView.imageURLStringsGroup = imgUrlArr;
+        }
     }else{
-        self.pageListView.mainTableView.tableHeaderView = [UIView new];
+        // 只在需要时更新headerView
+        if (self.pageListView.mainTableView.tableHeaderView.frame.size.height > 1) {
+            self.pageListView.mainTableView.tableHeaderView = [UIView new];
+        }
     }
 }
 
 - (void)updateDiyDollUI {
-    // 处理我的公仔模块数据
+    // 🔒 安全检查：确保在主线程执行UI更新
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self updateDiyDollUI];
+        });
+        return;
+    }
+    
+    // 🔒 线程安全：处理我的公仔模块数据
     if(![PublicObj isEmptyObject:[CoreArchive strForKey:KCURRENT_HOME_ID]]){
+        // 创建数组副本，避免在遍历时修改原数组导致崩溃
         NSArray *tempArr = [NSArray arrayWithArray:self.diyDollList];
+        NSMutableArray *itemsToRemove = [NSMutableArray array];
+        
         for (HomeDollModel *model in tempArr) {
             if(self.currentHome.homeId != [model.ownerId longLongValue]){
-                [self.diyDollList removeObject:model];
+                [self safeAddObject:model toArray:itemsToRemove];
             }
+        }
+        
+        // 批量移除不匹配的公仔
+        for (HomeDollModel *model in itemsToRemove) {
+            [self safeRemoveObject:model fromArray:self.diyDollList];
         }
     }
     
-    // 刷新我的公仔section
-    NSIndexSet *sections = [NSIndexSet indexSetWithIndex:1];
-    [self.pageListView.mainTableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+    // 🔧 优化：使用performWithoutAnimation避免闪动
+    [UIView performWithoutAnimation:^{
+        NSIndexSet *sections = [NSIndexSet indexSetWithIndex:1];
+        [self.pageListView.mainTableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+    }];
 }
 
 - (void)updateDeviceUI {
-    // 刷新设备section
-    NSIndexSet *sections = [NSIndexSet indexSetWithIndex:0];
-    [self.pageListView.mainTableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+    // 🔧 优化：使用performWithoutAnimation避免闪动
+    [UIView performWithoutAnimation:^{
+        NSIndexSet *sections = [NSIndexSet indexSetWithIndex:0];
+        [self.pageListView.mainTableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+    }];
 }
 
 - (void)updateExploreDollUI {
+    // 🔒 安全检查：确保在主线程执行UI更新
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self updateExploreDollUI];
+        });
+        return;
+    }
+    
     [self.titles removeAllObjects];
     [self.imageURLs removeAllObjects];
     [self.listViewArray removeAllObjects];
     
-    for (FindDollModel *item in self.exploreDollList) {
-        NSString *toysName = item.name;
-        if(toysName.length >12){
-            toysName = [NSString stringWithFormat:@"%@...",[item.name substringToIndex:12]];
+    // 🔒 安全遍历：防止在遍历过程中数组被修改
+    NSArray *safeDollList = [NSArray arrayWithArray:self.exploreDollList];
+    
+    for (FindDollModel *item in safeDollList) {
+        NSString *toysName = item.name ?: @""; // 防止name为nil
+        if(toysName.length > 12){
+            toysName = [NSString stringWithFormat:@"%@...",[toysName substringToIndex:12]];
         }
-        [self.titles addObject:toysName];
-        [self.imageURLs addObject:[NSURL URLWithString:item.coverImg]];
+        [self safeAddObject:toysName toArray:self.titles];
+        
+        // 🔒 安全处理URL
+        NSString *coverImgStr = item.coverImg ?: @"";
+        NSURL *coverURL = coverImgStr.length > 0 ? [NSURL URLWithString:coverImgStr] : nil;
+        if (coverURL) {
+            [self safeAddObject:coverURL toArray:self.imageURLs];
+        } else {
+            NSLog(@"⚠️ 封面图片URL为空或无效: %@", item.name);
+            [self safeAddObject:[NSURL URLWithString:@""] toArray:self.imageURLs]; // 添加空URL占位
+        }
     }
     
-    for (FindDollModel *item in self.exploreDollList) {
+    for (FindDollModel *item in safeDollList) {
         HomeExploreToysView *exploreView = [[HomeExploreToysView alloc] init];
         exploreView.model = item;
-        [self.listViewArray addObject:exploreView];
+        [self safeAddObject:exploreView toArray:self.listViewArray];
     }
     
-    self.pageListView.pinCategoryView.imageURLs = self.imageURLs;
-    self.pageListView.pinCategoryView.selectedImageURLs = self.imageURLs;
+    self.pageListView.pinCategoryView.imageURLs = [NSArray arrayWithArray:self.imageURLs];
+    self.pageListView.pinCategoryView.selectedImageURLs = [NSArray arrayWithArray:self.imageURLs];
     self.pageListView.pinCategoryView.loadImageCallback = ^(UIImageView *imageView, NSURL *imageURL) {
         [imageView sd_setImageWithURL:imageURL];
     };
     
     NSMutableArray *imageTypesArr = [NSMutableArray array];
     for (NSObject *obj in self.imageURLs) {
-        [imageTypesArr addObject:@(JXCategoryTitleImageType_TopImage)];
+        [self safeAddObject:@(JXCategoryTitleImageType_TopImage) toArray:imageTypesArr];
     }
     
-    self.pageListView.pinCategoryView.titles = self.titles;
-    self.pageListView.pinCategoryView.imageTypes = imageTypesArr;
+    self.pageListView.pinCategoryView.titles = [NSArray arrayWithArray:self.titles];
+    self.pageListView.pinCategoryView.imageTypes = [NSArray arrayWithArray:imageTypesArr];
     self.pageListView.pinCategoryView.imageNeedLayer = YES;
     self.pageListView.pinCategoryView.imageSize = CGSizeMake(64, 64);
     
@@ -722,27 +1255,41 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 
 - (void)handleDisplayModeUpdate {
-    if ([self.homeDisplayMode isEqualToString:@"0"]) {
-        NSLog(@"使用默认数据结构 (propValue=0)");
-        // 使用默认数据
-        [self.bannerImgArray removeAllObjects];
-        [self.bannerImgArray addObjectsFromArray:[self createDefaultBannerData]];
-        [self updateBannerUI];
-        
-        [self.exploreDollList removeAllObjects];
-        [self.exploreDollList addObjectsFromArray:[self createDefaultExploreDollData]];
-        [self updateExploreDollUI];
-    }
+    // 移除默认数据逻辑，直接基于网络数据
+    NSLog(@"处理显示模式更新: homeDisplayMode = %@", self.homeDisplayMode);
     
-    // 处理启动图控制
-    [self handleSplashScreenControl];
+    // 根据配置更新UI显示（如果需要特殊处理）
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.pageListView.mainTableView reloadData];
+    });
 }
 
 - (void)finalizeDataLoading {
+    // 标记数据加载完成
+    self.isDataLoading = NO;
+    self.hasInitialDataLoaded = YES;
+    
     // 结束刷新状态，显示界面
-    [self.pageListView.mainTableView.mj_header endRefreshing];
-    self.topView.hidden = NO;
-    [self.pageListView.mainTableView tab_endAnimation];
+    if (self.pageListView.mainTableView.mj_header.isRefreshing) {
+        [self.pageListView.mainTableView.mj_header endRefreshing];
+    }
+    
+    // 确保界面可见
+    if (self.topView.isHidden) {
+        self.topView.hidden = NO;
+    }
+    
+    // 只有在动画激活时才结束动画
+    if (self.isAnimationActive) {
+        // 使用延迟确保动画平滑结束
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [self.pageListView.mainTableView tab_endAnimation];
+            self.isAnimationActive = NO;
+            NSLog(@"✅ 骨架屏动画已结束，数据加载完成");
+        });
+    } else {
+        NSLog(@"✅ 数据加载完成（无动画）");
+    }
 }
 
 //刷新家庭列表
@@ -915,7 +1462,20 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
                 // 跳转小程序
                 NSLog(@"deviceId:%@,token:%@",weakSelf.deviceArr[index].devId,kMyUser.accessToken);
-                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":weakSelf.deviceArr[index].devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@""}];
+                
+                // 获取当前音频播放状态信息
+                NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
+                    @"deviceId": weakSelf.deviceArr[index].devId,
+                    @"BearerId": (kMyUser.accessToken ?: @""),
+                    @"langType": @"en",
+                    @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
+                    @"envtype": @"dev"
+                }];
+                
+                // 添加音频播放状态参数
+                [weakSelf addAudioPlaybackInfoToParams:params];
+                
+                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:params];
             };
             cell.manageBlock = ^{
                 HomeDeviceListVC *VC = [HomeDeviceListVC new];
@@ -957,7 +1517,21 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 NSLog(@"deviceId:%@,token:%@",weakSelf.diyDollList[index].Id,kMyUser.accessToken);
                 // 跳转小程序
                 NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
-                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":weakSelf.diyDollList[index].Id,@"BearerId":(kMyUser.accessToken?:@""),@"homeId":(currentHomeId?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@""}];
+                
+                // 获取当前音频播放状态信息
+                NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
+                    @"dollId": weakSelf.diyDollList[index].Id,
+                    @"BearerId": (kMyUser.accessToken ?: @""),
+                    @"homeId": (currentHomeId ?: @""),
+                    @"langType": @"en",
+                    @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
+                    @"envtype": @"dev"
+                }];
+                
+                // 添加音频播放状态参数
+                [weakSelf addAudioPlaybackInfoToParams:params];
+                
+                [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:params];
             };
             cell.manageBlock = ^{
                 HomeToysListVC *VC = [HomeToysListVC new];
@@ -1338,7 +1912,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 //        WCQRCodeScanningVC *WBVC = [[WCQRCodeScanningVC alloc] init];
 //        WBVC.scanResultBlock = ^(NSString *result) {
 //            // 通过二维码打开小程序
-//            [[ThingMiniAppClient coreClient] openMiniAppByQrcode:result params:@{@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en"}];
+//            // 创建基础参数
+//            NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
+//                @"BearerId": (kMyUser.accessToken ?: @""),
+//                @"langType": @"en"
+//            }];
+//            
+//            // 添加音频播放状态参数
+//            [weakSelf addAudioPlaybackInfoToParams:params];
+//            
+//            [[ThingMiniAppClient coreClient] openMiniAppByQrcode:result params:params];
 //        };
 //        [self QRCodeScanVC:WBVC];
     }
@@ -1416,167 +1999,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     return UIStatusBarStyleLightContent; // 或UIStatusBarStyleDefault
 }
 
-#pragma mark - 默认数据创建方法
-
-// 创建默认banner数据
-- (NSArray<BannerModel *> *)createDefaultBannerData {
-    BannerModel *defaultBanner = [[BannerModel alloc] init];
-    defaultBanner.Id = @"15";
-    defaultBanner.title = @"banner1";
-    defaultBanner.positionCode = @"HOME_BANNER";
-    defaultBanner.mediaUrl = @"https://app.talenpalussaastest.com/admin-api/infra/file/29/get/banner/20250829/8291755569649_.pic_副本_1756467884805.jpg";
-    defaultBanner.linkUrl = @"";
-    defaultBanner.linkParams = nil;
-
-    return @[defaultBanner];
-}
-
-// 创建默认启动图数据
-- (NSArray<BannerModel *> *)createDefaultSplashScreenData {
-    BannerModel *defaultSplash = [[BannerModel alloc] init];
-    defaultSplash.Id = @"21";
-    defaultSplash.imageUrl = @"https://app.talenpalussaastest.com/admin-api/infra/file/29/get/splash-screen/20250905/20250905224021_5387_1757083264312.png";
-
-    return @[defaultSplash];
-}
-
-// 创建默认探索公仔数据
-- (NSArray<FindDollModel *> *)createDefaultExploreDollData {
-    FindDollModel *defaultDoll = [[FindDollModel alloc] init];
-    defaultDoll.Id = @"C008";
-    defaultDoll.name = @"Little Lion";
-    defaultDoll.type = @"explore";
-    defaultDoll.family = @"狮子家族";
-    defaultDoll.model = @"Lion001";
-    defaultDoll.desc = @"He is cheerful and lively, and is the \"happy fruit\" in the lion group. He is full of energy every day, and uses his cheerful \"aow\" to convey happiness and is positive and optimistic.";
-    defaultDoll.coverImg = @"https://app.talenpalussaastest.com/admin-api/infra/file/29/get/doll/20250829/WechatIMG937_1756486719169.png";
-    defaultDoll.backgroundImg = @"https://app.talenpalussaastest.com/admin-api/infra/file/29/get/doll/20250829/WechatIMG931_1756486724296.png";
-    defaultDoll.preview3d = nil;
-    defaultDoll.releaseStatus = @"released";
-    defaultDoll.grayConfig = @"";
-    defaultDoll.createTime = @"1754124647000";
-    defaultDoll.totalStoryNum = 1;
-    defaultDoll.totalStoryDuration = 41;
-
-    return @[defaultDoll];
-}
-
-// 处理启动图显示控制
-- (void)handleSplashScreenControl {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"loading.png"];
-    NSString *modelPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"adModel"];
-
-    if ([self.homeDisplayMode isEqualToString:@"0"]) {
-        NSLog(@"配置为使用默认启动图，更新缓存为默认启动图");
-        // 使用默认启动图数据，更新缓存为默认启动图
-        NSArray *defaultSplashData = [self createDefaultSplashScreenData];
-        if (defaultSplashData.count > 0) {
-            BannerModel *defaultSplash = defaultSplashData.firstObject;
-
-            // 更新缓存模型文件
-            NSError *error = nil;
-            NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:defaultSplash requiringSecureCoding:NO error:&error];
-            if (modelData && !error) {
-                [modelData writeToFile:modelPath atomically:YES];
-            }
-
-            // 异步下载并缓存默认启动图，替换当前缓存
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                if (defaultSplash.imageUrl.length > 0) {
-                    NSLog(@"🔄 开始下载默认启动图: %@", defaultSplash.imageUrl);
-                    NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:defaultSplash.imageUrl]];
-                    if (data) {
-                        UIImage *image = [UIImage imageWithData:data];
-                        if (image) {
-                            BOOL success = [UIImagePNGRepresentation(image) writeToFile:filePath atomically:YES];
-                            if (success) {
-                                NSLog(@"✅ 默认启动图下载并缓存成功！");
-                                NSLog(@"📁 缓存路径: %@", filePath);
-                                NSLog(@"📏 图片尺寸: %.0f x %.0f", image.size.width, image.size.height);
-                                NSLog(@"💾 文件大小: %.2f KB", (double)data.length / 1024.0);
-                                NSLog(@"🎯 下次启动将显示默认启动图");
-                            } else {
-                                NSLog(@"❌ 默认启动图缓存写入失败");
-                            }
-                        } else {
-                            NSLog(@"❌ 默认启动图数据转换为UIImage失败");
-                        }
-                    } else {
-                        NSLog(@"❌ 默认启动图下载失败: %@", defaultSplash.imageUrl);
-                    }
-                } else {
-                    NSLog(@"⚠️ 默认启动图URL为空，跳过下载");
-                }
-            });
-        }
-    } else {
-        NSLog(@"配置为使用网络启动图 (propValue=%@)，更新缓存为网络启动图", self.homeDisplayMode);
-        // 使用网络启动图，确保缓存为最新的网络启动图数据
-        // 重新请求网络启动图数据并更新缓存
-        NSLog(@"🌐 开始请求网络启动图数据...");
-        WEAK_SELF
-        [[APIManager shared] GET:[APIPortConfiguration getSplashScreenUrl] parameter:nil success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg)  {
-            NSArray *dataArr = @[];
-            if ([data isKindOfClass:NSArray.class]){
-                dataArr = (NSArray *)data;
-            }
-
-            NSLog(@"📡 网络启动图API请求成功，返回数据数量: %lu", (unsigned long)dataArr.count);
-
-            if (dataArr.count > 0) {
-                BannerModel *adModel = [BannerModel mj_objectWithKeyValues:[dataArr firstObject]];
-                NSLog(@"📋 解析到网络启动图模型:");
-                NSLog(@"   ID: %@", adModel.Id);
-                NSLog(@"   图片URL: %@", adModel.imageUrl);
-                NSLog(@"   跳转URL: %@", adModel.linkUrl ?: @"无");
-
-                // 更新缓存模型文件
-                NSError *modelError = nil;
-                NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:adModel requiringSecureCoding:NO error:&modelError];
-                BOOL modelSaved = NO;
-                if (modelData && !modelError) {
-                    modelSaved = [modelData writeToFile:modelPath atomically:YES];
-                }
-                NSLog(@"💾 网络启动图模型缓存%@: %@", modelSaved ? @"成功" : @"失败", modelPath);
-
-                //异步下载并缓存网络启动图，替换当前缓存
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    if (adModel.imageUrl.length > 0) {
-                        NSLog(@"🔄 开始下载网络启动图: %@", adModel.imageUrl);
-                        NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:adModel.imageUrl]];
-                        if (data) {
-                            UIImage *image = [UIImage imageWithData:data];
-                            if (image) {
-                                BOOL success = [UIImagePNGRepresentation(image) writeToFile:filePath atomically:YES];
-                                if (success) {
-                                    NSLog(@"✅ 网络启动图下载并缓存成功！");
-                                    NSLog(@"📁 缓存路径: %@", filePath);
-                                    NSLog(@"📏 图片尺寸: %.0f x %.0f", image.size.width, image.size.height);
-                                    NSLog(@"💾 文件大小: %.2f KB", (double)data.length / 1024.0);
-                                    NSLog(@"🎯 下次启动将显示网络启动图");
-                                } else {
-                                    NSLog(@"❌ 网络启动图缓存写入失败");
-                                }
-                            } else {
-                                NSLog(@"❌ 网络启动图数据转换为UIImage失败");
-                            }
-                        } else {
-                            NSLog(@"❌ 网络启动图下载失败: %@", adModel.imageUrl);
-                        }
-                    } else {
-                        NSLog(@"⚠️ 网络启动图URL为空，跳过下载");
-                    }
-                });
-            } else {
-                NSLog(@"⚠️ 网络启动图数据为空，保持当前缓存");
-            }
-        } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg){
-            NSLog(@"❌ 网络启动图API请求失败: %@ (错误码: %ld)", msg, (long)error.code);
-            NSLog(@"🔄 保持当前缓存不变");
-        }];
-    }
-}
 
 // 播放新的音频
 - (void)playNewAudioForAudioURL:(NSString *)Url storyTitle:(NSString *)title coverImageURL:(NSString *)coverImageURL{
@@ -1613,6 +2035,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.isAudioSessionActive = YES;
     
     NSLog(@"✅ 开始播放音频: %@", Url);
+    
+    // 🎵 延迟日志音频播放状态（给播放器时间初始化）
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self logCurrentAudioPlaybackStatus];
+    });
 }
 
 // 检查并从系统状态恢复音频播放器
@@ -1671,10 +2098,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 - (void)audioPlayerDidStartPlaying {
     NSLog(@"▶️ 音频播放开始");
     self.isAudioSessionActive = YES;
+    
+    // 🎵 播放开始时记录音频状态
+    [self logCurrentAudioPlaybackStatus];
 }
 
 - (void)audioPlayerDidPause {
     NSLog(@"⏸️ 音频播放暂停");
+    
+    // 🎵 暂停时记录音频状态
+    [self logCurrentAudioPlaybackStatus];
 }
 
 - (void)audioPlayerDidFinish {
@@ -1699,12 +2132,23 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     } else {
         NSLog(@"✅ 音频播放完成，会话已释放，媒体控制中心已清理");
     }
+    
+    // 🎵 播放完成时记录最终状态
+    [self logCurrentAudioPlaybackStatus];
 }
 
 - (void)audioPlayerDidUpdateProgress:(CGFloat)progress currentTime:(NSTimeInterval)currentTime totalTime:(NSTimeInterval)totalTime {
     // 可以用来更新UI进度等
     if (currentTime>=60) {
         [self.currentAudioPlayer pause];
+    }
+    
+    // 🎵 可选：定期记录播放进度（为了避免日志过多，这里先注释掉）
+    // 每10秒记录一次播放进度
+    static NSTimeInterval lastLogTime = 0;
+    if (currentTime - lastLogTime >= 10.0) {
+        NSLog(@"🎵 播放进度更新: %.1f/%.1f秒 (%.1f%%)", currentTime, totalTime, progress * 100);
+        lastLogTime = currentTime;
     }
 }
 
@@ -1731,6 +2175,111 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     } else {
         NSLog(@"✅ 音频会话已释放，媒体控制中心已清理");
     }
+    
+    // 🎵 关闭时记录最终状态
+    [self logCurrentAudioPlaybackStatus];
+}
+- (void)audioPlayerDidTapPrevious {
+    NSLog(@"用户点击了上一首按钮");
+    [SVProgressHUD showErrorWithStatus:@"This is already the first song."];
+}
+
+- (void)audioPlayerDidTapNext {
+    NSLog(@"用户点击了下一首按钮");
+    [SVProgressHUD showErrorWithStatus:@"This is the last song."];
+}
+
+
+#pragma mark - 音频播放状态获取方法
+
+// 🎵 获取当前音频播放状态信息
+- (void)addAudioPlaybackInfoToParams:(NSMutableDictionary *)params {
+    if (!params) {
+        NSLog(@"⚠️ 参数字典为空，无法添加音频播放信息");
+        return;
+    }
+    
+    // 设置默认值
+    [params setObject:@"" forKey:@"currentAudioId"];
+    [params setObject:@(0) forKey:@"milliseconds"];
+    [params setObject:@(NO) forKey:@"isPlay"];
+    
+    // 检查是否有正在播放的音频
+    if (self.currentAudioPlayer && self.currentAudioURL) {
+        // 设置当前播放的音频URL作为ID
+        [params setObject:self.currentAudioURL forKey:@"currentAudioId"];
+        
+        // 获取已播放的时间（转换为毫秒）
+        NSTimeInterval currentTimeInSeconds = 0;
+        BOOL isCurrentlyPlaying = NO;
+        
+        @try {
+            // 尝试获取当前播放时间和播放状态
+            currentTimeInSeconds = [self.currentAudioPlayer getCurrentPlaybackTime];
+            isCurrentlyPlaying = [self.currentAudioPlayer isPlaying];
+            
+            // 转换为毫秒
+            NSInteger milliseconds = (NSInteger)(currentTimeInSeconds * 1000);
+            [params setObject:@(milliseconds) forKey:@"milliseconds"];
+            [params setObject:@(isCurrentlyPlaying) forKey:@"isPlay"];
+            
+            NSLog(@"🎵 添加音频播放状态到小程序参数:");
+            NSLog(@"   currentAudioId: %@", self.currentAudioURL);
+            NSLog(@"   milliseconds: %ld", (long)milliseconds);
+            NSLog(@"   isPlay: %@", isCurrentlyPlaying ? @"YES" : @"NO");
+            NSLog(@"   currentTime: %.2f seconds", currentTimeInSeconds);
+            
+        } @catch (NSException *exception) {
+            NSLog(@"⚠️ 获取音频播放状态时发生异常: %@", exception.reason);
+            // 保持默认值
+        }
+    } else {
+        NSLog(@"🎵 当前没有音频播放器或音频URL，使用默认值");
+    }
+}
+
+// 🎵 获取音频播放状态的详细信息（用于调试）
+- (NSDictionary *)getCurrentAudioPlaybackInfo {
+    if (!self.currentAudioPlayer || !self.currentAudioURL) {
+        return @{
+            @"hasPlayer": @(NO),
+            @"currentAudioId": @"",
+            @"milliseconds": @(0),
+            @"isPlay": @(NO),
+            @"storyTitle": @""
+        };
+    }
+    
+    NSTimeInterval currentTime = 0;
+    BOOL isPlaying = NO;
+    
+    @try {
+        currentTime = [self.currentAudioPlayer getCurrentPlaybackTime];
+        isPlaying = [self.currentAudioPlayer isPlaying];
+    } @catch (NSException *exception) {
+        NSLog(@"⚠️ 获取音频播放信息时发生异常: %@", exception.reason);
+    }
+    
+    return @{
+        @"hasPlayer": @(YES),
+        @"currentAudioId": self.currentAudioURL ?: @"",
+        @"milliseconds": @((NSInteger)(currentTime * 1000)),
+        @"isPlay": @(isPlaying),
+        @"storyTitle": self.currentStoryTitle ?: @"",
+        @"currentTimeSeconds": @(currentTime)
+    };
+}
+
+// 🎵 打印当前音频播放状态（调试用）
+- (void)logCurrentAudioPlaybackStatus {
+    NSDictionary *info = [self getCurrentAudioPlaybackInfo];
+    NSLog(@"🎵 当前音频播放状态:");
+    NSLog(@"   hasPlayer: %@", info[@"hasPlayer"]);
+    NSLog(@"   currentAudioId: %@", info[@"currentAudioId"]);
+    NSLog(@"   milliseconds: %@", info[@"milliseconds"]);
+    NSLog(@"   isPlay: %@", info[@"isPlay"]);
+    NSLog(@"   storyTitle: %@", info[@"storyTitle"]);
+    NSLog(@"   currentTimeSeconds: %@", info[@"currentTimeSeconds"]);
 }
 
 #pragma mark - 音频会话中断处理
@@ -1772,5 +2321,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         }
     }
 }
-
+-(void)dismissWidgetDialog:(UIView *)view{
+    
+}
 @end

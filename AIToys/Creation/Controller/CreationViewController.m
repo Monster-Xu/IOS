@@ -10,6 +10,7 @@
 #import "VoiceStoryTableViewCell.h"
 #import "VoiceManagementViewController.h"
 #import "VoiceStoryModel.h"
+#import "StoryBoundDoll.h"
 #import "AFStoryAPIManager.h"
 #import "APIRequestModel.h"
 #import "APIResponseModel.h"
@@ -19,7 +20,6 @@
 #import "AudioPlayerView.h"
 #import <SVProgressHUD/SVProgressHUD.h>
 #import "LGBaseAlertView.h"
-#import "LGAlertView.h"
 
 static NSString *const kNormalCellIdentifier = @"NormalCell";
 static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
@@ -35,11 +35,12 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 @property (nonatomic, strong) NSMutableArray<NSURLSessionDataTask *> *activeTasks;
 @property (nonatomic, assign) BOOL isLoading; // ✅ 加载状态
 @property (nonatomic, assign) NSInteger skeletonRowCount; // ✅ 骨架屏行数
-// ⭐️ 明确标记：是否处于批量编辑模式
-@property (nonatomic, assign) BOOL isBatchEditingMode;
+// ⭐️ 明确标记：是否处于单选编辑模式
+@property (nonatomic, assign) BOOL isSingleEditingMode;
 
 @property (nonatomic, strong) UIView *editingToolbar;
 @property (nonatomic, strong) UIButton *deleteSelectedButton;
+@property (nonatomic, assign) NSInteger selectedIndex; // 当前选中的索引（单选）
 
 // 音频播放器
 @property (nonatomic, strong) AudioPlayerView *currentAudioPlayer;
@@ -60,8 +61,9 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     self.activeTasks = [NSMutableArray array];
     self.dataSource = [NSMutableArray array];
     
-    // 初始化为非批量编辑模式
-    self.isBatchEditingMode = NO;
+    // 初始化为非单选编辑模式
+    self.isSingleEditingMode = NO;
+    self.selectedIndex = -1; // 初始化为-1表示没有选中
     
     // 初始化播放状态
     self.currentPlayingIndex = -1; // -1 表示没有正在播放的音频
@@ -94,7 +96,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.navigationController setNavigationBarHidden:YES animated:animated];
     
     // 确保 TabBar 正常显示
-    if (self.tabBarController && !self.isBatchEditingMode) {
+    if (self.tabBarController && !self.isSingleEditingMode) {
         self.tabBarController.tabBar.hidden = NO;
         self.tabBarController.tabBar.alpha = 1.0;
         self.tabBarController.tabBar.userInteractionEnabled = YES;
@@ -115,8 +117,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
     
-    if (self.isBatchEditingMode) {
-        [self cancelBatchEditingMode];
+    if (self.isSingleEditingMode) {
+        [self cancelSingleEditingMode];
     }
     
     // 清理音频播放器
@@ -201,20 +203,20 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     self.tableView.backgroundColor = [UIColor clearColor];
     self.tableView.hidden = YES;
     
-//    // 配置多选编辑
-//    self.tableView.allowsMultipleSelectionDuringEditing = YES;
-//    self.tableView.allowsSelectionDuringEditing = YES;
+    // ✅ 配置单选编辑模式
+    self.tableView.allowsMultipleSelectionDuringEditing = NO;
+    self.tableView.allowsSelectionDuringEditing = YES;
     
     [self.tableView registerClass:[VoiceStoryTableViewCell class] forCellReuseIdentifier:@"VoiceStoryTableViewCell"];
     // ✅ 注册骨架屏 Cell
     [self.tableView registerClass:[SkeletonTableViewCell class] forCellReuseIdentifier:kSkeletonCellIdentifier];
     
-//    // 长按手势
-//    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
-//    longPress.minimumPressDuration = 0.5;
-//    [self.tableView addGestureRecognizer:longPress];
+    // 长按手势（单选编辑模式）
+    UILongPressGestureRecognizer *longPress = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPress:)];
+    longPress.minimumPressDuration = 0.5;
+    [self.tableView addGestureRecognizer:longPress];
     self.tableView.mj_header = [RYFGifHeader headerWithRefreshingBlock:^{
-        [self refreshDataWithSkeleton];
+        [self refreshDataWithoutSkeleton];
     }];
     
     [self.view addSubview:self.tableView];
@@ -501,69 +503,12 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         strongSelf.isLoading = NO;
         
         // 显示错误提示
-        [strongSelf showErrorAlert:error.localizedDescription];
+//        [strongSelf showErrorAlert:error.localizedDescription];
         
         strongSelf.currentLoadTask = nil;
         
         // 如果没有数据，显示空状态
         [strongSelf updateEmptyState];
-    }];
-}
-
-/// 下拉刷新，显示骨架屏加载效果
-- (void)refreshDataWithSkeleton {
-    NSLog(@"[CreationVC] 开始下拉刷新...");
-    
-    // ✅ 显示骨架屏
-    self.isLoading = NO;
-    [self.tableView reloadData];
-    
-    // 创建分页请求参数
-    PageRequestModel *pageRequest = [[PageRequestModel alloc] initWithPageNum:1 pageSize:20];
-    
-    // 发起网络请求
-    __weak typeof(self) weakSelf = self;
-    [[AFStoryAPIManager sharedManager] getStoriesWithPage:pageRequest success:^(StoryListResponseModel *response) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        
-        NSLog(@"[CreationVC] 刷新数据成功，共 %ld 条", (long)response.total);
-        
-        // ✅ 隐藏骨架屏
-//        strongSelf.isLoading = NO;
-        
-        // 更新数据源
-        [strongSelf.dataSource removeAllObjects];
-        [strongSelf.dataSource addObjectsFromArray:response.list];
-        
-        // 刷新 TableView，显示真实数据
-        [strongSelf.tableView reloadData];
-        [strongSelf updateEmptyState];
-        
-        // 结束刷新动画
-        [strongSelf endRefreshingWithSuccess];
-        
-        strongSelf.currentLoadTask = nil;
-        
-    } failure:^(NSError *error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        
-        NSLog(@"[CreationVC] 刷新数据失败: %@", error.localizedDescription);
-        
-        // ✅ 隐藏骨架屏
-        strongSelf.isLoading = NO;
-        
-        // 结束刷新动画
-        [strongSelf endRefreshingWithSuccess];
-        
-        // 显示错误提示
-        [strongSelf showErrorAlert:error.localizedDescription];
-        
-        // 如果没有数据，显示空状态
-        [strongSelf updateEmptyState];
-        
-        strongSelf.currentLoadTask = nil;
     }];
 }
 
@@ -590,6 +535,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         // 刷新 TableView，显示真实数据
         [strongSelf.tableView reloadData];
         [strongSelf updateEmptyState];
+         //结束刷新动画
+        [strongSelf endRefreshingWithSuccess];
+        
+        strongSelf.currentLoadTask = nil;
         
     } failure:^(NSError *error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -598,6 +547,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         NSLog(@"[CreationVC] 轻量级刷新数据失败: %@", error.localizedDescription);
         
         // 静默处理错误，不显示提示
+        //结束刷新动画
+       [strongSelf endRefreshingWithSuccess];
+       
+       strongSelf.currentLoadTask = nil;
         // 如果没有数据，显示空状态
         [strongSelf updateEmptyState];
     }];
@@ -648,11 +601,19 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     // ✅ 数据加载完成返回真实 Cell
     VoiceStoryTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"VoiceStoryTableViewCell" forIndexPath:indexPath];
     
-    // ⭐️ 关键：设置 cell 的批量编辑标记
-    cell.isBatchEditingMode = self.isBatchEditingMode;
+    // ⭐️ 关键：设置 cell 的单选编辑标记
+    cell.isBatchEditingMode = self.isSingleEditingMode;
     
     // ✅ 使用 section 而不是 row
     cell.model = self.dataSource[indexPath.section];
+    
+    // ✅ 设置cell的显示状态（编辑模式/正常模式）
+    [self updateCellDisplayState:cell atIndexPath:indexPath];
+    
+    // ✅ 设置选择按钮点击事件（如果cell有选择按钮的话）
+    if ([cell respondsToSelector:@selector(chooseButton)] && cell.chooseButton) {
+        [cell.chooseButton addTarget:self action:@selector(cellChooseButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+    }
     
     __weak typeof(self) weakSelf = self;
     
@@ -678,7 +639,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         VoiceStoryModel *model = self.dataSource[indexPath.section];
         
         // 如果是生成中、音频生成中或失败状态，需要额外的空间显示状态提示
-        if (model.storyStatus == 1 || model.storyStatus == 3 || model.storyStatus == 4) {
+        if (model.storyStatus == 1 || model.storyStatus == 3 || model.storyStatus == 4 ||model.storyStatus==6){
             return 122; // 卡片内容高度，无上下边距
         }
         
@@ -712,8 +673,37 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         return; // 加载期间不响应点击
     }
     
-    if (self.isBatchEditingMode) {
-        [self updateDeleteButtonState];
+    if (self.isSingleEditingMode) {
+        // ✅ 单选编辑模式下的点击逻辑
+        NSInteger previousSelectedIndex = self.selectedIndex;
+        
+        if (self.selectedIndex == indexPath.section) {
+            // 如果点击的是当前选中的项目，取消选中
+            self.selectedIndex = -1;
+            [self updateDeleteButtonState];
+            NSLog(@"❌ 取消选中项目 - section: %ld", (long)indexPath.section);
+        } else {
+            // 如果点击的是其他项目，选中该项目
+            self.selectedIndex = indexPath.section;
+            [self updateDeleteButtonState];
+            NSLog(@"✅ 选中项目 - section: %ld", (long)indexPath.section);
+        }
+        
+        // ✅ 更新之前选中的cell状态（如果有的话）
+        if (previousSelectedIndex >= 0 && previousSelectedIndex < self.dataSource.count && previousSelectedIndex != indexPath.section) {
+            NSIndexPath *previousIndexPath = [NSIndexPath indexPathForRow:0 inSection:previousSelectedIndex];
+            VoiceStoryTableViewCell *previousCell = [self.tableView cellForRowAtIndexPath:previousIndexPath];
+            if ([previousCell isKindOfClass:[VoiceStoryTableViewCell class]]) {
+                [self updateCellDisplayState:previousCell atIndexPath:previousIndexPath];
+            }
+        }
+        
+        // ✅ 更新当前点击的cell状态
+        VoiceStoryTableViewCell *currentCell = [self.tableView cellForRowAtIndexPath:indexPath];
+        if ([currentCell isKindOfClass:[VoiceStoryTableViewCell class]]) {
+            [self updateCellDisplayState:currentCell atIndexPath:indexPath];
+        }
+        
     } else {
         // 根据 storyStatus 跳转到不同的控制器
         [self handleCellTappedAtIndex:indexPath.section];
@@ -721,7 +711,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 }
 
 - (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.isBatchEditingMode) {
+    if (self.isSingleEditingMode) {
         [self updateDeleteButtonState];
     }
 }
@@ -729,8 +719,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 #pragma mark - UITableView Editing Style
 
 - (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
-    if (self.isBatchEditingMode) {
-        // 批量编辑模式：返回 None，显示多选框
+    if (self.isSingleEditingMode) {
+        // 单选编辑模式：返回 None，不显示删除按钮（通过自定义选择实现）
         return UITableViewCellEditingStyleNone;
     } else {
         // 左滑删除：显示删除按钮
@@ -752,10 +742,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     return YES;
 }
 
-// 左滑删除时阻止批量编辑模式
+// 左滑删除时阻止单选编辑模式
 - (BOOL)tableView:(UITableView *)tableView shouldBeginEditingRowAtIndexPath:(NSIndexPath *)indexPath {
-    // 在批量编辑模式下，不允许左滑删除
-    if (self.isBatchEditingMode) {
+    // 在单选编辑模式下，不允许左滑删除
+    if (self.isSingleEditingMode) {
         return NO;
     }
     return YES;
@@ -807,9 +797,9 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 - (void)handleLongPress:(UILongPressGestureRecognizer *)gesture {
     if (gesture.state == UIGestureRecognizerStateBegan) {
         
-        // 检查是否有 cell 正在左滑删除状态，如果有则阻止进入批量编辑
+        // 检查是否有 cell 正在左滑删除状态，如果有则阻止进入单选编辑
         if ([self isAnyRowInSwipeDeleteState]) {
-            NSLog(@"⚠️ 检测到左滑删除状态，阻止进入批量编辑模式");
+            NSLog(@"⚠️ 检测到左滑删除状态，阻止进入单选编辑模式");
             return;
         }
         
@@ -828,8 +818,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         CGPoint location = [gesture locationInView:self.tableView];
         NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:location];
         
-        if (indexPath && !self.isBatchEditingMode) {
-            NSLog(@"✅ 长按触发批量编辑模式，索引: %ld", (long)indexPath.section);
+        if (indexPath && !self.isSingleEditingMode) {
+            NSLog(@"✅ 长按触发单选编辑模式，索引: %ld", (long)indexPath.section);
             
             // 提供触觉反馈
             if (@available(iOS 10.0, *)) {
@@ -838,14 +828,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
                 [feedbackGenerator impactOccurred];
             }
             
-            // 进入批量编辑模式
-            [self enterBatchEditingMode];
+            // 进入单选编辑模式并自动选中长按的项目
+            [self enterSingleEditingModeWithSelectedIndex:indexPath.section];
             
-            // 自动选中长按的项目
-//            [self.tableView selectRowAtIndexPath:indexPath animated:YES scrollPosition:UITableViewScrollPositionNone];
-            [self updateDeleteButtonState];
-            
-            NSLog(@"✅ 批量编辑模式已激活，已选中第 %ld 个项目", (long)indexPath.section);
+            NSLog(@"✅ 单选编辑模式已激活，已选中第 %ld 个项目", (long)indexPath.section);
         }
     }
 }
@@ -858,7 +844,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         VoiceStoryTableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         
         if ([cell isKindOfClass:[VoiceStoryTableViewCell class]]) {
-            // 如果 cell 正在编辑状态，但不是批量编辑模式，说明是左滑删除
+            // 如果 cell 正在编辑状态，但不是单选编辑模式，说明是左滑删除
             if (cell.isEditing && !cell.isBatchEditingMode) {
                 return YES;
             }
@@ -868,9 +854,14 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     return NO;
 }
 
-// 进入批量编辑模式
-- (void)enterBatchEditingMode {
-    NSLog(@"🔵 === 进入批量编辑模式 ===");
+// 进入单选编辑模式
+- (void)enterSingleEditingMode {
+    [self enterSingleEditingModeWithSelectedIndex:-1];
+}
+
+// 进入单选编辑模式并指定初始选中项
+- (void)enterSingleEditingModeWithSelectedIndex:(NSInteger)selectedIndex {
+    NSLog(@"🔵 === 进入单选编辑模式，初始选中索引: %ld ===", (long)selectedIndex);
     
     // 停止当前音频播放
     if (self.currentAudioPlayer) {
@@ -888,10 +879,12 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }
     
     // 1. 设置标记
-    self.isBatchEditingMode = YES;
+    self.isSingleEditingMode = YES;
+    // ✅ 设置初始选中索引
+    self.selectedIndex = selectedIndex;
     
-    // 2. TableView 进入编辑模式
-//    [self.tableView setEditing:YES animated:YES];
+    // 2. TableView 不使用系统编辑模式，使用自定义单选逻辑
+    // [self.tableView setEditing:YES animated:YES]; // 禁用系统编辑模式
     
     // 3. 隐藏 TabBar
     if (self.tabBarController) {
@@ -909,10 +902,23 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     // 5. 添加并显示工具栏
     [self showEditingToolbar];
     
-    // 6. 刷新所有可见 cells，确保它们知道当前是批量编辑模式
+    // 6. 刷新所有可见 cells，确保它们知道当前是单选编辑模式
     [self reloadVisibleCellsEditingState];
     
-    NSLog(@"✅ 批量编辑模式激活完成");
+    // 7. ✅ 特别处理：确保长按选中的cell立即显示选中状态
+    if (selectedIndex >= 0 && selectedIndex < self.dataSource.count) {
+        NSIndexPath *selectedIndexPath = [NSIndexPath indexPathForRow:0 inSection:selectedIndex];
+        VoiceStoryTableViewCell *selectedCell = [self.tableView cellForRowAtIndexPath:selectedIndexPath];
+        if ([selectedCell isKindOfClass:[VoiceStoryTableViewCell class]]) {
+            [self updateCellDisplayState:selectedCell atIndexPath:selectedIndexPath];
+            NSLog(@"🎯 强制更新长按选中cell状态 - section: %ld", (long)selectedIndex);
+        }
+    }
+    
+    // 8. 更新删除按钮状态
+    [self updateDeleteButtonState];
+    
+    NSLog(@"✅ 单选编辑模式激活完成，选中索引: %ld", (long)self.selectedIndex);
 }
 
 // 显示编辑工具栏
@@ -956,15 +962,16 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }];
 }
 
-// 退出批量编辑模式
-- (void)cancelBatchEditingMode {
-    NSLog(@"🔴 === 退出批量编辑模式 ===");
+// 退出单选编辑模式
+- (void)cancelSingleEditingMode {
+    NSLog(@"🔴 === 退出单选编辑模式 ===");
     
     // 1. 清除标记
-    self.isBatchEditingMode = NO;
+    self.isSingleEditingMode = NO;
+    self.selectedIndex = -1;
     
-    // 2. TableView 退出编辑模式
-//    [self.tableView setEditing:NO animated:YES];
+    // 2. TableView 不使用系统编辑模式
+    // [self.tableView setEditing:NO animated:YES]; // 不使用系统编辑模式
     
     // 3. 更新导航栏
     [self updateCustomNavBarForEditingMode:NO];
@@ -981,10 +988,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     self.deleteSelectedButton.enabled = NO;
     [self updateDeleteButtonState];
     
-    // 7. 刷新所有可见 cells，确保它们知道已退出批量编辑模式
+    // 7. 刷新所有可见 cells，确保它们知道已退出单选编辑模式
     [self reloadVisibleCellsEditingState];
     
-    NSLog(@"✅ 批量编辑模式退出完成");
+    NSLog(@"✅ 单选编辑模式退出完成");
 }
 
 // 隐藏编辑工具栏
@@ -1009,20 +1016,80 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }];
 }
 
-// 刷新可见 cells 的编辑状态
+/// ✅ 处理cell中选择按钮的点击事件
+- (void)cellChooseButtonTapped:(UIButton *)sender {
+    // 找到按钮所属的cell
+    UIView *view = sender.superview;
+    while (view && ![view isKindOfClass:[UITableViewCell class]]) {
+        view = view.superview;
+    }
+    
+    if ([view isKindOfClass:[VoiceStoryTableViewCell class]]) {
+        // 获取cell的indexPath
+        NSIndexPath *indexPath = [self.tableView indexPathForCell:(VoiceStoryTableViewCell *)view];
+        if (indexPath) {
+            NSLog(@"🔘 选择按钮点击 - section: %ld", (long)indexPath.section);
+            // 触发didSelectRowAtIndexPath逻辑
+            [self tableView:self.tableView didSelectRowAtIndexPath:indexPath];
+        }
+    }
+}
+
+/// ✅ 自定义更新cell的显示状态（不依赖系统editing模式）
+- (void)updateCellDisplayState:(VoiceStoryTableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath {
+    if (!cell || !indexPath) {
+        return;
+    }
+    
+    // 设置cell的编辑模式状态
+    cell.isBatchEditingMode = self.isSingleEditingMode;
+    
+    if (self.isSingleEditingMode) {
+        // ✅ 单选编辑模式：显示选择按钮，设置选中状态
+        BOOL isSelected = (self.selectedIndex == indexPath.section);
+        cell.isCustomSelected = isSelected;
+        
+        // ✅ 先调用setEditing来切换UI状态
+        [cell setEditing:YES animated:YES];
+        
+        // ✅ 然后更新选择状态
+        [cell updateSelectionState:isSelected];
+        
+        NSLog(@"📝 更新cell显示状态 - section: %ld, 选中状态: %@", 
+              (long)indexPath.section, isSelected ? @"是" : @"否");
+    } else {
+        // ✅ 正常模式：隐藏选择按钮，退出编辑状态
+        cell.isCustomSelected = NO;
+        
+        // ✅ 退出编辑状态
+        [cell setEditing:NO animated:YES];
+        
+        // ✅ 确保选择状态为未选中
+        [cell updateSelectionState:NO];
+    }
+}
+
+// 刷新可见 cells 的编辑状态（自定义单选模式）
 - (void)reloadVisibleCellsEditingState {
     NSArray *visibleIndexPaths = [self.tableView indexPathsForVisibleRows];
     for (NSIndexPath *indexPath in visibleIndexPaths) {
         VoiceStoryTableViewCell *cell = [self.tableView cellForRowAtIndexPath:indexPath];
         if ([cell isKindOfClass:[VoiceStoryTableViewCell class]]) {
-            // 更新 cell 的批量编辑标记
-            cell.isBatchEditingMode = self.isBatchEditingMode;
+            // 更新 cell 的单选编辑标记
+            cell.isBatchEditingMode = self.isSingleEditingMode;
             
-            // 触发 setEditing 方法更新按钮状态
-            [cell setEditing:self.isBatchEditingMode animated:YES];
+            // ✅ 手动调用setEditing方法来更新cell状态
+            [cell setEditing:self.isSingleEditingMode animated:YES];
+            
+            // ✅ 自定义更新cell的显示状态
+            [self updateCellDisplayState:cell atIndexPath:indexPath];
+            
+            NSLog(@"🔄 刷新cell编辑状态 - section: %ld, 编辑模式: %@, 选中状态: %@", 
+                  (long)indexPath.section, 
+                  self.isSingleEditingMode ? @"是" : @"否",
+                  (self.selectedIndex == indexPath.section) ? @"是" : @"否");
         }
     }
-    
 }
 
 - (void)updateCustomNavBarForEditingMode:(BOOL)isEditing {
@@ -1035,11 +1102,11 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
         [cancelButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         cancelButton.titleLabel.font = [UIFont systemFontOfSize:16];
-        [cancelButton addTarget:self action:@selector(cancelBatchEditingMode) forControlEvents:UIControlEventTouchUpInside];
+        [cancelButton addTarget:self action:@selector(cancelSingleEditingMode) forControlEvents:UIControlEventTouchUpInside];
         [self.customNavBarView addSubview:cancelButton];
         
         UILabel *titleLabel = [[UILabel alloc] init];
-        titleLabel.text = @"Delete Stories";
+        titleLabel.text = @"Delete Story";
         titleLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
         titleLabel.textColor = [UIColor blackColor];
         titleLabel.textAlignment = NSTextAlignmentCenter;
@@ -1049,7 +1116,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         [doneButton setTitle:@"Done" forState:UIControlStateNormal];
         [doneButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
         doneButton.titleLabel.font = [UIFont systemFontOfSize:16];
-        [doneButton addTarget:self action:@selector(cancelBatchEditingMode) forControlEvents:UIControlEventTouchUpInside];
+        [doneButton addTarget:self action:@selector(cancelSingleEditingMode) forControlEvents:UIControlEventTouchUpInside];
         [self.customNavBarView addSubview:doneButton];
         
         [cancelButton mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -1106,138 +1173,120 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 }
 
 - (void)updateDeleteButtonState {
-    NSArray *selectedRows = [self.tableView indexPathsForSelectedRows];
-    NSInteger selectedCount = selectedRows.count;
+    BOOL hasSelection = (self.selectedIndex >= 0);
     
-    self.deleteSelectedButton.enabled = selectedCount > 0;
+    self.deleteSelectedButton.enabled = hasSelection;
     
-    if (selectedCount > 0) {
-        NSString *buttonTitle = selectedCount == 1 ? @"Delete Story" : [NSString stringWithFormat:@"Delete %ld Stories", (long)selectedCount];
-        [self.deleteSelectedButton setTitle:buttonTitle forState:UIControlStateNormal];
-        [self.deleteSelectedButton setTitle:buttonTitle forState:UIControlStateDisabled];
+    if (hasSelection) {
+        [self.deleteSelectedButton setTitle:@"Delete Story" forState:UIControlStateNormal];
+        [self.deleteSelectedButton setTitle:@"Delete Story" forState:UIControlStateDisabled];
         
-        self.deleteSelectedButton.layer.borderColor = [UIColor systemRedColor].CGColor;
+        // ✅ 设置红色字体白色底，边框为1的红色
+        [self.deleteSelectedButton setTitleColor:[UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0] forState:UIControlStateNormal];
+        [self.deleteSelectedButton setBackgroundColor:[UIColor whiteColor]];
+        self.deleteSelectedButton.layer.borderColor = [UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0].CGColor;
         self.deleteSelectedButton.layer.borderWidth = 1.5;
-        self.deleteSelectedButton.backgroundColor = [UIColor whiteColor];
     } else {
-        [self.deleteSelectedButton setTitle:@"Delete Stories" forState:UIControlStateNormal];
-        [self.deleteSelectedButton setTitle:@"Delete Stories" forState:UIControlStateDisabled];
+        [self.deleteSelectedButton setTitle:@"Delete Story" forState:UIControlStateNormal];
+        [self.deleteSelectedButton setTitle:@"Delete Story" forState:UIControlStateDisabled];
         
+        // ✅ 设置禁用状态的样式
+        [self.deleteSelectedButton setTitleColor:[UIColor colorWithWhite:0.7 alpha:1] forState:UIControlStateDisabled];
+        [self.deleteSelectedButton setBackgroundColor:[UIColor whiteColor]];
         self.deleteSelectedButton.layer.borderColor = [UIColor colorWithWhite:0.85 alpha:1].CGColor;
         self.deleteSelectedButton.layer.borderWidth = 1.5;
-        self.deleteSelectedButton.backgroundColor = [UIColor whiteColor];
     }
 }
 
 - (void)deleteSelectedItems {
-    NSArray *selectedIndexPaths = [self.tableView indexPathsForSelectedRows];
-    if (selectedIndexPaths.count == 0) {
+    if (self.selectedIndex < 0 || self.selectedIndex >= self.dataSource.count) {
         return;
     }
     
-    NSString *message;
-    if (selectedIndexPaths.count == 1) {
-        NSIndexPath *indexPath = selectedIndexPaths.firstObject;
-        VoiceStoryModel *model = self.dataSource[indexPath.section];
-        message = [NSString stringWithFormat:@"Are you sure you want to delete the story '%@'?", model.storyName ?: @"Untitled Story"];
-    } else {
-        message = [NSString stringWithFormat:@"Are you sure you want to delete the %ld selected stories?", (long)selectedIndexPaths.count];
+    VoiceStoryModel *model = self.dataSource[self.selectedIndex];
+    
+    // ✅ 检查故事是否已绑定公仔
+    if ([self checkStoryBoundDoll:model]) {
+        // 已绑定公仔，显示特殊确认弹窗
+        [self showBoundDollDeletionConfirmForModel:model atIndex:self.selectedIndex];
+        return;
     }
     
+    // 正常删除确认流程
+    NSString *title = @"Confirm Deletion";
+    NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete the story '%@'?", model.storyName ?: @"Untitled Story"];
+    
     __weak typeof(self) weakSelf = self;
-    [LGAlertView showWithTitle:@"Confirm Deletion" 
-                       message:message 
-                       buttons:@[@"Cancel", @"Delete"] 
-                        action:^(LGAlertView *alertView, NSInteger buttonIndex) {
+    [LGBaseAlertView showAlertWithTitle:title
+                                content:message
+                             cancelBtnStr:@"Cancel"
+                            confirmBtnStr:@"Delete"
+                            confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (strongSelf && buttonIndex == 1) { // 用户点击了"删除"按钮
-            [strongSelf performBatchDelete:selectedIndexPaths];
+        if (strongSelf && is_value) { // 用户点击了"Delete"按钮
+            [strongSelf performSingleDeleteAtIndex:strongSelf.selectedIndex];
         }
-        // buttonIndex == 0 是"取消"按钮，无需处理
+        // is_value == NO 是"Cancel"按钮，无需处理
     }];
 }
 
-- (void)performBatchDelete:(NSArray<NSIndexPath *> *)indexPaths {
-    NSLog(@"🗑️ 开始批量删除 %ld 个故事", (long)indexPaths.count);
+- (void)performSingleDeleteAtIndex:(NSInteger)index {
+    NSLog(@"🗑️ 开始删除第 %ld 个故事", (long)index);
     
-    // 使用 section 排序，从大到小删除
-    NSArray *sortedIndexPaths = [indexPaths sortedArrayUsingComparator:^NSComparisonResult(NSIndexPath *obj1, NSIndexPath *obj2) {
-        return obj2.section - obj1.section;
-    }];
-    
-    // 收集要删除的故事模型和ID
-    NSMutableArray<VoiceStoryModel *> *modelsToDelete = [NSMutableArray array];
-    NSMutableArray<NSNumber *> *idsToDelete = [NSMutableArray array];
-    
-    for (NSIndexPath *indexPath in sortedIndexPaths) {
-        if (indexPath.section < self.dataSource.count) {
-            VoiceStoryModel *model = self.dataSource[indexPath.section];
-            [modelsToDelete addObject:model];
-            [idsToDelete addObject:@(model.storyId)];
-        }
+    if (index < 0 || index >= self.dataSource.count) {
+        NSLog(@"❌ 删除索引越界: %ld", (long)index);
+        return;
     }
     
-    // 如果有正在播放的音频，且要删除的项目中包含正在播放的，则停止播放
-    if (self.currentPlayingIndex >= 0) {
-        for (NSIndexPath *indexPath in indexPaths) {
-            if (indexPath.section == self.currentPlayingIndex) {
-                [self.currentAudioPlayer stop];
-                self.currentPlayingIndex = -1;
-                self.currentAudioPlayer = nil;
-                break;
-            }
-        }
+    VoiceStoryModel *model = self.dataSource[index];
+    NSString *storyName = model.storyName ?: @"Untitled Story";
+    
+    // 如果有正在播放的音频，且要删除的是正在播放的项目，则停止播放
+    if (self.currentPlayingIndex == index) {
+        [self.currentAudioPlayer stop];
+        self.currentPlayingIndex = -1;
+        self.currentAudioPlayer = nil;
     }
     
     // 先从 UI 中移除
-    for (NSIndexPath *indexPath in sortedIndexPaths) {
-        if (indexPath.section < self.dataSource.count) {
-            [self.dataSource removeObjectAtIndex:indexPath.section];
-        }
-    }
+    [self.dataSource removeObjectAtIndex:index];
     
-    // 删除 sections
-    NSMutableIndexSet *sectionsToDelete = [NSMutableIndexSet indexSet];
-    for (NSIndexPath *indexPath in indexPaths) {
-        [sectionsToDelete addIndex:indexPath.section];
-    }
+    // 删除对应的 section
+    NSIndexSet *sectionsToDelete = [NSIndexSet indexSetWithIndex:index];
     [self.tableView deleteSections:sectionsToDelete withRowAnimation:UITableViewRowAnimationFade];
     
-    // 退出批量编辑模式
-    [self cancelBatchEditingMode];
+    // 退出单选编辑模式
+    [self cancelSingleEditingMode];
     
     // 更新空状态
     [self updateEmptyState];
     
-    // TODO: 这里应该调用后台删除 API
-    // 可以考虑实现批量删除 API 或者逐个删除
-    /*
-    dispatch_group_t group = dispatch_group_create();
-    __block NSInteger successCount = 0;
-    __block NSInteger failureCount = 0;
+    // 调用后台删除 API
+    [[AFStoryAPIManager sharedManager] deleteStoryWithId:model.storyId success:^(APIResponseModel * _Nonnull response) {
+        NSLog(@"✅ 故事删除成功: %@", storyName);
+        
+        // 显示删除成功提示
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSString *successMessage = [NSString stringWithFormat:@"Story '%@' has been successfully deleted.", storyName];
+            [LGBaseAlertView showAlertWithContent:successMessage confirmBlock:^(BOOL is_value, id obj) {
+                // 用户点击确定按钮，无需额外处理
+            }];
+        });
+        
+    } failure:^(NSError * _Nonnull error) {
+        NSLog(@"❌ 故事删除失败: %@", error.localizedDescription);
+        
+        // 删除失败时显示错误提示并重新加载数据
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            NSString *errorMessage = [NSString stringWithFormat:@"Failed to delete story '%@'. %@", storyName, error.localizedDescription ?: @"Please try again later."];
+//            [LGBaseAlertView showAlertWithContent:errorMessage confirmBlock:^(BOOL is_value, id obj) {
+//                // 重新加载数据以确保数据一致性
+//                [self loadDataWithSkeleton];
+//            }];
+//        });
+    }];
     
-    for (NSNumber *storyId in idsToDelete) {
-        dispatch_group_enter(group);
-        [[AFStoryAPIManager sharedManager] deleteStoryWithId:storyId.integerValue success:^(APIResponseModel * _Nonnull response) {
-            successCount++;
-            dispatch_group_leave(group);
-        } failure:^(NSError * _Nonnull error) {
-            failureCount++;
-            dispatch_group_leave(group);
-        }];
-    }
-    
-    dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        if (failureCount > 0) {
-            NSString *message = [NSString stringWithFormat:@"删除完成，成功 %ld 个，失败 %ld 个", (long)successCount, (long)failureCount];
-            [self showErrorAlert:message];
-            // 如果有删除失败的，重新加载数据以确保数据一致性
-            [self loadDataWithSkeleton];
-        }
-    });
-    */
-    
-    NSLog(@"✅ 批量删除完成，共删除 %ld 个故事", (long)indexPaths.count);
+    NSLog(@"✅ 单个删除完成");
 }
 
 #pragma mark - Story Navigation Methods
@@ -1278,6 +1327,13 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
             break;
         }
         case 5: // 跳转到 CreateStoryWithVoiceVC（播放按钮可用）
+        {
+            CreateStoryWithVoiceViewController *voiceVC = [[CreateStoryWithVoiceViewController alloc] initWithEditMode:YES];
+            voiceVC.storyId = model.storyId;
+            [self.navigationController pushViewController:voiceVC animated:YES];
+            NSLog(@"✅ 跳转到 CreateStoryWithVoiceViewController，storyId: %ld", (long)model.storyId);
+            break;
+        }
         case 6: // 跳转到 CreateStoryWithVoiceVC（播放按钮不可用）
         {
             CreateStoryWithVoiceViewController *voiceVC = [[CreateStoryWithVoiceViewController alloc] initWithEditMode:YES];
@@ -1349,18 +1405,28 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     VoiceStoryModel *model = self.dataSource[index];
     NSLog(@"点击删除第 %ld 个故事: %@", (long)index, model.storyName);
     
-    NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete the story '%@'?", model.storyName];
+    // ✅ 检查故事是否已绑定公仔
+    if ([self checkStoryBoundDoll:model]) {
+        // 已绑定公仔，显示特殊确认弹窗
+        [self showBoundDollDeletionConfirmForModel:model atIndex:index];
+        return;
+    }
+    
+    // 正常删除确认流程
+    NSString *title = @"Confirm Deletion";
+    NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete the story '%@'?", model.storyName ?: @"Untitled Story"];
     
     __weak typeof(self) weakSelf = self;
-    [LGAlertView showWithTitle:@"Confirm Deletion" 
-                       message:message 
-                       buttons:@[@"Cancel", @"Delete"] 
-                        action:^(LGAlertView *alertView, NSInteger buttonIndex) {
+    [LGBaseAlertView showAlertWithTitle:title
+                                content:message
+                             cancelBtnStr:@"Cancel"
+                            confirmBtnStr:@"Delete"
+                            confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (strongSelf && buttonIndex == 1) { // 用户点击了"删除"按钮
+        if (strongSelf && is_value) { // 用户点击了"Delete"按钮
             [strongSelf performSingleDelete:index];
         }
-        // buttonIndex == 0 是"取消"按钮，无需处理
+        // is_value == NO 是"Cancel"按钮，无需处理
     }];
 }
 
@@ -1368,9 +1434,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     VoiceStoryModel *model = self.dataSource[index];
     
     [[AFStoryAPIManager sharedManager] deleteStoryWithId:model.storyId success:^(APIResponseModel * _Nonnull response) {
-        [self refreshDataWithSkeleton];
+        
+        [self refreshDataWithoutSkeleton];
     } failure:^(NSError * _Nonnull error) {
-        [self showErrorAlert:error.localizedDescription];
+//        [self showErrorAlert:error.localizedDescription];
     }];
 }
 
@@ -1540,6 +1607,59 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 }
 
 #pragma mark - Helper Methods
+
+/// ✅ 检查故事是否绑定了公仔
+/// @param model 要检查的故事模型
+/// @return YES 如果已绑定公仔，NO 如果未绑定
+- (BOOL)checkStoryBoundDoll:(VoiceStoryModel *)model {
+    // 直接检查 boundDolls 数组是否有数据
+    if (model.boundDolls && model.boundDolls.count > 0) {
+        NSLog(@"⚠️ 故事 '%@' 已绑定公仔", model.storyName);
+        return YES; // 已绑定公仔
+    }
+    
+    NSLog(@"✅ 故事 '%@' 未绑定公仔", model.storyName);
+    return NO; // 未绑定公仔
+}
+
+/// ✅ 显示绑定公仔的删除确认弹窗
+/// @param model 故事模型
+/// @param index 故事索引
+- (void)showBoundDollDeletionConfirmForModel:(VoiceStoryModel *)model atIndex:(NSInteger)index {
+    // 获取第一个公仔的 customName
+    StoryBoundDoll *firstDoll = model.boundDolls.firstObject;
+    NSString *customName = firstDoll.customName ?: @"Unknown Doll";
+    
+    NSLog(@"⚠️ 故事 '%@' 已绑定公仔 '%@'，显示删除确认弹窗", model.storyName, customName);
+    
+    // 构建提示信息
+    NSString *title = @"Delete Bound Story";
+    NSString *message = [NSString stringWithFormat:@"This story is already associated with creative doll '%@'. Please place the doll back on the device to get the latest resources.\n\nAre you sure you want to delete this story?", customName];
+    
+    __weak typeof(self) weakSelf = self;
+    [LGBaseAlertView showAlertWithTitle:title
+                                content:message
+                             cancelBtnStr:@"Cancel"
+                            confirmBtnStr:@"Delete"
+                            confirmBlock:^(BOOL is_value, id obj) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        if (is_value) { // 用户点击了"Delete"按钮
+            NSLog(@"✅ 用户确认删除已绑定公仔的故事");
+            // 根据删除方式调用对应的删除方法
+            if (strongSelf.isSingleEditingMode && index == strongSelf.selectedIndex) {
+                // 单选编辑模式删除
+                [strongSelf performSingleDeleteAtIndex:index];
+            } else {
+                // 左滑删除
+                [strongSelf performSingleDelete:index];
+            }
+        } else {
+            NSLog(@"❌ 用户取消删除已绑定公仔的故事");
+        }
+    }];
+}
 
 - (void)showStoryLimitAlert {
     NSString *title = @"Story Limit Reached";

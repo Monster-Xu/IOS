@@ -697,7 +697,7 @@
     
     // Placeholder
     self.themePlaceholderLabel = [[UILabel alloc] init];
-    self.themePlaceholderLabel.text = NSLocalizedString(@"Please Input, no more than 120 characters", @"");
+    self.themePlaceholderLabel.text = NSLocalizedString(@"120 characters maximum.", @"");
     self.themePlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.themePlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.themePlaceholderLabel.userInteractionEnabled = NO;
@@ -861,7 +861,7 @@
     
     // Placeholder
     self.contentPlaceholderLabel = [[UILabel alloc] init];
-    self.contentPlaceholderLabel.text = NSLocalizedString(@"Please Input", @"");
+    self.contentPlaceholderLabel.text = NSLocalizedString(@"Please briefly enter the main plot of this story", @"");
     self.contentPlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.contentPlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.contentPlaceholderLabel.userInteractionEnabled = NO;
@@ -1582,7 +1582,7 @@
         
         [strongSelf hideLoadingAlert];
         NSLog(@"❌ 失败故事更新网络请求失败: %@", error.localizedDescription);
-        [strongSelf showErrorAlert:error.localizedDescription];
+//        [strongSelf showErrorAlert:error.localizedDescription];
     }];
 }
 
@@ -1669,7 +1669,7 @@
         
         [strongSelf hideLoadingAlert];
         NSLog(@"❌ 删除旧故事网络请求失败: %@", error.localizedDescription);
-        [strongSelf showErrorAlert:@"Network error, unable to regenerate story"];
+//        [strongSelf showErrorAlert:@"Network error, unable to regenerate story"];
     }];
 }
 - (void)handleCreateStorySuccess:(APIResponseModel *)response {

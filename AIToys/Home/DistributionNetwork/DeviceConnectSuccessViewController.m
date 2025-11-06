@@ -56,7 +56,7 @@
         ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.deviceModel.devId];
         [device updateName:self.deviceNameTextView.text success:^{
                 NSLog(@"updateName success");
-            [SVProgressHUD showSuccessWithStatus:LocalString(@"修改成功，开始使用")];
+            [SVProgressHUD showSuccessWithStatus:LocalString(@"Modification successful, start using.")];
             // 跳转小程序
             NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
             [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1"}];
@@ -65,7 +65,7 @@
             });
            
             } failure:^(NSError *error) {
-                [SVProgressHUD showSuccessWithStatus:LocalString(@"修改失败，请重试")];
+                [SVProgressHUD showSuccessWithStatus:LocalString(@"Modification failed, please try again.")];
             }];
     }else{
         NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
