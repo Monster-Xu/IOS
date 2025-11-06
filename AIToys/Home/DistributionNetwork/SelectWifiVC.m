@@ -141,7 +141,7 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     
-    [SVProgressHUD showWithStatus:@"检索此wifi是否已连接"];
+    [SVProgressHUD showWithStatus:@"Check if this Wi-Fi is already connected."];
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
     [param setValue:@"connectedWifi" forKey:@"propKey"];
     
