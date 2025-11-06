@@ -19,8 +19,8 @@
 #import "AnalyticsManager.h"
 #import "LogManager.h"
 #import <AVFoundation/AVFoundation.h>
-#import <UMCommon/UMCommon.h>
-#import <UMCommonLog/UMCommonLogHeaders.h>
+//#import <UMCommon/UMCommon.h>
+//#import <UMCommonLog/UMCommonLogHeaders.h>
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
 
@@ -70,10 +70,10 @@
         NSLog(@"AppDelegate: 音频会话设置失败: %@", audioError.localizedDescription);
     }
     
-    //友盟相关
-    [UMConfigure initWithAppkey:@"6908c3d08560e34872dd8dcf" channel:@"App Store"];
-    [UMConfigure setLogEnabled:YES];
-    [UMCommonLogManager setUpUMCommonLogManager];
+//    //友盟相关
+//    [UMConfigure initWithAppkey:@"6908c3d08560e34872dd8dcf" channel:@"App Store"];
+//    [UMConfigure setLogEnabled:YES];
+//    [UMCommonLogManager setUpUMCommonLogManager];
     
     //启动广告图
     [self loadAD];
@@ -309,13 +309,13 @@
         }
     }
 }
-//iOS9以上使用以下方法
-- (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
-{
-    if ([MobClick handleUrl:url]) {
-        return YES;
-    }
-    //其它第三方处理
-    return YES;
-}
+////iOS9以上使用以下方法
+//- (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+//{
+//    if ([MobClick handleUrl:url]) {
+//        return YES;
+//    }
+//    //其它第三方处理
+//    return YES;
+//}
 @end

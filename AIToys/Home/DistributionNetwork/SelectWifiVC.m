@@ -160,11 +160,24 @@
                     
                     // 从本地获取已保存的Wi-Fi密码
                     NSString *savedPassword = [[NSUserDefaults standardUserDefaults] stringForKey:self.wifiArr[indexPath.row][@"ssid"]];
-                    dict[@"pwd"] = savedPassword ?: @"";
                     NSLog(@"从本地获取密码: %@ -> %@", self.wifiArr[indexPath.row][@"ssid"], savedPassword ?: @"未找到");
+                    
+                    // 判断本地获得的密码是否为空
+                    if (savedPassword && savedPassword.length > 0) {
+                        // 密码不为空，直接连接
+                        dict[@"pwd"] = savedPassword;
                         DeviceConnectingVC *VC = [DeviceConnectingVC new];
                         VC.connectDeviceInfo = dict;
                         [self.navigationController pushViewController:VC animated:YES];
+                    } else {
+                        // 密码为空，跳转到输入密码页面
+                        NSLog(@"本地密码为空，跳转到密码输入页面");
+                        ConnectWifiVC *VC = [ConnectWifiVC new];
+                        VC.UUID = self.UUID;
+                        VC.homeId = self.homeId;
+                        VC.ssid = self.wifiArr[indexPath.row][@"ssid"];
+                        [self.navigationController pushViewController:VC animated:YES];
+                    }
                 }else{
                     ConnectWifiVC *VC = [ConnectWifiVC new];
                     VC.UUID = self.UUID;
