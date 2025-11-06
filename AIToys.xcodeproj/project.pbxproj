@@ -15,10 +15,6 @@
 		187647DE2E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647D92E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx */; };
 		187647E02E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647DF2E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx */; };
 		188C18572E8D30570095B6BC /* LogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 188C18562E8D30570095B6BC /* LogManager.m */; };
-		189665C12EB2621700D7C9EA /* DeviceConnectSuccessViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 189665C02EB2621700D7C9EA /* DeviceConnectSuccessViewController.xib */; };
-		189665C22EB2621700D7C9EA /* DeviceConnectFailedViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 189665BD2EB2621700D7C9EA /* DeviceConnectFailedViewController.xib */; };
-		189665C32EB2621700D7C9EA /* DeviceConnectFailedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 189665BC2EB2621700D7C9EA /* DeviceConnectFailedViewController.m */; };
-		189665C42EB2621700D7C9EA /* DeviceConnectSuccessViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 189665BF2EB2621700D7C9EA /* DeviceConnectSuccessViewController.m */; };
 		1896661A2EB3976C00D7C9EA /* WiFiListViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 189666192EB3976C00D7C9EA /* WiFiListViewController.xib */; };
 		1896661B2EB3976C00D7C9EA /* WiFiListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 189666182EB3976C00D7C9EA /* WiFiListViewController.m */; };
 		1896661F2EB397DB00D7C9EA /* WiFiListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1896661E2EB397DB00D7C9EA /* WiFiListTableViewCell.xib */; };
@@ -26,6 +22,10 @@
 		18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */; };
 		18EE7F4E2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18EE7F4C2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m */; };
 		18EE7F4F2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18EE7F4D2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib */; };
+		18FA4B502EBC8273008A1F92 /* DeviceConnectFailedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18FA4B4B2EBC8273008A1F92 /* DeviceConnectFailedViewController.m */; };
+		18FA4B512EBC8273008A1F92 /* DeviceConnectSuccessViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18FA4B4E2EBC8273008A1F92 /* DeviceConnectSuccessViewController.m */; };
+		18FA4B522EBC8273008A1F92 /* DeviceConnectSuccessViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18FA4B4F2EBC8273008A1F92 /* DeviceConnectSuccessViewController.xib */; };
+		18FA4B532EBC8273008A1F92 /* DeviceConnectFailedViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18FA4B4C2EBC8273008A1F92 /* DeviceConnectFailedViewController.xib */; };
 		A3E81D34F080E0F6069DDC1F /* libPods-AIToys.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CD81051212684563E5D7D2BB /* libPods-AIToys.a */; };
 		DC1583E32E0533920097CF0A /* SetNewPasswordViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = DC1583E22E0533920097CF0A /* SetNewPasswordViewController.xib */; };
 		DC1583E42E0533920097CF0A /* SetNewPasswordViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DC1583E12E0533920097CF0A /* SetNewPasswordViewController.m */; };
@@ -411,12 +411,6 @@
 		187647DF2E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Talenpal_User_Privacy_Policy.docx; sourceTree = "<group>"; };
 		188C18552E8D30570095B6BC /* LogManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LogManager.h; sourceTree = "<group>"; };
 		188C18562E8D30570095B6BC /* LogManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LogManager.m; sourceTree = "<group>"; };
-		189665BB2EB2621700D7C9EA /* DeviceConnectFailedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DeviceConnectFailedViewController.h; path = ../Aitoy_dev/AIToys/Home/DistributionNetwork/DeviceConnectFailedViewController.h; sourceTree = SOURCE_ROOT; };
-		189665BC2EB2621700D7C9EA /* DeviceConnectFailedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DeviceConnectFailedViewController.m; path = ../Aitoy_dev/AIToys/Home/DistributionNetwork/DeviceConnectFailedViewController.m; sourceTree = SOURCE_ROOT; };
-		189665BD2EB2621700D7C9EA /* DeviceConnectFailedViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = DeviceConnectFailedViewController.xib; path = ../Aitoy_dev/AIToys/Home/DistributionNetwork/DeviceConnectFailedViewController.xib; sourceTree = SOURCE_ROOT; };
-		189665BE2EB2621700D7C9EA /* DeviceConnectSuccessViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DeviceConnectSuccessViewController.h; path = ../Aitoy_dev/AIToys/Home/DistributionNetwork/DeviceConnectSuccessViewController.h; sourceTree = SOURCE_ROOT; };
-		189665BF2EB2621700D7C9EA /* DeviceConnectSuccessViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = DeviceConnectSuccessViewController.m; path = ../Aitoy_dev/AIToys/Home/DistributionNetwork/DeviceConnectSuccessViewController.m; sourceTree = SOURCE_ROOT; };
-		189665C02EB2621700D7C9EA /* DeviceConnectSuccessViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = DeviceConnectSuccessViewController.xib; path = ../Aitoy_dev/AIToys/Home/DistributionNetwork/DeviceConnectSuccessViewController.xib; sourceTree = SOURCE_ROOT; };
 		189666172EB3976C00D7C9EA /* WiFiListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WiFiListViewController.h; sourceTree = "<group>"; };
 		189666182EB3976C00D7C9EA /* WiFiListViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WiFiListViewController.m; sourceTree = "<group>"; };
 		189666192EB3976C00D7C9EA /* WiFiListViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = WiFiListViewController.xib; sourceTree = "<group>"; };
@@ -429,6 +423,12 @@
 		18EE7F4B2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThirdPartySDKInfoViewController.h; sourceTree = "<group>"; };
 		18EE7F4C2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ThirdPartySDKInfoViewController.m; sourceTree = "<group>"; };
 		18EE7F4D2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ThirdPartySDKInfoViewController.xib; sourceTree = "<group>"; };
+		18FA4B4A2EBC8273008A1F92 /* DeviceConnectFailedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceConnectFailedViewController.h; sourceTree = "<group>"; };
+		18FA4B4B2EBC8273008A1F92 /* DeviceConnectFailedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceConnectFailedViewController.m; sourceTree = "<group>"; };
+		18FA4B4C2EBC8273008A1F92 /* DeviceConnectFailedViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DeviceConnectFailedViewController.xib; sourceTree = "<group>"; };
+		18FA4B4D2EBC8273008A1F92 /* DeviceConnectSuccessViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceConnectSuccessViewController.h; sourceTree = "<group>"; };
+		18FA4B4E2EBC8273008A1F92 /* DeviceConnectSuccessViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceConnectSuccessViewController.m; sourceTree = "<group>"; };
+		18FA4B4F2EBC8273008A1F92 /* DeviceConnectSuccessViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DeviceConnectSuccessViewController.xib; sourceTree = "<group>"; };
 		3B9BC1741B7BB023A5D17058 /* Pods-AIToys.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AIToys.release.xcconfig"; path = "Target Support Files/Pods-AIToys/Pods-AIToys.release.xcconfig"; sourceTree = "<group>"; };
 		CD81051212684563E5D7D2BB /* libPods-AIToys.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AIToys.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC1583E02E0533920097CF0A /* SetNewPasswordViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SetNewPasswordViewController.h; sourceTree = "<group>"; };
@@ -1679,12 +1679,6 @@
 				DCF8023C2E121E5500C72B4D /* DeviceConnectingVC.h */,
 				DCF8023D2E121E5500C72B4D /* DeviceConnectingVC.m */,
 				DCF8023E2E121E5500C72B4D /* DeviceConnectingVC.xib */,
-				189665BB2EB2621700D7C9EA /* DeviceConnectFailedViewController.h */,
-				189665BC2EB2621700D7C9EA /* DeviceConnectFailedViewController.m */,
-				189665BD2EB2621700D7C9EA /* DeviceConnectFailedViewController.xib */,
-				189665BE2EB2621700D7C9EA /* DeviceConnectSuccessViewController.h */,
-				189665BF2EB2621700D7C9EA /* DeviceConnectSuccessViewController.m */,
-				189665C02EB2621700D7C9EA /* DeviceConnectSuccessViewController.xib */,
 				DCF802412E12224C00C72B4D /* DeviceAddVC.h */,
 				DCF802422E12224C00C72B4D /* DeviceAddVC.m */,
 				DCF802432E12224C00C72B4D /* DeviceAddVC.xib */,
@@ -1696,6 +1690,12 @@
 				DCEA01082E127BEA00170D8C /* ConnectWifiVC.xib */,
 				DC70F1DD2E1BA4A700C4D646 /* FindDollModel.h */,
 				DC70F1DE2E1BA4A700C4D646 /* FindDollModel.m */,
+				18FA4B4A2EBC8273008A1F92 /* DeviceConnectFailedViewController.h */,
+				18FA4B4B2EBC8273008A1F92 /* DeviceConnectFailedViewController.m */,
+				18FA4B4C2EBC8273008A1F92 /* DeviceConnectFailedViewController.xib */,
+				18FA4B4D2EBC8273008A1F92 /* DeviceConnectSuccessViewController.h */,
+				18FA4B4E2EBC8273008A1F92 /* DeviceConnectSuccessViewController.m */,
+				18FA4B4F2EBC8273008A1F92 /* DeviceConnectSuccessViewController.xib */,
 			);
 			path = DistributionNetwork;
 			sourceTree = "<group>";
@@ -2551,6 +2551,8 @@
 				E80BED9F2E575FF500F33EA9 /* 埋点集成完成报告.md in Resources */,
 				E80BEDA02E575FF500F33EA9 /* README.md in Resources */,
 				DC862ACF2E094193001A4793 /* FamailyNameCell.xib in Resources */,
+				18FA4B522EBC8273008A1F92 /* DeviceConnectSuccessViewController.xib in Resources */,
+				18FA4B532EBC8273008A1F92 /* DeviceConnectFailedViewController.xib in Resources */,
 				1896661A2EB3976C00D7C9EA /* WiFiListViewController.xib in Resources */,
 				E46F397C2E0FE4070039CE33 /* DeviceHavenFindItem.xib in Resources */,
 				DC862AE32E095470001A4793 /* FamailyMemeberAvatarCell.xib in Resources */,
@@ -2616,8 +2618,6 @@
 				E42A8A2A2E06CB8A00AD0BD9 /* HomeToysItem.xib in Resources */,
 				DCF802452E12224C00C72B4D /* DeviceAddVC.xib in Resources */,
 				DC674C2A2E41EF6500BF438E /* QATabAnimationThreeCell.xib in Resources */,
-				189665C12EB2621700D7C9EA /* DeviceConnectSuccessViewController.xib in Resources */,
-				189665C22EB2621700D7C9EA /* DeviceConnectFailedViewController.xib in Resources */,
 				DCEA00FA2E126BD400170D8C /* SelectWifCell.xib in Resources */,
 				DC1583E32E0533920097CF0A /* SetNewPasswordViewController.xib in Resources */,
 			);
@@ -2714,6 +2714,8 @@
 				DC862ABF2E093370001A4793 /* FamailyManageCell.m in Sources */,
 				DCEA00FB2E126BD400170D8C /* SelectWifCell.m in Sources */,
 				E42F14F42E225C1A00376855 /* JXCategoryIndicatorTriangleView.m in Sources */,
+				18FA4B502EBC8273008A1F92 /* DeviceConnectFailedViewController.m in Sources */,
+				18FA4B512EBC8273008A1F92 /* DeviceConnectSuccessViewController.m in Sources */,
 				DC674C202E41EA4B00BF438E /* LineTableViewHeaderFooterView.m in Sources */,
 				E46A38D32E0B063100C930D3 /* ToysGuideFindVC.m in Sources */,
 				DC862AC92E093EDB001A4793 /* FamailyMemberCell.m in Sources */,
@@ -2812,8 +2814,6 @@
 				DC7C45242E28D9880069CBA4 /* TABAnimatedDocumentMethod.m in Sources */,
 				DC7C45252E28D9880069CBA4 /* TABAnimatedCacheModel.m in Sources */,
 				DC7C45262E28D9880069CBA4 /* TABClassicAnimation.m in Sources */,
-				189665C32EB2621700D7C9EA /* DeviceConnectFailedViewController.m in Sources */,
-				189665C42EB2621700D7C9EA /* DeviceConnectSuccessViewController.m in Sources */,
 				DC7C45272E28D9880069CBA4 /* NSArray+TABAnimatedChain.m in Sources */,
 				DC7C45282E28D9880069CBA4 /* TABComponentLayer.m in Sources */,
 				DC7C45292E28D9880069CBA4 /* TABFormAnimated.m in Sources */,
