@@ -382,7 +382,7 @@
         self.isLoading = NO;
         
         // 显示错误提示
-        [self showErrorAlert:@"Loading Failed" message:error.localizedDescription];
+//        [self showErrorAlert:@"Loading Failed" message:error.localizedDescription];
         
         self.emptyView.hidden = NO;
         
@@ -927,7 +927,7 @@
             [SVProgressHUD dismiss];
             
             // 显示错误提示
-            [self showErrorAlert:@"Delete Failed" message:error.localizedDescription];
+//            [self showErrorAlert:@"Delete Failed" message:error.localizedDescription];
         });
     }];
 }

@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) UIButton *editButton;
 @property (nonatomic, strong) UIImageView *badgeImageView;
 @property (nonatomic, strong) UIView *statusView;
+@property (nonatomic, strong) UIImageView *failureImageView; // 失败状态图标
 
 // ⭐️ 关键属性：明确标记是否为批量编辑模式
 @property (nonatomic, assign) BOOL isBatchEditingMode;

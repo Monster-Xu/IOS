@@ -935,13 +935,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
         NSLog(@"轮播图请求失败: %@", msg);
-        // 使用默认数据
+        // 不使用默认数据，保持空状态
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf.bannerImgArray removeAllObjects];
-            NSArray *defaultData = [weakSelf createDefaultBannerData];
-            if (defaultData && defaultData.count > 0) {
-                [weakSelf.bannerImgArray addObjectsFromArray:defaultData];
-            }
             [weakSelf updateBannerUI];
         });
     }];
@@ -1005,10 +1001,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
         NSLog(@"探索公仔请求失败: %@", msg);
-        // 使用默认数据
+        // 不使用默认数据，保持空状态
         dispatch_async(dispatch_get_main_queue(), ^{
             [weakSelf.exploreDollList removeAllObjects];
-            [weakSelf.exploreDollList addObjectsFromArray:[weakSelf createDefaultExploreDollData]];
             [weakSelf updateExploreDollUI];
         });
     }];
@@ -1260,20 +1255,13 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 
 - (void)handleDisplayModeUpdate {
-    if ([self.homeDisplayMode isEqualToString:@"0"]) {
-        NSLog(@"使用默认数据结构 (propValue=0)");
-        // 使用默认数据
-        [self.bannerImgArray removeAllObjects];
-        [self.bannerImgArray addObjectsFromArray:[self createDefaultBannerData]];
-        [self updateBannerUI];
-        
-        [self.exploreDollList removeAllObjects];
-        [self.exploreDollList addObjectsFromArray:[self createDefaultExploreDollData]];
-        [self updateExploreDollUI];
-    }
+    // 移除默认数据逻辑，直接基于网络数据
+    NSLog(@"处理显示模式更新: homeDisplayMode = %@", self.homeDisplayMode);
     
-    // 处理启动图控制
-    [self handleSplashScreenControl];
+    // 根据配置更新UI显示（如果需要特殊处理）
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.pageListView.mainTableView reloadData];
+    });
 }
 
 - (void)finalizeDataLoading {
@@ -2011,172 +1999,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     return UIStatusBarStyleLightContent; // 或UIStatusBarStyleDefault
 }
 
-#pragma mark - 默认数据创建方法
-
-// 创建默认banner数据
-- (NSArray<BannerModel *> *)createDefaultBannerData {
-    BannerModel *defaultBanner = [[BannerModel alloc] init];
-    defaultBanner.Id = @"15";
-    defaultBanner.title = @"banner1";
-    defaultBanner.positionCode = @"HOME_BANNER";
-    defaultBanner.mediaUrl = @"https://app.talenpalussaastest.com/admin-api/infra/file/29/get/banner/20250829/8291755569649_.pic_副本_1756467884805.jpg";
-    defaultBanner.linkUrl = @"";
-    defaultBanner.linkParams = nil;
-
-    return @[defaultBanner];
-}
-
-// 创建默认启动图数据
-- (NSArray<BannerModel *> *)createDefaultSplashScreenData {
-    BannerModel *defaultSplash = [[BannerModel alloc] init];
-    defaultSplash.Id = @"21";
-    defaultSplash.imageUrl = @"https://app.talenpalussaastest.com/admin-api/infra/file/29/get/splash-screen/20250905/20250905224021_5387_1757083264312.png";
-
-    return @[defaultSplash];
-}
-
-// 创建默认探索公仔数据
-- (NSArray<FindDollModel *> *)createDefaultExploreDollData {
-    FindDollModel *defaultDoll = [[FindDollModel alloc] init];
-    defaultDoll.Id = @"C008";
-    defaultDoll.name = @"Little Lion";
-    defaultDoll.type = @"explore";
-    defaultDoll.family = @"狮子家族";
-    defaultDoll.model = @"Lion001";
-    defaultDoll.desc = @"He is cheerful and lively, and is the \"happy fruit\" in the lion group. He is full of energy every day, and uses his cheerful \"aow\" to convey happiness and is positive and optimistic.";
-    defaultDoll.coverImg = @"https://app.talenpalussaastest.com/admin-api/infra/file/29/get/doll/20250829/WechatIMG937_1756486719169.png";
-    defaultDoll.backgroundImg = @"https://app.talenpalussaastest.com/admin-api/infra/file/29/get/doll/20250829/WechatIMG931_1756486724296.png";
-    defaultDoll.preview3d = nil;
-    defaultDoll.releaseStatus = @"released";
-    defaultDoll.grayConfig = @"";
-    defaultDoll.createTime = @"1754124647000";
-    defaultDoll.totalStoryNum = 1;
-    defaultDoll.totalStoryDuration = 41;
-
-    return @[defaultDoll];
-}
-
-// 处理启动图显示控制
-- (void)handleSplashScreenControl {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    // 🔒 安全检查：防止数组越界
-    if (paths.count == 0) {
-        NSLog(@"⚠️ 无法获取文档目录路径");
-        return;
-    }
-    NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"loading.png"];
-    NSString *modelPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"adModel"];
-
-    if ([self.homeDisplayMode isEqualToString:@"0"]) {
-        NSLog(@"配置为使用默认启动图，更新缓存为默认启动图");
-        // 使用默认启动图数据，更新缓存为默认启动图
-        NSArray *defaultSplashData = [self createDefaultSplashScreenData];
-        if (defaultSplashData.count > 0) {
-            BannerModel *defaultSplash = defaultSplashData.firstObject;
-
-            // 更新缓存模型文件
-            NSError *error = nil;
-            NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:defaultSplash requiringSecureCoding:NO error:&error];
-            if (modelData && !error) {
-                [modelData writeToFile:modelPath atomically:YES];
-            }
-
-            // 异步下载并缓存默认启动图，替换当前缓存
-            dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                if (defaultSplash.imageUrl.length > 0) {
-                    NSLog(@"🔄 开始下载默认启动图: %@", defaultSplash.imageUrl);
-                    NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:defaultSplash.imageUrl]];
-                    if (data) {
-                        UIImage *image = [UIImage imageWithData:data];
-                        if (image) {
-                            BOOL success = [UIImagePNGRepresentation(image) writeToFile:filePath atomically:YES];
-                            if (success) {
-                                NSLog(@"✅ 默认启动图下载并缓存成功！");
-                                NSLog(@"📁 缓存路径: %@", filePath);
-                                NSLog(@"📏 图片尺寸: %.0f x %.0f", image.size.width, image.size.height);
-                                NSLog(@"💾 文件大小: %.2f KB", (double)data.length / 1024.0);
-                                NSLog(@"🎯 下次启动将显示默认启动图");
-                            } else {
-                                NSLog(@"❌ 默认启动图缓存写入失败");
-                            }
-                        } else {
-                            NSLog(@"❌ 默认启动图数据转换为UIImage失败");
-                        }
-                    } else {
-                        NSLog(@"❌ 默认启动图下载失败: %@", defaultSplash.imageUrl);
-                    }
-                } else {
-                    NSLog(@"⚠️ 默认启动图URL为空，跳过下载");
-                }
-            });
-        }
-    } else {
-        NSLog(@"配置为使用网络启动图 (propValue=%@)，更新缓存为网络启动图", self.homeDisplayMode);
-        // 使用网络启动图，确保缓存为最新的网络启动图数据
-        // 重新请求网络启动图数据并更新缓存
-        NSLog(@"🌐 开始请求网络启动图数据...");
-        WEAK_SELF
-        [[APIManager shared] GET:[APIPortConfiguration getSplashScreenUrl] parameter:nil success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg)  {
-            NSArray *dataArr = @[];
-            if ([data isKindOfClass:NSArray.class]){
-                dataArr = (NSArray *)data;
-            }
-
-            NSLog(@"📡 网络启动图API请求成功，返回数据数量: %lu", (unsigned long)dataArr.count);
-
-            if (dataArr.count > 0) {
-                BannerModel *adModel = [BannerModel mj_objectWithKeyValues:[dataArr firstObject]];
-                NSLog(@"📋 解析到网络启动图模型:");
-                NSLog(@"   ID: %@", adModel.Id);
-                NSLog(@"   图片URL: %@", adModel.imageUrl);
-                NSLog(@"   跳转URL: %@", adModel.linkUrl ?: @"无");
-
-                // 更新缓存模型文件
-                NSError *modelError = nil;
-                NSData *modelData = [NSKeyedArchiver archivedDataWithRootObject:adModel requiringSecureCoding:NO error:&modelError];
-                BOOL modelSaved = NO;
-                if (modelData && !modelError) {
-                    modelSaved = [modelData writeToFile:modelPath atomically:YES];
-                }
-                NSLog(@"💾 网络启动图模型缓存%@: %@", modelSaved ? @"成功" : @"失败", modelPath);
-
-                //异步下载并缓存网络启动图，替换当前缓存
-                dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-                    if (adModel.imageUrl.length > 0) {
-                        NSLog(@"🔄 开始下载网络启动图: %@", adModel.imageUrl);
-                        NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:adModel.imageUrl]];
-                        if (data) {
-                            UIImage *image = [UIImage imageWithData:data];
-                            if (image) {
-                                BOOL success = [UIImagePNGRepresentation(image) writeToFile:filePath atomically:YES];
-                                if (success) {
-                                    NSLog(@"✅ 网络启动图下载并缓存成功！");
-                                    NSLog(@"📁 缓存路径: %@", filePath);
-                                    NSLog(@"📏 图片尺寸: %.0f x %.0f", image.size.width, image.size.height);
-                                    NSLog(@"💾 文件大小: %.2f KB", (double)data.length / 1024.0);
-                                    NSLog(@"🎯 下次启动将显示网络启动图");
-                                } else {
-                                    NSLog(@"❌ 网络启动图缓存写入失败");
-                                }
-                            } else {
-                                NSLog(@"❌ 网络启动图数据转换为UIImage失败");
-                            }
-                        } else {
-                            NSLog(@"❌ 网络启动图下载失败: %@", adModel.imageUrl);
-                        }
-                    } else {
-                        NSLog(@"⚠️ 网络启动图URL为空，跳过下载");
-                    }
-                });
-            } else {
-                NSLog(@"⚠️ 网络启动图数据为空，保持当前缓存");
-            }
-        } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg){
-            NSLog(@"❌ 网络启动图API请求失败: %@ (错误码: %ld)", msg, (long)error.code);
-            NSLog(@"🔄 保持当前缓存不变");
-        }];
-    }
-}
 
 // 播放新的音频
 - (void)playNewAudioForAudioURL:(NSString *)Url storyTitle:(NSString *)title coverImageURL:(NSString *)coverImageURL{
@@ -2357,6 +2179,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     // 🎵 关闭时记录最终状态
     [self logCurrentAudioPlaybackStatus];
 }
+- (void)audioPlayerDidTapPrevious {
+    NSLog(@"用户点击了上一首按钮");
+    [SVProgressHUD showErrorWithStatus:@"This is already the first song."];
+}
+
+- (void)audioPlayerDidTapNext {
+    NSLog(@"用户点击了下一首按钮");
+    [SVProgressHUD showErrorWithStatus:@"This is the last song."];
+}
+
 
 #pragma mark - 音频播放状态获取方法
 

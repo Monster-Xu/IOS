@@ -99,7 +99,7 @@
     self.contentTextView.backgroundColor = [UIColor clearColor];
     self.contentTextView.font = [UIFont systemFontOfSize:16];
     self.contentTextView.textColor = [UIColor blackColor];
-    self.contentTextView.text = @"please speak...";
+    self.contentTextView.text = @"Please enter the main plot of this story...";
     self.contentTextView.editable = NO;
     self.contentTextView.scrollEnabled = YES;
     [self.containerView addSubview:self.contentTextView];
@@ -231,7 +231,7 @@
     self.recognizedText = text ?: @"";
     
     if (self.recognizedText.length == 0) {
-        self.contentTextView.text = @"please speak...";
+        self.contentTextView.text = @"Please enter the main plot of this story...";
         self.contentTextView.textColor = [UIColor grayColor];
     } else {
         self.contentTextView.text = self.recognizedText;

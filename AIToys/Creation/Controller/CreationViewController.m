@@ -216,7 +216,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     longPress.minimumPressDuration = 0.5;
     [self.tableView addGestureRecognizer:longPress];
     self.tableView.mj_header = [RYFGifHeader headerWithRefreshingBlock:^{
-        [self refreshDataWithSkeleton];
+        [self refreshDataWithoutSkeleton];
     }];
     
     [self.view addSubview:self.tableView];
@@ -503,67 +503,12 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         strongSelf.isLoading = NO;
         
         // 显示错误提示
-        [strongSelf showErrorAlert:error.localizedDescription];
+//        [strongSelf showErrorAlert:error.localizedDescription];
         
         strongSelf.currentLoadTask = nil;
         
         // 如果没有数据，显示空状态
         [strongSelf updateEmptyState];
-    }];
-}
-
-/// 下拉刷新，显示骨架屏加载效果
-- (void)refreshDataWithSkeleton {
-    NSLog(@"[CreationVC] 开始下拉刷新...");
-    
-    // ✅ 显示骨架屏
-    self.isLoading = NO;
-    [self.tableView reloadData];
-    
-    // 创建分页请求参数
-    PageRequestModel *pageRequest = [[PageRequestModel alloc] initWithPageNum:1 pageSize:20];
-    
-    // 发起网络请求
-    __weak typeof(self) weakSelf = self;
-    [[AFStoryAPIManager sharedManager] getStoriesWithPage:pageRequest success:^(StoryListResponseModel *response) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        
-        NSLog(@"[CreationVC] 刷新数据成功，共 %ld 条", (long)response.total);
-        
-        
-        // 更新数据源
-        [strongSelf.dataSource removeAllObjects];
-        [strongSelf.dataSource addObjectsFromArray:response.list];
-        
-        // 刷新 TableView，显示真实数据
-        [strongSelf.tableView reloadData];
-        [strongSelf updateEmptyState];
-        
-        // 结束刷新动画
-        [strongSelf endRefreshingWithSuccess];
-        
-        strongSelf.currentLoadTask = nil;
-        
-    } failure:^(NSError *error) {
-        __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (!strongSelf) return;
-        
-        NSLog(@"[CreationVC] 刷新数据失败: %@", error.localizedDescription);
-        
-        // ✅ 隐藏骨架屏
-        strongSelf.isLoading = NO;
-        
-        // 结束刷新动画
-        [strongSelf endRefreshingWithSuccess];
-        
-        // 显示错误提示
-        [strongSelf showErrorAlert:error.localizedDescription];
-        
-        // 如果没有数据，显示空状态
-        [strongSelf updateEmptyState];
-        
-        strongSelf.currentLoadTask = nil;
     }];
 }
 
@@ -590,6 +535,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         // 刷新 TableView，显示真实数据
         [strongSelf.tableView reloadData];
         [strongSelf updateEmptyState];
+         //结束刷新动画
+        [strongSelf endRefreshingWithSuccess];
+        
+        strongSelf.currentLoadTask = nil;
         
     } failure:^(NSError *error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -598,6 +547,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         NSLog(@"[CreationVC] 轻量级刷新数据失败: %@", error.localizedDescription);
         
         // 静默处理错误，不显示提示
+        //结束刷新动画
+       [strongSelf endRefreshingWithSuccess];
+       
+       strongSelf.currentLoadTask = nil;
         // 如果没有数据，显示空状态
         [strongSelf updateEmptyState];
     }];
@@ -686,7 +639,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         VoiceStoryModel *model = self.dataSource[indexPath.section];
         
         // 如果是生成中、音频生成中或失败状态，需要额外的空间显示状态提示
-        if (model.storyStatus == 1 || model.storyStatus == 3 || model.storyStatus == 4) {
+        if (model.storyStatus == 1 || model.storyStatus == 3 || model.storyStatus == 4 ||model.storyStatus==6){
             return 122; // 卡片内容高度，无上下边距
         }
         
@@ -1324,13 +1277,13 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         NSLog(@"❌ 故事删除失败: %@", error.localizedDescription);
         
         // 删除失败时显示错误提示并重新加载数据
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSString *errorMessage = [NSString stringWithFormat:@"Failed to delete story '%@'. %@", storyName, error.localizedDescription ?: @"Please try again later."];
-            [LGBaseAlertView showAlertWithContent:errorMessage confirmBlock:^(BOOL is_value, id obj) {
-                // 重新加载数据以确保数据一致性
-                [self loadDataWithSkeleton];
-            }];
-        });
+//        dispatch_async(dispatch_get_main_queue(), ^{
+//            NSString *errorMessage = [NSString stringWithFormat:@"Failed to delete story '%@'. %@", storyName, error.localizedDescription ?: @"Please try again later."];
+//            [LGBaseAlertView showAlertWithContent:errorMessage confirmBlock:^(BOOL is_value, id obj) {
+//                // 重新加载数据以确保数据一致性
+//                [self loadDataWithSkeleton];
+//            }];
+//        });
     }];
     
     NSLog(@"✅ 单个删除完成");
@@ -1374,6 +1327,13 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
             break;
         }
         case 5: // 跳转到 CreateStoryWithVoiceVC（播放按钮可用）
+        {
+            CreateStoryWithVoiceViewController *voiceVC = [[CreateStoryWithVoiceViewController alloc] initWithEditMode:YES];
+            voiceVC.storyId = model.storyId;
+            [self.navigationController pushViewController:voiceVC animated:YES];
+            NSLog(@"✅ 跳转到 CreateStoryWithVoiceViewController，storyId: %ld", (long)model.storyId);
+            break;
+        }
         case 6: // 跳转到 CreateStoryWithVoiceVC（播放按钮不可用）
         {
             CreateStoryWithVoiceViewController *voiceVC = [[CreateStoryWithVoiceViewController alloc] initWithEditMode:YES];
@@ -1475,9 +1435,9 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     
     [[AFStoryAPIManager sharedManager] deleteStoryWithId:model.storyId success:^(APIResponseModel * _Nonnull response) {
         
-        [self refreshDataWithSkeleton];
+        [self refreshDataWithoutSkeleton];
     } failure:^(NSError * _Nonnull error) {
-        [self showErrorAlert:error.localizedDescription];
+//        [self showErrorAlert:error.localizedDescription];
     }];
 }
 

@@ -58,9 +58,9 @@
     if (mins > 0){
         timeStr = [timeStr stringByAppendingFormat:@"%ld mins ",(long)mins];
     }
-    if (s > 0){
-        timeStr = [timeStr stringByAppendingFormat:@"%ld s ",(long)s];
-    }
+//    if (s > 0){
+//        timeStr = [timeStr stringByAppendingFormat:@"%ld s ",(long)s];
+//    }
     if(timeStr.length == 0)
     {
         timeStr = @"0 s";

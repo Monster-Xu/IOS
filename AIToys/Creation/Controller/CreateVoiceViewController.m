@@ -397,7 +397,7 @@
             [SVProgressHUD dismiss];
             
             // 加载失败时的处理
-            [strongSelf handleVoiceDataLoadFailure:error];
+//            [strongSelf handleVoiceDataLoadFailure:error];
         });
     }];
 }
@@ -1097,7 +1097,7 @@
                 errorMessage = [NSString stringWithFormat:@"Update failed: %@", error.localizedDescription];
             }
             
-            [self showAlert:errorMessage];
+//            [self showAlert:errorMessage];
         });
     }];
 }
@@ -1162,7 +1162,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             self.isUploading = NO;
             [SVProgressHUD dismiss];
-            [self showAlert:[NSString stringWithFormat:@"Upload failed: %@", error.localizedDescription]];
+//            [self showAlert:[NSString stringWithFormat:@"Upload failed: %@", error.localizedDescription]];
         });
     }];
 }
@@ -1255,7 +1255,7 @@
                 errorMessage = [NSString stringWithFormat:@"更新失败: %@", error.localizedDescription];
             }
             
-            [self showAlert:errorMessage];
+//            [self showAlert:errorMessage];
         });
     }];
 }
@@ -1342,7 +1342,7 @@
                 errorMessage = [NSString stringWithFormat:@"Story update failed: %@", error.localizedDescription];
             }
             
-            [self showAlert:errorMessage];
+//            [self showAlert:errorMessage];
         });
     }];
 }
@@ -1479,7 +1479,7 @@
                 errorMessage = [NSString stringWithFormat:@"Update failed: %@", error.localizedDescription];
             }
             
-            [self showAlert:errorMessage];
+//            [self showAlert:errorMessage];
         });
     }];
 }
@@ -1566,7 +1566,7 @@
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.isUploading = NO;
                 [SVProgressHUD dismiss];
-                [self showAlert:[NSString stringWithFormat:@"Upload failed: %@", error.localizedDescription]];
+//                [self showAlert:[NSString stringWithFormat:@"Upload failed: %@", error.localizedDescription]];
             });
         }];
     
@@ -1643,7 +1643,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             self.isCloningVoice = NO;
             [SVProgressHUD dismiss];
-            [self showAlert:[NSString stringWithFormat:@"Failed to create voice: %@", error.localizedDescription]];
+//            [self showAlert:[NSString stringWithFormat:@"Failed to create voice: %@", error.localizedDescription]];
         });
     }];
 }

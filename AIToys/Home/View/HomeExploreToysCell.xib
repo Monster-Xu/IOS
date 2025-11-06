@@ -63,8 +63,8 @@
                                             <constraint firstAttribute="width" constant="32" id="dlD-DW-haM"/>
                                         </constraints>
                                     </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Story" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="61k-0D-32o">
-                                        <rect key="frame" x="40" y="0.0" width="26.666666666666671" height="13"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Episodes" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="61k-0D-32o">
+                                        <rect key="frame" x="40" y="0.0" width="46" height="13"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="13" id="0lE-NM-GEO"/>
                                         </constraints>
@@ -102,8 +102,8 @@
                                             <constraint firstAttribute="height" constant="32" id="zjn-xH-dOb"/>
                                         </constraints>
                                     </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Length" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Y14-gV-bD3">
-                                        <rect key="frame" x="40" y="0.0" width="35.333333333333343" height="13"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Running Time" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Y14-gV-bD3">
+                                        <rect key="frame" x="40" y="0.0" width="69" height="13"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="13" id="e1i-Va-BD7"/>
                                         </constraints>

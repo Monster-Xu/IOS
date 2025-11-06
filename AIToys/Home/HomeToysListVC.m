@@ -272,7 +272,7 @@
             NSMutableDictionary *dic = [NSMutableDictionary dictionary];
             [dic setObject:self.selectDeviceId forKey:@"id"];
             [[APIManager shared] DELETE:[APIPortConfiguration getDoolDeleteUrl] parameter:dic success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
-                [SVProgressHUD showSuccessWithStatus:LocalString(@"删除成功")];
+                [SVProgressHUD showSuccessWithStatus:LocalString(@"公仔删除成功")];
                 NSInteger temp = 0;
                 for (int i = 0; i<self.dataArr.count; i++) {
                     if([weakSelf.selectDeviceId isEqualToString:weakSelf.dataArr[i].Id]){

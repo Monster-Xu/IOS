@@ -63,11 +63,15 @@
 @property (nonatomic, strong) UIView *loadingView;
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicator;
 @property (nonatomic, strong) UILabel *loadingLabel;
+@property (weak, nonatomic) IBOutlet UIView *failedView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *storyNameTop;
 
 
 @end
 
 @implementation CreateStoryWithVoiceViewController
+
+
 
 #pragma mark - Lifecycle
 
@@ -122,6 +126,11 @@
     
     // 隐藏所有控件，显示加载状态
     [self hideAllContentViews];
+    
+    // ✅ 确保failedView初始状态为隐藏
+    self.failedView.hidden = YES;
+    self.storyNameTop.constant = 10.0; // 设置默认约束值
+    
     [self showLoadingState];
     
     [self loadData];
@@ -191,11 +200,8 @@
 /// 显示所有内容视图（带动画）
 - (void)showAllContentViewsWithAnimation {
     NSLog(@"✨ 显示所有内容控件");
-    [self scrollToBottomAfterDataLoaded];
-    // 隐藏加载指示器
-    [self hideCustomLoadingView];
     
-    // 设置初始状态（透明）
+    // ✅ 第一步：先显示所有控件（透明状态），这样可以参与布局计算
     self.storyThemeView.alpha = 0.0;
     self.voiceHeaderView.alpha = 0.0;
     self.storyView.alpha = 0.0;
@@ -203,7 +209,6 @@
     self.saveStoryBtn.alpha = 0.0;
     self.deletBtn.alpha = 0.0;
     
-    // 显示控件
     self.storyThemeView.hidden = NO;
     self.voiceHeaderView.hidden = YES;  // ✅ 保持插画头部视图隐藏，不参与高度计算
     self.storyView.hidden = NO;
@@ -211,8 +216,14 @@
     self.saveStoryBtn.hidden = NO;
     self.deletBtn.hidden = NO;
     
-    // 添加渐显动画
-    [UIView animateWithDuration:0.1
+    // ✅ 第二步：强制布局，确保所有frame计算完成
+    [self.contentView layoutIfNeeded];
+    
+    // ✅ 第三步：更新scrollview的contentSize
+    [self updateMainScrollViewContentSize];
+    
+    // ✅ 第四步：开始渐显动画
+    [UIView animateWithDuration:0.3
                           delay:0.0
                         options:UIViewAnimationOptionCurveEaseOut
                      animations:^{
@@ -225,10 +236,9 @@
     } completion:^(BOOL finished) {
         if (finished) {
             NSLog(@"🎉 内容显示动画完成");
-            // ✅ 动画完成后更新滚动视图内容大小
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self scheduleScrollViewContentSizeUpdate];
-            });
+            
+            // ✅ 第五步：渐显完成后，滚动到底部
+            [self scrollToBottomAfterContentVisible];
         }
     }];
 }
@@ -272,6 +282,9 @@
             [strongSelf.voiceHeaderImageBtn sd_setImageWithURL:[NSURL URLWithString:story.illustrationUrl] forState:UIControlStateNormal];
             strongSelf.storyTextField.text = story.storyContent;
             
+            // ✅ 根据故事状态控制failedView显示和storyNameTop约束
+            [strongSelf configureViewsForStoryStatus:story.storyStatus];
+            
             // ✅ 故事内容加载完成后，动态调整高度
             dispatch_async(dispatch_get_main_queue(), ^{
                 [strongSelf adjustStoryViewHeightOptimized];
@@ -284,13 +297,6 @@
             
             // 确保文本充满整个视图并滚动到顶部
             [strongSelf.storyTextField scrollRangeToVisible:NSMakeRange(0, 0)];
-            
-            // 根据编辑模式设置不同的状态文本
-            if (strongSelf.isEditMode) {
-                strongSelf.storyStautsLabel.text = @"Edit your story content and voice!";
-            } else {
-                strongSelf.storyStautsLabel.text = @"The story has been created!";
-            }
         });
         
         dispatch_group_leave(group);
@@ -302,12 +308,7 @@
             return;
         }
         
-        NSLog(@"❌ 获取故事列表失败: %@", error.localizedDescription);
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // 显示错误提示
-            [strongSelf showErrorAlert:error.localizedDescription];
-        });
         
         dispatch_group_leave(group);
     }];
@@ -406,10 +407,6 @@
         
         NSLog(@"❌ 获取音色列表失败: %@", error.localizedDescription);
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // 显示错误提示
-            [strongSelf showErrorAlert:error.localizedDescription];
-        });
         
         dispatch_group_leave(group);
     }];
@@ -468,8 +465,8 @@
         
         // ✅ 添加更详细的调试日志
         if (self.isEditMode) {
-            NSLog(@"🎯 配置音色cell[%ld]: '%@' (ID: %ld), isSelected: %@, selectedIndex: %ld", 
-                  (long)indexPath.row, 
+            NSLog(@"🎯 配置音色cell[%ld]: '%@' (ID: %ld), isSelected: %@, selectedIndex: %ld",
+                  (long)indexPath.row,
                   voiceModel.voiceName ?: @"无名称",
                   (long)voiceModel.voiceId,
                   isSelected ? @"YES" : @"NO",
@@ -691,43 +688,49 @@
 
 #pragma mark - ScrollView Setup
 
-/// ✅ 编辑模式下数据加载完成后滚动到底部
-- (void)scrollToBottomAfterDataLoaded {
-    NSLog(@"📱 编辑模式：准备滚动到页面底部");
+/// ✅ 内容显示完成后滚动到底部（带动画）
+- (void)scrollToBottomAfterContentVisible {
+    NSLog(@"📱 内容显示完成，准备滚动到底部");
     
     if (!self.mainScrollView) {
         NSLog(@"⚠️ 主滚动视图未初始化，无法滚动");
+        // 即使不能滚动，也要隐藏loading
+        [self hideCustomLoadingView];
         return;
     }
     
-    // 延迟一点时间，确保所有布局和内容大小计算都已完成
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        // 强制更新布局
+    // ✅ 稍微延迟一下，让渲染完成
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // 再次确保布局和contentSize是最新的
         [self.contentView layoutIfNeeded];
-        
-        // 确保滚动视图内容大小是最新的
         [self updateMainScrollViewContentSize];
         
-        // 再延迟一点，确保内容大小更新完成
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            CGSize contentSize = self.mainScrollView.contentSize;
-            CGSize boundsSize = self.mainScrollView.bounds.size;
+        CGSize contentSize = self.mainScrollView.contentSize;
+        CGSize boundsSize = self.mainScrollView.bounds.size;
+        
+        // 如果内容高度大于可视区域高度，才需要滚动
+        if (contentSize.height > boundsSize.height) {
+            // 计算底部偏移量
+            CGFloat bottomOffset = contentSize.height - boundsSize.height;
+            CGPoint bottomPoint = CGPointMake(0, bottomOffset);
             
-            // 如果内容高度大于可视区域高度，才需要滚动
-            if (contentSize.height > boundsSize.height) {
-                // 计算底部偏移量
-                CGFloat bottomOffset = contentSize.height - boundsSize.height;
-                CGPoint bottomPoint = CGPointMake(0, bottomOffset);
-                
-                NSLog(@"📱 开始滚动到底部：内容高度=%.1f, 可视高度=%.1f, 偏移量=%.1f", 
-                      contentSize.height, boundsSize.height, bottomOffset);
-                
-                // 带动画滚动到底部
-                [self.mainScrollView setContentOffset:bottomPoint animated:YES];
-            } else {
-                NSLog(@"📱 内容未超出可视区域，无需滚动");
-            }
-        });
+            NSLog(@"📱 开始滚动到底部：内容高度=%.1f, 可视高度=%.1f, 偏移量=%.1f",
+                  contentSize.height, boundsSize.height, bottomOffset);
+            
+            // ✅ 带动画滚动到底部，让用户看到滚动过程
+            [self.mainScrollView setContentOffset:bottomPoint animated:YES];
+            
+            // ✅ 第六步：等待滚动动画完成后（约0.3秒），最后隐藏loading
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self hideCustomLoadingView];
+                NSLog(@"✅ 所有动作完成，loading已隐藏");
+            });
+        } else {
+            NSLog(@"📱 内容未超出可视区域，无需滚动");
+            // ✅ 不需要滚动时，也要隐藏loading
+            [self hideCustomLoadingView];
+            NSLog(@"✅ 所有动作完成，loading已隐藏");
+        }
     });
 }
 
@@ -887,16 +890,37 @@
 - (void)scheduleScrollViewContentSizeUpdate {
     // 取消之前的调用
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSize) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSizeWithExtraHeight) object:nil];
     
     // 延迟调用，避免频繁更新
     [self performSelector:@selector(updateMainScrollViewContentSize) withObject:nil afterDelay:0.1];
 }
 
+/// ✅ 延迟更新滚动视图内容大小（带额外高度）- 用于失败状态
+- (void)scheduleScrollViewContentSizeUpdateWithExtraHeight:(CGFloat)extraHeight {
+    // 取消之前的调用
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSize) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSizeWithExtraHeight) object:nil];
+    
+    // 保存额外高度到实例变量（如果需要的话）
+    NSNumber *extraHeightNumber = @(extraHeight);
+    
+    // 延迟调用，避免频繁更新
+    [self performSelector:@selector(updateMainScrollViewContentSizeWithExtraHeight:) withObject:extraHeightNumber afterDelay:0.1];
+}
+
 /// ✅ 优化的主滚动视图内容大小更新 - 避免重复计算
 - (void)updateMainScrollViewContentSize {
+    [self updateMainScrollViewContentSizeWithExtraHeight:@(0)];
+}
+
+/// ✅ 优化的主滚动视图内容大小更新（带额外高度）- 避免重复计算
+- (void)updateMainScrollViewContentSizeWithExtraHeight:(NSNumber *)extraHeightNumber {
     if (!self.contentView || !self.mainScrollView) {
         return;
     }
+    
+    CGFloat extraHeight = extraHeightNumber.floatValue;
     
     // 强制布局更新，确保所有约束变化都已生效
     [self.contentView layoutIfNeeded];
@@ -913,18 +937,16 @@
     }
     
     // 添加适量底部边距，确保有足够的滚动空间
-    maxY += 40;  // ✅ 减少底部边距：50 → 20
+    maxY += 100;  // ✅ 底部边距统一设置为100pt
     
-    // 确保内容高度能够滚动，但不要过高
-    // ✅ 计算实际可用的滚动区域高度（减去导航栏等系统UI）
-    CGFloat availableHeight = self.mainScrollView.frame.size.height;
-    // 如果可用高度为0（布局未完成），使用屏幕高度减去常见的系统UI高度作为估算
-    if (availableHeight <= 0) {
-        CGFloat statusBarHeight = [UIApplication sharedApplication].statusBarFrame.size.height;
-        CGFloat navBarHeight = self.navigationController.navigationBar.frame.size.height;
-        availableHeight = [UIScreen mainScreen].bounds.size.height - statusBarHeight - navBarHeight;
+    // ✅ 为失败状态添加额外高度
+    if (extraHeight > 0) {
+        maxY += extraHeight;
+        NSLog(@"📏 为失败状态添加额外高度: %.1f", extraHeight);
     }
-    CGFloat contentHeight = MAX(maxY, availableHeight + 10);  // ✅ 只需要少量额外空间确保能滚动
+    
+    // ✅ 内容高度就是实际内容的高度，不强制增加到屏幕高度
+    CGFloat contentHeight = maxY;
     
     // ✅ 只有在内容高度真的变化时才更新
     CGFloat currentContentHeight = self.mainScrollView.contentSize.height;
@@ -937,8 +959,8 @@
         // 设置ScrollView的内容大小
         self.mainScrollView.contentSize = CGSizeMake(self.contentView.frame.size.width, contentHeight);
         
-        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (计算最大Y: %.1f, 可用高度: %.1f)",
-              currentContentHeight, contentHeight, maxY, availableHeight);
+        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (最大Y: %.1f, 额外高度: %.1f)",
+              currentContentHeight, contentHeight, maxY - extraHeight - 100, extraHeight);
     } else {
         NSLog(@"📏 滚动视图内容大小无需更新 (当前: %.1f, 计算: %.1f)", currentContentHeight, contentHeight);
     }
@@ -1071,7 +1093,7 @@
             
             if (newVoiceList.count != strongSelf.voiceListArray.count) {
                 shouldUpdate = YES;
-                changeReason = [NSString stringWithFormat:@"数量变化: %ld → %ld", 
+                changeReason = [NSString stringWithFormat:@"数量变化: %ld → %ld",
                                (long)strongSelf.voiceListArray.count, (long)newVoiceList.count];
             } else {
                 // 检查音色ID是否有变化
@@ -1081,7 +1103,7 @@
                         VoiceModel *oldVoice = strongSelf.voiceListArray[i];
                         if (newVoice.voiceId != oldVoice.voiceId) {
                             shouldUpdate = YES;
-                            changeReason = [NSString stringWithFormat:@"音色ID变化在位置%ld: %ld → %ld", 
+                            changeReason = [NSString stringWithFormat:@"音色ID变化在位置%ld: %ld → %ld",
                                            (long)i, (long)oldVoice.voiceId, (long)newVoice.voiceId];
                             break;
                         }
@@ -1249,30 +1271,30 @@
 //}
 //- (void)showIllustrationPicker {
 //    SelectIllustrationVC *vc = [[SelectIllustrationVC alloc] init];
-//    
+//
 //    // 设置当前已选择的图片URL，以便在选择器中显示选中状态
 //    if (self.selectedIllustrationUrl && self.selectedIllustrationUrl.length > 0) {
 //        vc.imgUrl = self.selectedIllustrationUrl;
 //        NSLog(@"🖼️ 传递已选择的图片URL: %@", self.selectedIllustrationUrl);
 //    }
-//    
+//
 //    // 设置回调
 //    vc.sureBlock = ^(NSString *imgUrl) {
 //        NSLog(@"选中的插画: %@", imgUrl);
-//        
+//
 //        // ✅ 检查插画是否真的有变更
 //        NSString *currentUrl = imgUrl ?: @"";
 //        NSString *originalUrl = self.originalIllustrationUrl ?: @"";
-//        
+//
 //        // 保存选中的插画URL
 //        self.selectedIllustrationUrl = imgUrl;
-//        
+//
 //        // ✅ 编辑模式下检测插画变化
 //        if (self.isEditMode && ![currentUrl isEqualToString:originalUrl]) {
 //            self.hasUnsavedChanges = YES;
 //            NSLog(@"🔄 插画发生变更: '%@' → '%@'", originalUrl, currentUrl);
 //        }
-//        
+//
 //        // 使用插画URL设置按钮背景
 //        [self.voiceHeaderImageBtn sd_setImageWithURL:[NSURL URLWithString:imgUrl]
 //                                             forState:UIControlStateNormal
@@ -1282,7 +1304,7 @@
 //        self.deletHeaderBtn.hidden = NO;
 //        NSLog(@"✅ 插画已选中，URL已保存");
 //    };
-//    
+//
 //    // 显示
 //    vc.modalPresentationStyle = UIModalPresentationOverFullScreen;
 //    [self presentViewController:vc animated:NO completion:^{
@@ -1429,21 +1451,7 @@
         
         [SVProgressHUD dismiss];
         
-        NSLog(@"❌ 故事编辑失败: %@", error.localizedDescription);
-        
-        // 显示错误提示
-        NSString *errorMessage;
-        if (error.code == -1009) {
-            errorMessage = @"Network connection failed, please check network and try again";
-        } else if (error.code == 401) {
-            errorMessage = @"Authentication failed, please log in again";
-        } else if (error.code >= 500) {
-            errorMessage = @"Server is busy, please try again later";
-        } else {
-            errorMessage = error.localizedDescription ?: @"Failed to edit story, please try again";
-        }
-        
-        [strongSelf showErrorAlert:errorMessage];
+       
     }];
 }
 
@@ -1525,8 +1533,6 @@
         
         NSLog(@"❌ 音频合成失败: %@", error.localizedDescription);
         
-        // 显示错误提示
-        [strongSelf showErrorAlert:error.localizedDescription ?: @"Audio synthesis failed, please try again"];
     }];
 }
 - (IBAction)deletBtnClick:(id)sender {
@@ -1624,16 +1630,8 @@
     } failure:^(NSError * _Nonnull error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
+        [SVProgressHUD dismiss];
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [SVProgressHUD dismiss];
-            
-            NSLog(@"❌ 故事删除失败: %@", error.localizedDescription);
-            
-            // ✅ 显示删除失败提示
-            NSString *errorMessage = error.localizedDescription ?: @"Failed to delete story, please try again";
-            [strongSelf showErrorAlert:[NSString stringWithFormat:@"Delete failed: %@", errorMessage]];
-        });
     }];
 }
 
@@ -1657,8 +1655,8 @@
                                                        style:UIAlertActionStyleDefault
                                                      handler:^(UIAlertAction * _Nonnull action) {
         // ✅ 发送通知，让故事列表页面刷新数据
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"StoryDeletedNotification" 
-                                                            object:nil 
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"StoryDeletedNotification"
+                                                            object:nil
                                                           userInfo:@{@"storyId": @(self.storyId)}];
         
         // ✅ 删除成功后返回上一页
@@ -1691,8 +1689,8 @@
     NSLog(@"🔧 设置编辑模式文本变化监听");
     
     // 监听故事名称变化
-    [self.stroryThemeTextView addTarget:self 
-                                 action:@selector(storyNameDidChange:) 
+    [self.stroryThemeTextView addTarget:self
+                                 action:@selector(storyNameDidChange:)
                        forControlEvents:UIControlEventEditingChanged];
     
     // 监听故事内容变化（UITextView需要使用通知）
@@ -1717,7 +1715,7 @@
         NSString *currentContent = self.storyTextField.text ?: @"";
         if (![currentContent isEqualToString:self.originalStoryContent]) {
             self.hasUnsavedChanges = YES;
-            NSLog(@"🔄 故事内容发生变更，长度: %ld → %ld", 
+            NSLog(@"🔄 故事内容发生变更，长度: %ld → %ld",
                   (long)self.originalStoryContent.length, (long)currentContent.length);
         }
         
@@ -1744,13 +1742,13 @@
         VoiceModel *voice = self.voiceListArray[i];
         
         // ✅ 添加更详细的日志
-        NSLog(@"   检查音色[%ld]: 名称='%@', ID=%ld, cloneStatus=%ld", 
+        NSLog(@"   检查音色[%ld]: 名称='%@', ID=%ld, cloneStatus=%ld",
               (long)i, voice.voiceName ?: @"无名称", (long)voice.voiceId, (long)voice.cloneStatus);
         
         // ✅ 严格匹配音色ID
         if (voice.voiceId == voiceId) {
             self.selectedVoiceIndex = i;
-            NSLog(@"🎵 成功匹配！自动选中音色: '%@' (ID: %ld, 索引: %ld)", 
+            NSLog(@"🎵 成功匹配！自动选中音色: '%@' (ID: %ld, 索引: %ld)",
                   voice.voiceName ?: @"无名称", (long)voiceId, (long)i);
             
             // ✅ 匹配成功后立即返回
@@ -1820,7 +1818,7 @@
                             break;
                     }
                     
-                    NSString *alertMessage = [NSString stringWithFormat:@"The voice '%@' used by the story is currently in status: %@\nCannot be displayed in the list", 
+                    NSString *alertMessage = [NSString stringWithFormat:@"The voice '%@' used by the story is currently in status: %@\nCannot be displayed in the list",
                                             targetVoice.voiceName ?: @"Unknown voice", statusText];
                     [strongSelf showErrorAlert:alertMessage];
                 });
@@ -1972,7 +1970,7 @@
     if (contentChanged) {
         [changedFields addObject:@"storyContent"];
         changes[@"storyContent"] = @{
-            @"original": @(self.originalStoryContent.length), 
+            @"original": @(self.originalStoryContent.length),
             @"current": @(currentContent.length)
         };
     }
@@ -2046,8 +2044,8 @@
     // 显示当前选中的音色信息
     if (self.selectedVoiceIndex >= 0 && self.selectedVoiceIndex < self.voiceListArray.count) {
         VoiceModel *selectedVoice = self.voiceListArray[self.selectedVoiceIndex];
-        NSLog(@"   ✅ 当前选中音色: '%@' (ID: %ld, 索引: %ld)", 
-              selectedVoice.voiceName ?: @"无名称", 
+        NSLog(@"   ✅ 当前选中音色: '%@' (ID: %ld, 索引: %ld)",
+              selectedVoice.voiceName ?: @"无名称",
               (long)selectedVoice.voiceId,
               (long)self.selectedVoiceIndex);
               
@@ -2090,8 +2088,8 @@
     
     if (self.selectedVoiceIndex >= 0 && self.selectedVoiceIndex < self.voiceListArray.count) {
         VoiceModel *selectedVoice = self.voiceListArray[self.selectedVoiceIndex];
-        NSLog(@"   选中音色: '%@' (ID: %ld, cloneStatus: %ld)", 
-              selectedVoice.voiceName ?: @"无名称", 
+        NSLog(@"   选中音色: '%@' (ID: %ld, cloneStatus: %ld)",
+              selectedVoice.voiceName ?: @"无名称",
               (long)selectedVoice.voiceId,
               (long)selectedVoice.cloneStatus);
     } else if (self.isEditMode && self.originalVoiceId > 0) {
@@ -2105,9 +2103,9 @@
     for (NSInteger i = 0; i < self.voiceListArray.count; i++) {
         VoiceModel *voice = self.voiceListArray[i];
         NSString *isSelectedMark = (i == self.selectedVoiceIndex) ? @" ✅" : @"";
-        NSLog(@"     [%ld] '%@' (ID: %ld, cloneStatus: %ld)%@", 
-              (long)i, 
-              voice.voiceName ?: @"无名称", 
+        NSLog(@"     [%ld] '%@' (ID: %ld, cloneStatus: %ld)%@",
+              (long)i,
+              voice.voiceName ?: @"无名称",
               (long)voice.voiceId,
               (long)voice.cloneStatus,
               isSelectedMark);
@@ -2120,7 +2118,9 @@
     NSLog(@"🔄 CreateStoryWithVoiceViewController dealloc");
     
     // ✅ 取消所有延迟调用
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(adjustStoryViewHeightOptimized) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSize) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSizeWithExtraHeight:) object:nil];
     
     // ✅ 移除通知监听（包括键盘通知和文本变化通知）
     [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -2210,5 +2210,122 @@
         self.loadingLabel.text = text;
     }
 }
+
+#pragma mark - Story Status Configuration
+
+/// ✅ 根据故事状态配置视图显示
+/// @param storyStatus 故事状态
+- (void)configureViewsForStoryStatus:(StoryStatus)storyStatus {
+    NSLog(@"🎯 配置视图状态，故事状态: %ld (%@)", (long)storyStatus, [self storyStatusDescription:storyStatus]);
+    
+    
+    
+    switch (storyStatus) {
+        case StoryStatusGenerated: // 状态为2，故事生成成功
+            NSLog(@"✅ 故事生成成功，正常显示");
+            [self hideFailedViewWithStoryNameTopConstraint:10.0];
+           
+            break;
+            
+        case StoryStatusCompleted: // 状态为5，音频生成成功（完成状态）
+            NSLog(@"✅ 故事完成，正常显示");
+            [self hideFailedViewWithStoryNameTopConstraint:10.0];
+           
+            break;
+            
+        case StoryStatusAudioFailed: // 状态为6，音频生成失败
+            NSLog(@"❌ 故事音频生成失败，显示错误视图");
+            [self showFailedViewWithStoryNameTopConstraint:52.0];
+        
+            break;
+            
+        default:
+            // 理论上不应该到达这里，因为前面已经做了状态验证
+            NSLog(@"⚠️ 未预期的故事状态: %ld", (long)storyStatus);
+            [self hideFailedViewWithStoryNameTopConstraint:10.0];
+           
+            break;
+    }
+}
+
+/// ✅ 获取故事状态描述
+/// @param storyStatus 故事状态
+/// @return 状态描述字符串
+- (NSString *)storyStatusDescription:(StoryStatus)storyStatus {
+    switch (storyStatus) {
+        case StoryStatusPending:
+            return @"Pending";
+        case StoryStatusGenerating:
+            return @"Story Generating";
+        case StoryStatusGenerated:
+            return @"Story Generated";
+        case StoryStatusGenerateFailed:
+            return @"Story Generate Failed";
+        case StoryStatusAudioGenerating:
+            return @"Audio Generating";
+        case StoryStatusCompleted:
+            return @"Completed";
+        case StoryStatusAudioFailed:
+            return @"Audio Generate Failed";
+        default:
+            return [NSString stringWithFormat:@"Unknown Status (%ld)", (long)storyStatus];
+    }
+}
+
+
+
+
+
+/// ✅ 显示失败视图并调整约束
+/// @param topConstraintValue storyNameTop约束值
+- (void)showFailedViewWithStoryNameTopConstraint:(CGFloat)topConstraintValue {
+    // 显示失败视图
+    self.failedView.hidden = NO;
+    
+    // 调整storyNameTop约束
+    self.storyNameTop.constant = topConstraintValue;
+    
+    // 添加渐显动画
+    self.failedView.alpha = 0.0;
+    [UIView animateWithDuration:0.3 animations:^{
+        self.failedView.alpha = 1.0;
+        [self.view layoutIfNeeded]; // 让约束变化生效
+    } completion:^(BOOL finished) {
+        if (finished) {
+            // ✅ 显示完成后重新计算滚动视图高度（不需要额外高度，使用统一的100pt底部边距）
+            [self scheduleScrollViewContentSizeUpdate];
+        }
+    }];
+    
+    NSLog(@"📊 显示失败视图，storyNameTop约束设置为: %.1f", topConstraintValue);
+}
+
+/// ✅ 隐藏失败视图并调整约束
+/// @param topConstraintValue storyNameTop约束值
+- (void)hideFailedViewWithStoryNameTopConstraint:(CGFloat)topConstraintValue {
+    // 调整storyNameTop约束
+    self.storyNameTop.constant = topConstraintValue;
+    
+    // 添加渐隐动画
+    [UIView animateWithDuration:0.3 animations:^{
+        self.failedView.alpha = 0.0;
+        [self.view layoutIfNeeded]; // 让约束变化生效
+    } completion:^(BOOL finished) {
+        if (finished) {
+            // 隐藏失败视图
+            self.failedView.hidden = YES;
+            // ✅ 隐藏完成后重新计算滚动视图高度
+            [self scheduleScrollViewContentSizeUpdate];
+        }
+    }];
+    
+    NSLog(@"📊 隐藏失败视图，storyNameTop约束设置为: %.1f", topConstraintValue);
+}
+
+
+
+
+
+
 
 @end

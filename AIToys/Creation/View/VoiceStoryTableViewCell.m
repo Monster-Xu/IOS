@@ -72,18 +72,32 @@
     self.statusView.hidden = YES;
     [cardContainerView addSubview:self.statusView];
     
+    // 失败状态图标
+    self.failureImageView = [[UIImageView alloc] init];
+    self.failureImageView.image = [UIImage imageNamed:@"失败"]; // 请替换为实际的失败图标名称
+    self.failureImageView.contentMode = UIViewContentModeScaleAspectFit;
+    self.failureImageView.hidden = YES; // 默认隐藏
+    [self.statusView addSubview:self.failureImageView];
+    
     self.statusLabel = [[UILabel alloc] init];
     self.statusLabel.font = [UIFont systemFontOfSize:14]; // 更小的字体
     self.statusLabel.textAlignment = NSTextAlignmentLeft;
     self.statusLabel.numberOfLines = 2; // 允许两行显示
     [self.statusView addSubview:self.statusLabel];
     
-    // 使用Masonry设置statusLabel约束
+    // 使用Masonry设置failureImageView约束 - 距离statusView左侧16px
+    [self.failureImageView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.left.equalTo(self.statusView).offset(16);
+        make.centerY.equalTo(self.statusView);
+        make.width.height.mas_equalTo(16); // 设置图标大小为16x16
+    }];
+    
+    // 使用Masonry设置statusLabel约束 - 根据是否显示失败图标调整位置
     [self.statusLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.statusView).offset(4);
-        make.right.equalTo(self.statusView).offset(-4);
         make.top.equalTo(self.statusView).offset(3);
         make.bottom.equalTo(self.statusView).offset(-3);
+        make.right.equalTo(self.statusView).offset(-4);
+        // 左侧约束将在状态配置方法中动态设置
     }];
     
     // 标题
@@ -215,6 +229,26 @@
     }];
 }
 
+#pragma mark - Private Methods
+
+/// 更新statusLabel的约束，根据是否显示失败图标
+- (void)updateStatusLabelConstraints:(BOOL)showFailureIcon {
+    // 移除之前的左侧约束
+    [self.statusLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.statusView).offset(3);
+        make.bottom.equalTo(self.statusView).offset(-3);
+        make.right.equalTo(self.statusView).offset(-4);
+        
+        if (showFailureIcon) {
+            // 如果显示失败图标，statusLabel左侧距离失败图标12px
+            make.left.equalTo(self.failureImageView.mas_right).offset(12);
+        } else {
+            // 如果不显示失败图标，statusLabel左侧距离statusView 4px
+            make.left.equalTo(self.statusView).offset(4);
+        }
+    }];
+}
+
 - (void)setModel:(VoiceStoryModel *)model {
     _model = model;
     
@@ -293,7 +327,14 @@
     self.statusView.hidden = NO;
     self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.95 blue:0.8 alpha:1.0]; // 浅橙色
     self.statusView.layer.cornerRadius = 4;
-    self.statusLabel.text = @"  Story Generation...";
+    
+    // 隐藏失败图标
+    self.failureImageView.hidden = YES;
+    
+    // 更新statusLabel约束（不显示失败图标）
+    [self updateStatusLabelConstraints:NO];
+    
+    self.statusLabel.text = self.model.statusDesc;
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
     
     // 确保显示副标题
@@ -327,7 +368,14 @@
     self.statusView.hidden = NO;
     self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.95 blue:0.8 alpha:1.0]; // 浅橙色
     self.statusView.layer.cornerRadius = 4;
-    self.statusLabel.text = @"  Audio Generation...";
+    
+    // 隐藏失败图标
+    self.failureImageView.hidden = YES;
+    
+    // 更新statusLabel约束（不显示失败图标）
+    [self updateStatusLabelConstraints:NO];
+    
+    self.statusLabel.text = self.model.statusDesc;
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
     
     // 设置声音信息 - 确保显示音色名称
@@ -358,6 +406,10 @@
 - (void)configureStatus2State {
     // status = 2: 编辑和点击跳转到 CreateStoryWithVoiceVC，播放按钮不可用
     self.statusView.hidden = YES;
+    
+    // 隐藏失败图标
+    self.failureImageView.hidden = YES;
+    
     self.subtitleLabel.hidden = NO;
     
     // 设置声音信息
@@ -388,7 +440,14 @@
     // status = 3: 编辑和点击跳转到 CreateStoryVC，播放按钮不可用
     self.statusView.hidden = NO;
     self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.9 blue:0.9 alpha:1.0]; // 浅红色
-    self.statusLabel.text = @"   Failed, Try Again";
+    
+    // 显示失败图标
+    self.failureImageView.hidden = NO;
+    
+    // 更新statusLabel约束以适应失败图标
+    [self updateStatusLabelConstraints:YES];
+    
+    self.statusLabel.text = self.model.statusDesc;
     self.statusLabel.textColor = [UIColor systemRedColor];
     
     // 确保显示副标题
@@ -421,6 +480,10 @@
 - (void)configureStatus5State {
     // status = 5: 编辑和点击跳转到 CreateStoryWithVoiceVC，播放按钮可用
     self.statusView.hidden = YES;
+    
+    // 隐藏失败图标
+    self.failureImageView.hidden = YES;
+    
     self.subtitleLabel.hidden = NO;
     
     // 设置声音信息
@@ -454,7 +517,17 @@
 
 - (void)configureStatus6State {
     // status = 6: 编辑和点击跳转到 CreateStoryWithVoiceVC，播放按钮不可用
-    self.statusView.hidden = YES;
+    self.statusView.hidden = NO;
+    self.statusView.backgroundColor = [UIColor colorWithRed:1.0 green:0.9 blue:0.9 alpha:1.0]; // 浅红色
+    
+    // 显示失败图标
+    self.failureImageView.hidden = NO;
+    
+    // 更新statusLabel约束以适应失败图标
+    [self updateStatusLabelConstraints:YES];
+    
+    self.statusLabel.text = self.model.statusDesc;
+    self.statusLabel.textColor = [UIColor systemRedColor];
     self.subtitleLabel.hidden = NO;
     
     // 设置声音信息
@@ -695,6 +768,9 @@
     
     // ✅ 重置音频加载状态
     [self showAudioLoading:NO];
+    
+    // ✅ 重置失败图标状态
+    self.failureImageView.hidden = YES;
     
     // 重置按钮状态
     self.playButton.hidden = NO;

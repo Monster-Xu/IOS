@@ -71,6 +71,10 @@
 @property (nonatomic, strong) id previousTrackCommandTarget;
 @property (nonatomic, strong) id nextTrackCommandTarget;
 
+// 提示信息配置
+@property (nonatomic, copy) NSString *previousButtonMessage;
+@property (nonatomic, copy) NSString *nextButtonMessage;
+
 @end
 
 // 全局单例管理的实现
@@ -129,6 +133,10 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         self.isCancelledByUser = NO; // 初始化为未取消
         self.isBackgroundPlayMode = NO; // 默认不是后台播放模式
         
+//        // 初始化提示信息
+//        self.previousButtonMessage = @"已是第一首";
+//        self.nextButtonMessage = @"已是最后一首";
+        
         // 初始化拖动行为控制属性
         self.enableEdgeSnapping = NO;   // 默认不启用边缘吸附，允许自由拖动
         self.allowOutOfBounds = NO;     // 默认不允许超出边界
@@ -159,6 +167,10 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         self.coverImageURL = nil;
         self.isCancelledByUser = NO;
         self.isBackgroundPlayMode = backgroundPlay;
+        
+//        // 初始化提示信息
+//        self.previousButtonMessage = @"已是第一首";
+//        self.nextButtonMessage = @"已是最后一首";
         
         // 注册实例
         [self registerInstance];
@@ -594,6 +606,43 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     // 3秒后隐藏播放器
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self hide];
+    });
+}
+
+// 显示提示信息（例如："已是第一首"）
+- (void)showToastMessage:(NSString *)message {
+    // 如果是后台播放模式，不显示UI提示
+    if (self.isBackgroundPlayMode) {
+        NSLog(@"🔔 提示信息: %@", message);
+        return;
+    }
+    
+    // 保存原始标题和颜色
+    NSString *originalTitle = self.titleLabel.text;
+    UIColor *originalColor = self.titleLabel.textColor;
+    
+    // 显示提示信息
+    self.titleLabel.text = message;
+    self.titleLabel.textColor = [UIColor systemOrangeColor];
+    
+    // 添加弹跳动画效果
+    CAKeyframeAnimation *bounceAnimation = [CAKeyframeAnimation animationWithKeyPath:@"transform.scale"];
+    bounceAnimation.values = @[@1.0, @1.1, @1.0];
+    bounceAnimation.keyTimes = @[@0.0, @0.5, @1.0];
+    bounceAnimation.duration = 0.6;
+    bounceAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+    [self.titleLabel.layer addAnimation:bounceAnimation forKey:@"bounceAnimation"];
+    
+    // 2秒后恢复原始文字和颜色
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        // 使用渐变动画恢复
+        [UIView transitionWithView:self.titleLabel
+                          duration:0.3
+                           options:UIViewAnimationOptionTransitionCrossDissolve
+                        animations:^{
+            self.titleLabel.text = originalTitle;
+            self.titleLabel.textColor = originalColor;
+        } completion:nil];
     });
 }
 
@@ -1113,12 +1162,26 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
 
 - (void)previousButtonTapped {
     NSLog(@"上一首按钮点击");
-    // 可以通过代理通知外部处理上一首逻辑
+    
+    // 显示提示信息
+//    [self showToastMessage:self.previousButtonMessage];
+    
+    // 通知代理
+    if ([self.delegate respondsToSelector:@selector(audioPlayerDidTapPrevious)]) {
+        [self.delegate audioPlayerDidTapPrevious];
+    }
 }
 
 - (void)nextButtonTapped {
     NSLog(@"下一首按钮点击");
-    // 可以通过代理通知外部处理下一首逻辑
+    
+    // 显示提示信息
+//    [self showToastMessage:self.nextButtonMessage];
+    
+    // 通知代理
+    if ([self.delegate respondsToSelector:@selector(audioPlayerDidTapNext)]) {
+        [self.delegate audioPlayerDidTapNext];
+    }
 }
 
 - (void)closeButtonTapped {
@@ -1996,5 +2059,19 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     NSLog(@"🎛️ 拖动参数已更新 - 边缘阻力:%.2f, 减速率:%.2f",
           self.dragResistanceEdge, self.dragDecelerationRate);
 }
+
+#pragma mark - Toast Message Configuration Methods
+
+//// 设置上一首按钮的提示信息
+//- (void)setPreviousButtonMessage:(NSString *)message {
+//    self.previousButtonMessage = message ?: @"已是第一首";
+//    NSLog(@"🔔 上一首提示信息已设置: %@", self.previousButtonMessage);
+//}
+//
+//// 设置下一首按钮的提示信息
+//- (void)setNextButtonMessage:(NSString *)message {
+//    self.nextButtonMessage = message ?: @"已是最后一首";
+//    NSLog(@"🔔 下一首提示信息已设置: %@", self.nextButtonMessage);
+//}
 
 @end
