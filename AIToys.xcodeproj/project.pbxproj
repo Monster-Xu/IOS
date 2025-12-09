@@ -20,8 +20,13 @@
 		1896661F2EB397DB00D7C9EA /* WiFiListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1896661E2EB397DB00D7C9EA /* WiFiListTableViewCell.xib */; };
 		189666202EB397DB00D7C9EA /* WiFiListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1896661D2EB397DB00D7C9EA /* WiFiListTableViewCell.m */; };
 		18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */; };
+		18E8C74F2EE71E4700366022 /* getOTAInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 18E8C74E2EE71E4700366022 /* getOTAInfo.m */; };
 		18EE7F4E2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18EE7F4C2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m */; };
 		18EE7F4F2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18EE7F4D2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib */; };
+		18FA4AB62EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18FA4AB52EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.xib */; };
+		18FA4AB72EBC7DA5008A1F92 /* DeviceConnectFailedViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18FA4AB22EBC7DA5008A1F92 /* DeviceConnectFailedViewController.xib */; };
+		18FA4AB82EBC7DA5008A1F92 /* DeviceConnectFailedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18FA4AB12EBC7DA5008A1F92 /* DeviceConnectFailedViewController.m */; };
+		18FA4AB92EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18FA4AB42EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.m */; };
 		18FA4B502EBC8273008A1F92 /* DeviceConnectFailedViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18FA4B4B2EBC8273008A1F92 /* DeviceConnectFailedViewController.m */; };
 		18FA4B512EBC8273008A1F92 /* DeviceConnectSuccessViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18FA4B4E2EBC8273008A1F92 /* DeviceConnectSuccessViewController.m */; };
 		18FA4B522EBC8273008A1F92 /* DeviceConnectSuccessViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18FA4B4F2EBC8273008A1F92 /* DeviceConnectSuccessViewController.xib */; };
@@ -419,10 +424,18 @@
 		1896661E2EB397DB00D7C9EA /* WiFiListTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = WiFiListTableViewCell.xib; sourceTree = "<group>"; };
 		18CF0EF22E92626900F9E19E /* AFStoryAPIManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AFStoryAPIManager.h; sourceTree = "<group>"; };
 		18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AFStoryAPIManager.m; sourceTree = "<group>"; };
+		18E8C74D2EE71E4700366022 /* getOTAInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = getOTAInfo.h; sourceTree = "<group>"; };
+		18E8C74E2EE71E4700366022 /* getOTAInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = getOTAInfo.m; sourceTree = "<group>"; };
 		18EE7F4A2E882F7C00E9E078 /* ModernScreenAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModernScreenAdapter.h; sourceTree = "<group>"; };
 		18EE7F4B2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ThirdPartySDKInfoViewController.h; sourceTree = "<group>"; };
 		18EE7F4C2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ThirdPartySDKInfoViewController.m; sourceTree = "<group>"; };
 		18EE7F4D2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ThirdPartySDKInfoViewController.xib; sourceTree = "<group>"; };
+		18FA4AB02EBC7DA5008A1F92 /* DeviceConnectFailedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceConnectFailedViewController.h; sourceTree = "<group>"; };
+		18FA4AB12EBC7DA5008A1F92 /* DeviceConnectFailedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceConnectFailedViewController.m; sourceTree = "<group>"; };
+		18FA4AB22EBC7DA5008A1F92 /* DeviceConnectFailedViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DeviceConnectFailedViewController.xib; sourceTree = "<group>"; };
+		18FA4AB32EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceConnectSuccessViewController.h; sourceTree = "<group>"; };
+		18FA4AB42EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceConnectSuccessViewController.m; sourceTree = "<group>"; };
+		18FA4AB52EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DeviceConnectSuccessViewController.xib; sourceTree = "<group>"; };
 		18FA4B4A2EBC8273008A1F92 /* DeviceConnectFailedViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DeviceConnectFailedViewController.h; sourceTree = "<group>"; };
 		18FA4B4B2EBC8273008A1F92 /* DeviceConnectFailedViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DeviceConnectFailedViewController.m; sourceTree = "<group>"; };
 		18FA4B4C2EBC8273008A1F92 /* DeviceConnectFailedViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DeviceConnectFailedViewController.xib; sourceTree = "<group>"; };
@@ -1688,6 +1701,12 @@
 				DCEA01062E127BEA00170D8C /* ConnectWifiVC.h */,
 				DCEA01072E127BEA00170D8C /* ConnectWifiVC.m */,
 				DCEA01082E127BEA00170D8C /* ConnectWifiVC.xib */,
+				18FA4AB02EBC7DA5008A1F92 /* DeviceConnectFailedViewController.h */,
+				18FA4AB12EBC7DA5008A1F92 /* DeviceConnectFailedViewController.m */,
+				18FA4AB22EBC7DA5008A1F92 /* DeviceConnectFailedViewController.xib */,
+				18FA4AB32EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.h */,
+				18FA4AB42EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.m */,
+				18FA4AB52EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.xib */,
 				DC70F1DD2E1BA4A700C4D646 /* FindDollModel.h */,
 				DC70F1DE2E1BA4A700C4D646 /* FindDollModel.m */,
 				18FA4B4A2EBC8273008A1F92 /* DeviceConnectFailedViewController.h */,
@@ -2156,6 +2175,8 @@
 				E84D75722E545081004D9740 /* NavigateToNativePageAPI.m */,
 				E84D75742E545081004D9740 /* NavigateToNativePageResponseModel.h */,
 				E84D75752E545081004D9740 /* NavigateToNativePageResponseModel.m */,
+				18E8C74D2EE71E4700366022 /* getOTAInfo.h */,
+				18E8C74E2EE71E4700366022 /* getOTAInfo.m */,
 				E49272822E01C1C300DB6A2A /* APIManager.h */,
 				E49272832E01C1C300DB6A2A /* APIManager.m */,
 				E4C4BDAF2E12F21000243DA2 /* GlobalBluetoothManager.h */,
@@ -2553,6 +2574,8 @@
 				DC862ACF2E094193001A4793 /* FamailyNameCell.xib in Resources */,
 				18FA4B522EBC8273008A1F92 /* DeviceConnectSuccessViewController.xib in Resources */,
 				18FA4B532EBC8273008A1F92 /* DeviceConnectFailedViewController.xib in Resources */,
+				18FA4AB62EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.xib in Resources */,
+				18FA4AB72EBC7DA5008A1F92 /* DeviceConnectFailedViewController.xib in Resources */,
 				1896661A2EB3976C00D7C9EA /* WiFiListViewController.xib in Resources */,
 				E46F397C2E0FE4070039CE33 /* DeviceHavenFindItem.xib in Resources */,
 				DC862AE32E095470001A4793 /* FamailyMemeberAvatarCell.xib in Resources */,
@@ -2716,6 +2739,8 @@
 				E42F14F42E225C1A00376855 /* JXCategoryIndicatorTriangleView.m in Sources */,
 				18FA4B502EBC8273008A1F92 /* DeviceConnectFailedViewController.m in Sources */,
 				18FA4B512EBC8273008A1F92 /* DeviceConnectSuccessViewController.m in Sources */,
+				18FA4AB82EBC7DA5008A1F92 /* DeviceConnectFailedViewController.m in Sources */,
+				18FA4AB92EBC7DA5008A1F92 /* DeviceConnectSuccessViewController.m in Sources */,
 				DC674C202E41EA4B00BF438E /* LineTableViewHeaderFooterView.m in Sources */,
 				E46A38D32E0B063100C930D3 /* ToysGuideFindVC.m in Sources */,
 				DC862AC92E093EDB001A4793 /* FamailyMemberCell.m in Sources */,
@@ -2780,6 +2805,7 @@
 				DC7C45062E28D9880069CBA4 /* UITableView+TABControlAnimation.m in Sources */,
 				DC7C45072E28D9880069CBA4 /* UIView+TABControlModel.m in Sources */,
 				DC7C45082E28D9880069CBA4 /* TABBaseComponent.m in Sources */,
+				18E8C74F2EE71E4700366022 /* getOTAInfo.m in Sources */,
 				DC7C45092E28D9880069CBA4 /* TABCollectionAnimated.m in Sources */,
 				DC7C450A2E28D9880069CBA4 /* TABAnimatedPullLoadingComponent.m in Sources */,
 				DC7C450B2E28D9880069CBA4 /* TABComponentLayer+TABDropAnimation.m in Sources */,
@@ -3183,12 +3209,13 @@
 				CODE_SIGN_ENTITLEMENTS = AIToys/AIToys.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8H7R7557KU;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PREFIX_HEADER = "$(SRCROOT)/AIToys/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIToys/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TalenpalDEV;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
@@ -3208,8 +3235,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
+				MARKETING_VERSION = 1.2.01;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -3231,12 +3258,13 @@
 				CODE_SIGN_ENTITLEMENTS = AIToys/AIToys.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_TEAM = 8H7R7557KU;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_PREFIX_HEADER = "$(SRCROOT)/AIToys/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIToys/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = TalenpalDEV;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
@@ -3256,8 +3284,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1.1;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
+				MARKETING_VERSION = 1.2.01;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
