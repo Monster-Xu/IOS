@@ -74,6 +74,11 @@
         [LGBaseAlertView showAlertWithTitle:LocalString(@"创建家庭成功") content:nil cancelBtnStr:LocalString(@"查看家庭") confirmBtnStr:LocalString(@"确定") confirmBlock:^(BOOL isValue, id obj) {
             if(isValue){
                 [weakSelf.navigationController popToRootViewControllerAnimated:YES];
+                
+                //APP埋点：家庭创建成功
+                [[AnalyticsManager sharedManager]reportEventWithName:@"home_created" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"家庭创建成功时" properties:@{@"homename":homeName,@"homeid":[NSString stringWithFormat:@"%lld",result]} completion:^(BOOL success, NSString * _Nullable message) {
+                                
+                        }];
             }else{
                 [weakSelf.homeManager getHomeListWithSuccess:^(NSArray<ThingSmartHomeModel *> *homes) {
                     [weakSelf hiddenHud];

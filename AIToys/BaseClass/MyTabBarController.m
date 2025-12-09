@@ -36,6 +36,11 @@
         [[NSUserDefaults standardUserDefaults] setBool:YES forKey:KEY_ISFIRSTLAUNCH];
         [[NSUserDefaults standardUserDefaults] synchronize];
     }
+    
+    if(![[NSUserDefaults standardUserDefaults] boolForKey:KEY_ISFIRSTTOHOME]){
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:KEY_ISFIRSTTOHOME];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    }
 }
 
 - (void)viewDidLoad {
@@ -237,11 +242,24 @@
 #pragma mark - Event Methods
 
 -(BOOL)tabBarController:(UITabBarController *)tabBarController shouldSelectViewController:(UIViewController *)viewController{
+    NSLog(@"点击的出现的VC%@ %@",viewController.childViewControllers,tabBarController.childViewControllers);
     // ✅ 每次切换时检查并修复标题显示
     dispatch_async(dispatch_get_main_queue(), ^{
         [self refreshTabBarTitles];
     });
+    //APP埋点：点击功能按钮
+    UIViewController *currentVC = viewController.childViewControllers[0];
+    if ([currentVC isKindOfClass:[CreationViewController class]]) {
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_creation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击“创作”模块时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
+    }else if([currentVC isKindOfClass:[MineViewController class]]){
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_mine" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击Mine菜单时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
+    }
     
+        
     return YES;
 }
 

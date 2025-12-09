@@ -28,21 +28,20 @@
     [super viewDidLoad];
     self.fd_prefersNavigationBarHidden = YES;
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
-    [param setValue:[PublicObj isEmptyObject:kMyUser.userId]? @"": kMyUser.userId forKey:@"memberUserId"];
-    [param setValue:@"connectedWifi" forKey:@"propKey"];
-    [param setValue:self.wifiName forKey:@"propValue"];
-    [param setValue:@"" forKey:@"description"];
+    [param setValue:self.wifiName forKey:@"ssid"];
     [self modifySettingWithParam:param];
     // 在初始化textField后，添加事件监听
     [self.deviceNameTextView addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
     self.deviceNameTextView.text = self.deviceModel.name;
+    
+   
     
     
     // Do any additional setup after loading the view from its nib.
 }
 //上传wifi信息
 - (void)modifySettingWithParam:(NSDictionary *)param{
-    [[APIManager shared] POSTJSON:[APIPortConfiguration getAppPropertyCreateUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+    [[APIManager shared] POSTJSON:[APIPortConfiguration getWifiAddUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
 
         NSLog(@"上传信息%@",result);
 
@@ -59,7 +58,7 @@
             [SVProgressHUD showSuccessWithStatus:LocalString(@"Modification successful, start using.")];
             // 跳转小程序
             NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
-            [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"prod"}];
+            [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"dev"}];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self.navigationController popToRootViewControllerAnimated:NO];
             });
@@ -69,7 +68,7 @@
             }];
     }else{
         NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"prod"}];
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"dev"}];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self.navigationController popToRootViewControllerAnimated:NO];
         });

@@ -23,7 +23,7 @@
 "收不到验证码" = "Didn't receive the code";
 "验证码已发送到您的邮箱" = "Verification code has been sent to your email";
 "验证码有误" = "Verification code is incorrect";
-"重新发送" = "Resend";
+"重新发送验证码" = "Resend Code";
 "设置密码" = "Set Password";
 "密码" = "Password";
 "输入密码" = "Create a password";
@@ -71,7 +71,7 @@
 "离线" = "offline";
 "家庭管理" = "Home Management";
 "消息中心" = "Message Center";
-"设置" = "Setting";
+"设置" = "Settings";
 "帮助中心" = "Help Center";
 "家庭设置" = "Home Setting";
 "家庭名称" = "Home Name";
@@ -291,6 +291,7 @@
 "还没有数据，快去添加设备吧！" = "No data yet. Go add devices quickly!";
 "导出日志" = "Export Log";
 "导出成功" = "Export Successful";
+"上传" = "Upload";
 "日志已成功导出" = "Log exported successfully";
 "文件名" = "File Name";
 "可以在「文件」App的「...」文件夹中查看和分享" = "You can view and share it in the \"...\" folder of the Files app.";
@@ -301,3 +302,4 @@
 "WiFi列表" = "Wi-Fi List";
 "按住说话" = "Hold to speak";
 "温馨提示" = "Friendly Reminder";
+"应用市场" = "APP Store";

@@ -25,6 +25,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic ,assign) NSInteger totalStoryNum;//总的故事数量
 @property (nonatomic ,assign) NSInteger totalStoryDuration;//总的故事时长(秒)
+
+@property (nonatomic ,assign) NSInteger virtualStoryNum;//总的故事数量(虚拟)
+@property (nonatomic ,assign) NSInteger virtualStoryDuration;//总的故事时长(秒)（虚拟）
 @end
 
 NS_ASSUME_NONNULL_END

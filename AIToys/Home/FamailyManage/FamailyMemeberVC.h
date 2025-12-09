@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong)ThingSmartHomeMemberModel *memberModel;
 @property (nonatomic, strong)ThingSmartHomeInvitationRecordModel *inviteModel;
 @property(strong, nonatomic) ThingSmartHomeInvitation *smartHomeInvitation;
+@property(strong,nonatomic)NSString * avatarUrl;
 @end
 
 NS_ASSUME_NONNULL_END

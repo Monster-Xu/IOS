@@ -131,6 +131,10 @@
     RegistViewController *VC = [RegistViewController new];
     VC.type = EmailType_regist;
     [self.navigationController pushViewController:VC animated:YES];
+    //埋点：点击注册
+//    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_register" level1:@"LoginVC" level2:@"" level3:@"" reportTrigger:@"" properties:@{@"accessEntrance":@"loginPage"} completion:^(BOOL success, NSString * _Nullable message) {
+//            
+//    }];
 }
 
 //查看明文密码
@@ -179,12 +183,10 @@
         [weakSelf hiddenHud];
 //        [SVProgressHUD showSuccessWithStatus:@"Login Successfully"];
 
-        // 埋点上报：登录成功
-        NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
-        NSString *loginTime = [NSString stringWithFormat:@"%.0f", timestamp * 1000]; // 毫秒时间戳
-        [[AnalyticsManager sharedManager] reportAccountLoginSuccessWithId:uid ?: @""
-                                                                loginTime:loginTime
-                                                                   region:Country_Code];
+        // 埋点上报：登录结果
+            [[AnalyticsManager sharedManager]reportEventWithName:@"login_result" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"返回登录结果时" properties:@{@"loginResult":@"success"} completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
 
         kMyUser.email = weakSelf.accountTextField.text;
         kMyUser.passWord = weakSelf.pwdTextField.text;
@@ -198,6 +200,9 @@
             //进入首页
             MyTabBarController *tabbar = [MyTabBarController new];
             [UIApplication sharedApplication].keyWindow.rootViewController = tabbar;
+            [[AnalyticsManager sharedManager]reportEventWithName:@"enter_home" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"进入首页时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
         }
         
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
@@ -258,28 +263,48 @@
 
 - (BOOL)textView:(UITextView *)textView shouldInteractWithURL:(NSURL *)URL inRange:(NSRange)characterRange{
     
+    
+    
+    
+    
     if ([URL.scheme isEqualToString:@"privacyPolicy"]) {
         //隐私政策
         NSLog(@"点击了隐私政策");
         [self pushToNegotiateVCWithTitle:NSLocalizedString(@"隐私政策", @"") type:0];
+        //埋点：点击协议
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@1} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
         return NO;
         
     } else if ([URL.scheme isEqualToString:@"userProtocol"]) {
         //用户协议
         NSLog(@"点击了用户协议");
         [self pushToNegotiateVCWithTitle:NSLocalizedString(@"用户协议", @"") type:1];
+        //埋点：点击协议
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@2} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
         return NO;
         
     } else if ([URL.scheme isEqualToString:@"ChildAgreement"]) {
         //儿童协议
         NSLog(@"点击了儿童协议");
         [self pushToNegotiateVCWithTitle:NSLocalizedString(@"儿童协议", @"") type:2];
+        //埋点：点击协议
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@3} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
         return NO;
         
     } else if ([URL.scheme isEqualToString:@"creativeAgreement"]) {
         //创作协议
         NSLog(@"点击了创作协议");
         [self pushToNegotiateVCWithTitle:NSLocalizedString(@"创作协议", @"") type:3];
+        //埋点：点击协议
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@4} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
         return NO;
     }
     

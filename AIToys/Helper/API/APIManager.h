@@ -85,6 +85,56 @@ typedef void(^failBlock)(NSString *msg);
   parameter:(NSDictionary *_Nullable)parameter
     success:(void(^)(id result, id data, NSString *msg))success
        failure:(void(^)(NSError *error, NSString *msg))failure;
+
+#pragma mark -- 简单文件上传方法
+
+/**
+ * 简单文件上传方法（multipart/form-data）- 最简版本
+ * @param urlStr 上传地址
+ * @param fileData 文件数据
+ * @param fileName 文件名
+ * @param success 成功回调（返回服务器响应）
+ * @param failure 失败回调
+ */
+- (void)uploadSingleFile:(NSString *)urlStr
+                fileData:(NSData *)fileData
+                fileName:(NSString *)fileName
+                 success:(void (^)(id result))success
+                 failure:(void (^)(NSError *error))failure;
+
+/**
+ * 简单文件上传方法（multipart/form-data）- 带MIME类型
+ * @param urlStr 上传地址
+ * @param fileData 文件数据
+ * @param fileName 文件名
+ * @param mimeType 文件MIME类型
+ * @param success 成功回调（返回服务器响应）
+ * @param failure 失败回调
+ */
+- (void)uploadSingleFile:(NSString *)urlStr
+                fileData:(NSData *)fileData
+                fileName:(NSString *)fileName
+                mimeType:(NSString *)mimeType
+                 success:(void (^)(id result))success
+                 failure:(void (^)(NSError *error))failure;
+
+/**
+ * 简单文件上传方法（multipart/form-data）- 带参数
+ * @param urlStr 上传地址
+ * @param fileData 文件数据
+ * @param fileName 文件名
+ * @param parameters 额外参数
+ * @param success 成功回调（返回服务器响应）
+ * @param failure 失败回调
+ */
+- (void)uploadSingleFile:(NSString *)urlStr
+                fileData:(NSData *)fileData
+                fileName:(NSString *)fileName
+              parameters:(NSDictionary *)parameters
+                 success:(void (^)(id result))success
+                 failure:(void (^)(NSError *error))failure;
+
+
 @end
 
 NS_ASSUME_NONNULL_END

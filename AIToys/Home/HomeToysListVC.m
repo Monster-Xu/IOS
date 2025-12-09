@@ -31,8 +31,10 @@
 @property (nonatomic,strong)NSIndexPath *moveIndexPath;
 @property (nonatomic,assign)CGPoint lastPoint;
 @property (nonatomic,assign)BOOL isMoved;//是否移动了
-//选中的设备Id
+//选中的公仔Id
 @property (nonatomic,copy)NSString *selectDeviceId;
+//选中的公仔名称
+@property (nonatomic,copy)NSString *selectDeviceName;
 @end
 
 @implementation HomeToysListVC
@@ -148,6 +150,7 @@
 {
     if(_isEdit){
         self.selectDeviceId = self.dataArr[indexPath.row].Id;
+        self.selectDeviceName = [NSString stringWithFormat:@"%@",self.dataArr[indexPath.row].dollModel.name];
         [self.collectionView reloadData];
     }else{
         // 埋点上报：我的公仔点击
@@ -157,7 +160,7 @@
 
         // 跳转小程序
         NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":self.dataArr[indexPath.row].Id,@"BearerId":(kMyUser.accessToken?:@""),@"homeId":(currentHomeId?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype": @"prod"}];
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":self.dataArr[indexPath.row].Id,@"BearerId":(kMyUser.accessToken?:@""),@"homeId":(currentHomeId?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype": @"dev"}];
     }
 }
 
@@ -266,6 +269,7 @@
         [SVProgressHUD showErrorWithStatus:LocalString(@"请选择公仔")];
         return;
     }
+    
     WEAK_SELF
     [LGBaseAlertView showAlertWithTitle:LocalString(@"确定要删除设备吗？")  content:nil cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"删除") confirmBlock:^(BOOL isValue, id obj) {
         if (isValue){
@@ -280,16 +284,50 @@
                         break;
                     }
                 }
+                //埋点：公仔删除结果
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"doll_delete_result" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"公仔删除返回结果时" properties:@{@"dollDeleteResult":@"success",@"dollName":self.selectDeviceName,@"dollID":weakSelf.dataArr[temp].dollModelId} completion:^(BOOL success, NSString * _Nullable message) {
+                                    
+                            }];
+                
                 [weakSelf.dataArr removeObjectAtIndex:temp];
                 weakSelf.historyArr = weakSelf.dataArr;
                 [self.collectionView reloadData];
+                
+                
                 //删除设备不退出编辑状态
 //                [weakSelf dealViewEditStatus:NO];
             } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
                 NSLog(@"remove failure: %@", error);
+                
+                NSInteger temp = 0;
+                for (int i = 0; i<self.dataArr.count; i++) {
+                    if([weakSelf.selectDeviceId isEqualToString:weakSelf.dataArr[i].Id]){
+                        temp = i;
+                        break;
+                    }
+                }
+                
+                
+                //埋点：公仔删除结果
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"doll_delete_result" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"公仔删除返回结果时" properties:@{@"dollDeleteResult":@(error.code),@"dollName":self.selectDeviceName,@"dollID":weakSelf.dataArr[temp].dollModelId} completion:^(BOOL success, NSString * _Nullable message) {
+                                    
+                            }];
             }];
         }
     }];
+    
+    
+    NSInteger temp = 0;
+    for (int i = 0; i<self.dataArr.count; i++) {
+        if([weakSelf.selectDeviceId isEqualToString:weakSelf.dataArr[i].Id]){
+            temp = i;
+            break;
+        }
+    }
+    //埋点：点击删除公仔
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_delete_doll" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"在公仔列表点击删除公仔时" properties:@{@"dollName":self.selectDeviceName,@"dollID":weakSelf.dataArr[temp].dollModelId} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
 }
 
 //置顶设备
@@ -313,6 +351,13 @@
     [self.dataArr insertObject:objc atIndex:0];
     [self.collectionView reloadData];
     self.isMoved = YES;
+    HomeDollModel * model = [HomeDollModel new];
+    model = objc;
+    
+    //埋点：点击置顶公仔
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_doll_pin_top" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"在公仔列表点击置顶公仔时" properties:@{@"dollName":self.selectDeviceName,@"dollID":model.dollModelId} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
 }
 
 //设备排序接口
@@ -327,6 +372,19 @@
 //            idStr = [idStr stringByAppendingFormat:@",%@",model.Id];
 //        }
     }
+    id objc;
+    NSInteger temp = 0;
+    for (int i = 0; i<self.dataArr.count; i++) {
+        if([self.selectDeviceName isEqualToString:self.dataArr[i].dollModel.name]){
+            temp = i;
+            objc = self.dataArr[i];
+            break;
+        }
+    }
+    HomeDollModel * model = [HomeDollModel new];
+    model = objc;
+    
+    
     WEAK_SELF
     //设备或群组排序
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
@@ -336,8 +394,18 @@
         [SVProgressHUD showSuccessWithStatus:LocalString(@"操作成功")];
         weakSelf.historyArr = weakSelf.dataArr;
         [[NSNotificationCenter defaultCenter] postNotificationName:@"HomeDeviceRefresh" object:nil];
+        
+        //埋点：公仔置顶结果
+        [[AnalyticsManager sharedManager]reportEventWithName:@"doll_pin_to_top_result" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"公仔被成功置顶时" properties:@{@"dollPinToTopResult":@"success",@"dollName":self.selectDeviceName,@"dollID":model.dollModelId} completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+        
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
         NSLog(@"sort device or group failure: %@", error);
+        
+        [[AnalyticsManager sharedManager]reportEventWithName:@"doll_pin_to_top_result" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"公仔被成功置顶时" properties:@{@"dollPinToTopResult":@(error.code),@"dollName":self.selectDeviceName,@"dollID":model.dollModelId} completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
     }];
 }
 

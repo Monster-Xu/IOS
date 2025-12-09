@@ -134,9 +134,11 @@
 
     // 检查埋点是否启用
     BOOL isEnabled = [self isAnalyticsEnabled];
+    //检查是否已登录
+    BOOL isLogin = [ThingSmartUser sharedInstance].isLogin;
     NSLog(@"[AnalyticsManager] 埋点上报检查 - isEnabled: %@, 事件: %@", isEnabled ? @"YES" : @"NO", eventModel.eventName ?: @"未知事件");
 
-    if (!isEnabled) {
+    if (!isEnabled||!isLogin) {
         NSLog(@"[AnalyticsManager] 埋点已禁用，跳过上报事件: %@", eventModel.eventName ?: @"未知事件");
         if (completion) {
             completion(YES, @"埋点已禁用，跳过上报");
@@ -286,15 +288,14 @@
     NSLog(@"[AnalyticsManager] 调用 reportMyDeviceClickWithDeviceId - deviceId: %@, pid: %@", deviceId ?: @"nil", pid ?: @"nil");
 
     NSDictionary *properties = @{
-        kAnalyticsProperty_DeviceId: deviceId ?: @"",
-        kAnalyticsProperty_PID: pid ?: @""
+        @"uuid": pid ?: @""
     };
 
     [self reportEventWithName:kAnalyticsEvent_MyDevice_Click
                        level1:kAnalyticsLevel1_Home
                        level2:kAnalyticsLevel2_DevicePanel
                        level3:nil
-                reportTrigger:kAnalyticsTrigger_OnClick
+                reportTrigger:@"点击设备卡片时"
                    properties:properties
                    completion:nil];
 }
@@ -305,11 +306,11 @@
         kAnalyticsProperty_DollName: dollName ?: @""
     };
 
-    [self reportEventWithName:kAnalyticsEvent_MyDoll_Click
+    [self reportEventWithName:@"homepage_tap_doll"
                        level1:kAnalyticsLevel1_Home
                        level2:nil
                        level3:nil
-                reportTrigger:kAnalyticsTrigger_OnClick
+                reportTrigger:@"在主页点击公仔卡片时"
                    properties:properties
                    completion:nil];
 }
@@ -324,7 +325,7 @@
                        level1:kAnalyticsLevel1_Home
                        level2:nil
                        level3:nil
-                reportTrigger:kAnalyticsTrigger_OnClick
+                reportTrigger:@"同步到公仔激活信息时"
                    properties:properties
                    completion:nil];
 }
@@ -357,12 +358,12 @@
         kAnalyticsProperty_LoginRegion: region ?: @""
     };
     
-    [self reportEventWithName:kAnalyticsEvent_Account_LoginSuccess
+    [self reportEventWithName:@"login_result"
                        level1:kAnalyticsLevel1_Login
                        level2:nil
                        level3:nil
-                reportTrigger:kAnalyticsTrigger_OnLoginSuccess
-                   properties:properties
+                reportTrigger:@"返回登录结果时"
+                   properties:@{@"loginResult":@"success"}
                    completion:nil];
 }
 
@@ -375,7 +376,7 @@
     NSDictionary *properties = @{
         kAnalyticsProperty_MemberPermission: permission ?: @"",
         kAnalyticsProperty_HomeId: homeId ?: @"",
-        kAnalyticsProperty_FamilyMemberId: familyMemberId ?: @"",
+        kAnalyticsProperty_FamilyMemberId: @"0",
         kAnalyticsProperty_HomeOwnerId: homeOwnerId ?: @""
     };
 

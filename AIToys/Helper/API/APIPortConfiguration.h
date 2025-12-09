@@ -120,7 +120,18 @@ NS_ASSUME_NONNULL_BEGIN
 /// 获取官方音色列表
 + (NSString *)getOfficialVoicesUrl;
 
-
+//查询家庭组头像列表
++(NSString *)getGroupListUrl;
+//刷新Token
++(NSString *)getRefreshTokenUrl;
+//上传文件
++(NSString *)getuploadUrl;
+//添加WiFI
++(NSString *)getWifiAddUrl;
+//获取IFI列表
++(NSString *)getWifiListUrl;
+//删除WIFI
++(NSString *)getWifiRemoveUrl;
 @end
 
 NS_ASSUME_NONNULL_END

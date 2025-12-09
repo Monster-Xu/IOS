@@ -53,6 +53,9 @@ typedef NS_ENUM(NSInteger, LogLevel) {
 // 获取日志文件大小
 - (NSString *)getLogFileSize;
 
+// 自动清除7天前的日志
+- (void)cleanupOldLogs;
+
 @end
 
 NS_ASSUME_NONNULL_END

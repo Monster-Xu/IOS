@@ -48,24 +48,23 @@
     [self.bgImgView sd_setImageWithURL:[NSURL URLWithString:model.dollModel.backgroundImg]];
     [self.toysImgView sd_setImageWithURL:[NSURL URLWithString:model.dollModel.coverImg]];
     self.storyNumLabel.text = [NSString stringWithFormat:@"%ld",(long)model.totalStoryNum];
-    NSInteger hrs = model.totalStoryDuration / 3600;
-    NSInteger mins = model.totalStoryDuration % 3600 /60;
-    NSInteger s = model.totalStoryDuration % 60;
+    NSInteger totalMinutes = ceil(model.totalStoryDuration / 60.0);
+    
+    if (totalMinutes < 1) {
+        totalMinutes = 1; // 小于1分钟显示为1分钟
+    }
+    if(model.totalStoryDuration==0){
+        totalMinutes = 0;
+    }
+
     NSString *timeStr = @"";
-    if(hrs > 0){
-        timeStr = [NSString stringWithFormat:@"%ld h ",(long)hrs];
+    if (totalMinutes == 1) {
+        timeStr = @"1 min";
+    } else {
+        timeStr = [NSString stringWithFormat:@"%ld mins", (long)totalMinutes];
     }
-    if (mins > 0){
-        timeStr = [timeStr stringByAppendingFormat:@"%ld mins ",(long)mins];
-    }
-//    if (s > 0){
-//        timeStr = [timeStr stringByAppendingFormat:@"%ld s ",(long)s];
-//    }
-    if(timeStr.length == 0)
-    {
-        timeStr = @"0 s";
-    }
-    self.timeNumLabel.text = [NSString stringWithFormat:@"%@",timeStr];
+
+    self.timeNumLabel.text = timeStr;
 }
 
 -(void)starAnimation:(BOOL)animaiton

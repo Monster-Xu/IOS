@@ -77,6 +77,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self setupUI];
     [self setupTableViewConstraints];
     [self loadDataWithSkeleton];
+    
 }
 
 - (void)dealloc {
@@ -1356,12 +1357,19 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
             NSLog(@"⚠️ 故事状态 %ld 不支持编辑", (long)model.storyStatus);
             break;
     }
+    
+    
 }
 
 #pragma mark - Actions
 
 - (void)soundButtonTapped {
     NSLog(@"点击了声音按钮");
+    //埋点：点击进入声音复刻功能入口
+    [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_entry_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击“声音复刻”功能按钮时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+            
+    }];
+    
     VoiceManagementViewController *voiceVC = [[VoiceManagementViewController alloc] init];
     [self.navigationController pushViewController:voiceVC animated:YES];
 }
@@ -1381,6 +1389,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     NSLog(@"点击了 My Voice 按钮");
     VoiceManagementViewController *voiceVC = [[VoiceManagementViewController alloc] init];
     [self.navigationController pushViewController:voiceVC animated:YES];
+    //APP埋点：点击创建音色
+        [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_entry_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击“声音复刻”功能按钮时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
 }
 
 - (void)createButtonTapped {
@@ -1395,6 +1407,11 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     // 正常创建流程
     CreateStoryViewController *createStoryVC = [[CreateStoryViewController alloc] init];
     [self.navigationController pushViewController:createStoryVC animated:YES];
+    
+    //APP埋点：点击进入故事创作功能
+        [[AnalyticsManager sharedManager]reportEventWithName:@"create_story_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击故事创作的“+”功能按钮、以及故事清单为空创建故事时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
 }
 
 - (void)deleteStoryAtIndex:(NSInteger)index {

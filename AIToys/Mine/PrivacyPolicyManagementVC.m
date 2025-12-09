@@ -46,6 +46,11 @@
     [super viewDidLoad];
     [self loadData];
     [self setupUI];
+    
+    //APP埋点：点击隐私文件管理
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_privacy_policy_management" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击隐私文件管理时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 -(void)setupUI{
@@ -93,6 +98,11 @@
     RevokePrivacyPolicyVC *VC = [RevokePrivacyPolicyVC new];
     VC.title = btn.titleLabel.text;
     [self.navigationController pushViewController:VC animated:YES];
+    
+    //APP埋点：点击撤销同意隐私协议
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_revoke_privacy_policy_agreement" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击撤销同意隐私协议时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 #pragma mark -- UITableViewDataSource
@@ -127,18 +137,29 @@
         //隐私政策
         NSLog(@"点击了隐私政策");
         [self pushToNegotiateVCWithTitle:NSLocalizedString(@"隐私政策", @"") type:0];
+        //埋点：点击协议
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@1} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
         
         
     } else if (indexPath.row==1) {
         //用户协议
         NSLog(@"点击了用户协议");
         [self pushToNegotiateVCWithTitle:NSLocalizedString(@"用户协议", @"") type:1];
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@2} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
         
         
     } else if (indexPath.row==2) {
         //儿童协议
         NSLog(@"点击了儿童协议");
         [self pushToNegotiateVCWithTitle:NSLocalizedString(@"儿童协议", @"") type:2];
+        //埋点：点击协议
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@3} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
         
         
     } else if (indexPath.row==3) {

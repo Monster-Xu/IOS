@@ -35,6 +35,10 @@
     [smartHomeInvitation joinHomeWithInvitationCode:self.textfield.text success:^(BOOL result) {
         [weakSelf hiddenHud];
         [weakSelf.navigationController popViewControllerAnimated:YES];
+        //APP埋点：加入家庭成功
+        [[AnalyticsManager sharedManager]reportEventWithName:@"join_home_successful" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"加入家庭成功时" properties:@{@"homename":@"0",@"homeid":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
     } failure:^(NSError *error) {
         [weakSelf hiddenHud];
         [SVProgressHUD showErrorWithStatus:error.localizedDescription];

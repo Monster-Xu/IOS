@@ -49,6 +49,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)failureExtApiModel:(nullable NSString *)errorCode
                           errorMsg:(nullable NSString *)errorMsg;
 
+
++ (instancetype)failureExtApiModel:(nullable NSString *)errorCode
+                          errorMsg:(nullable NSString *)errorMsg
+                              Data:(nullable id)data;
 @end
 
 NS_ASSUME_NONNULL_END

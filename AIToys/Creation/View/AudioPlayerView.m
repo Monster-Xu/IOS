@@ -198,7 +198,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     NSLog(@"🗑️ AudioPlayerView dealloc 开始");
     
     // 先移除远程控制，防止被保留
-    [self removeRemoteTransportControls];
+//    [self removeRemoteTransportControls];
     
     // 注销实例
     [self unregisterInstance];
@@ -221,7 +221,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     
     // 清除系统播放器信息和远程控制
-    [self clearNowPlayingInfo];
+//    [self clearNowPlayingInfo];
     
     NSLog(@"🗑️ AudioPlayerView 已销毁");
 }
@@ -510,7 +510,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     // 加载音频文件
     [self loadAudioFromURL:self.audioURL];
     // 设置远程控制
-    [self setupRemoteTransportControls];
+//    [self setupRemoteTransportControls];
 }
 
 - (void)loadAudioFromURL:(NSString *)urlString {
@@ -917,7 +917,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
             [self stop];
             
             // 清除系统播放器信息
-            [self clearNowPlayingInfo];
+//            [self clearNowPlayingInfo];
             
             if ([self.delegate respondsToSelector:@selector(audioPlayerDidClose)]) {
                 [self.delegate audioPlayerDidClose];
@@ -931,7 +931,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         [AudioPlayerView stopAllOtherPlayers:self];
         
         // 设置远程控制（确保只有当前播放器响应）
-        [self setupRemoteTransportControls];
+//        [self setupRemoteTransportControls];
         
         [self.audioPlayer play];
         [self startProgressTimer];
@@ -960,7 +960,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         [self setupBackgroundAudioSession];
         
         // 设置远程控制
-        [self setupRemoteTransportControls];
+//        [self setupRemoteTransportControls];
         
         [self.audioPlayer play];
         [self startProgressTimer];
@@ -1004,7 +1004,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         }
         
         // 清除系统播放器信息
-        [self clearNowPlayingInfo];
+//        [self clearNowPlayingInfo];
         
         // 停止播放时注销实例
         [self unregisterInstance];

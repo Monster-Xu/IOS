@@ -16,11 +16,10 @@
 #import <ThingSmartMiniAppBizBundle/ThingSmartMiniAppBizBundle.h>
 #import <ThingModuleManager/ThingModuleManager.h>
 #import "NavigateToNativePageAPI.h"
+#import "getOTAInfo.h"
 #import "AnalyticsManager.h"
 #import "LogManager.h"
 #import <AVFoundation/AVFoundation.h>
-//#import <UMCommon/UMCommon.h>
-//#import <UMCommonLog/UMCommonLogHeaders.h>
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
 
@@ -39,7 +38,6 @@
     [[ThingMiniAppClient initialClient] initialize];
     // 开启 vConsole 调试开关
     // [[ThingMiniAppClient debugClient] vConsoleDebugEnable:YES];
-
     // 注册自定义 API
     [self registerCustomMiniAppAPIs];
 #ifdef DEBUG
@@ -77,6 +75,7 @@
     
     //启动广告图
     [self loadAD];
+    
     
     return [[ThingModuleManager sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
 
@@ -266,6 +265,7 @@
     // 注册原生页面跳转 API
     NSLog(@"创建 NavigateToNativePageAPI 实例...");
     NavigateToNativePageAPI *navigateAPI = [[NavigateToNativePageAPI alloc] init];
+    getOTAInfo * otaInfoAPI = [[getOTAInfo alloc]init];
     NSLog(@"NavigateToNativePageAPI 实例创建成功: %@", navigateAPI);
 
     NSLog(@"获取 ThingMiniAppClient developClient...");
@@ -274,48 +274,48 @@
 
     NSLog(@"注册 API 到 developClient...");
     [developClient addExtApiImpl:navigateAPI];
+    [developClient addExtApiImpl:otaInfoAPI];
 
     NSLog(@"✅ 自定义 MiniApp API 注册完成!");
     NSLog(@"API 名称: %@", navigateAPI.apiName);
     NSLog(@"API 是否可用: %@", [navigateAPI canIUseExtApi] ? @"YES" : @"NO");
+    NSLog(@"API 名称: %@", otaInfoAPI.apiName);
+    NSLog(@"API 是否可用: %@", [otaInfoAPI canIUseExtApi] ? @"YES" : @"NO");
     NSLog(@"========== 自定义 MiniApp API 注册结束 ==========");
 }
 // 处理远程控制事件
 - (void)remoteControlReceivedWithEvent:(UIEvent *)event {
-    if (event.type == UIEventTypeRemoteControl) {
-        switch (event.subtype) {
-            case UIEventSubtypeRemoteControlPlay:
-                // 播放命令 - 可以通过通知中心通知播放器
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPlay" object:nil];
-                break;
-            case UIEventSubtypeRemoteControlPause:
-                // 暂停命令
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPause" object:nil];
-                break;
-            case UIEventSubtypeRemoteControlTogglePlayPause:
-                // 切换播放/暂停
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlTogglePlayPause" object:nil];
-                break;
-            case UIEventSubtypeRemoteControlNextTrack:
-                // 下一曲
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlNextTrack" object:nil];
-                break;
-            case UIEventSubtypeRemoteControlPreviousTrack:
-                // 上一曲
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPreviousTrack" object:nil];
-                break;
-            default:
-                break;
-        }
-    }
-}
-////iOS9以上使用以下方法
-//- (BOOL)application:(UIApplication *)application openURL:(nonnull NSURL *)url options:(nonnull NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
-//{
-//    if ([MobClick handleUrl:url]) {
-//        return YES;
+//    if (event.type == UIEventTypeRemoteControl) {
+//        switch (event.subtype) {
+//            case UIEventSubtypeRemoteControlPlay:
+//                // 播放命令 - 可以通过通知中心通知播放器
+//                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPlay" object:nil];
+//                break;
+//            case UIEventSubtypeRemoteControlPause:
+//                // 暂停命令
+//                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPause" object:nil];
+//                break;
+//            case UIEventSubtypeRemoteControlTogglePlayPause:
+//                // 切换播放/暂停
+//                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlTogglePlayPause" object:nil];
+//                break;
+//            case UIEventSubtypeRemoteControlNextTrack:
+//                // 下一曲
+//                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlNextTrack" object:nil];
+//                break;
+//            case UIEventSubtypeRemoteControlPreviousTrack:
+//                // 上一曲
+//                [[NSNotificationCenter defaultCenter] postNotificationName:@"RemoteControlPreviousTrack" object:nil];
+//                break;
+//            default:
+//                break;
+//        }
 //    }
-//    //其它第三方处理
-//    return YES;
-//}
+}
+-(void)applicationDidEnterBackground:(UIApplication *)application{
+    //APP埋点：进入后台
+    [[AnalyticsManager sharedManager]reportEventWithName:@"close_app" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"切到后台时" properties:@{@"closeType":@"background"} completion:^(BOOL success, NSString * _Nullable message) {
+            
+    }];
+}
 @end

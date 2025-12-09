@@ -62,6 +62,11 @@
     //蓝牙监听
 //    [GlobalBluetoothManager sharedManager];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(bluetoothStateChanged:) name:@"BluetoothStateChanged" object:nil];
+    
+    //APP埋点：点击隐私设置
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_privacy_settings" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击隐私设置时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 -(void)setupUI{
@@ -156,6 +161,10 @@
                 [param setValue:on ? @"1": @"0" forKey:@"propValue"];
                 [param setValue:@"功能体验升级计划" forKey:@"description"];
                 [weakSelf modifySettingWithParam:param];
+                //APP埋点：隐私设置-开关用户体验计划
+                [[AnalyticsManager sharedManager]reportEventWithName:@"switch_improvement_plan" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"切换用户体验计划开关时" properties:@{@"improvementPlanStatus":on?@"0":@"1"} completion:^(BOOL success, NSString * _Nullable message) {
+                                
+                        }];
             }else{
                 NSMutableDictionary *param = [NSMutableDictionary dictionary];
                 [param setValue:[PublicObj isEmptyObject:kMyUser.userId]? @"": kMyUser.userId forKey:@"memberUserId"];
@@ -163,6 +172,10 @@
                 [param setValue:on ? @"1": @"0" forKey:@"propValue"];
                 [param setValue:@"个性化推送服务" forKey:@"description"];
                 [self modifySettingWithParam:param];
+                //APP埋点：隐私设置-开关个性化推荐
+                [[AnalyticsManager sharedManager]reportEventWithName:@"switch_personalized_recommendations" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"切换个性化设置开关时" properties:@{@"personalizedRecommStatus":on?@"1":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
+                                
+                        }];
             }
 //            [[ThingSmartSDK sharedInstance] setPushStatusWithStatus:on  success:^{
 //                // 设置成功
@@ -172,6 +185,8 @@
 //            } failure:^(NSError *error) {
 //                
 //            }];
+            
+            
             
         };
         return cell;
@@ -189,6 +204,23 @@
     if(indexPath.section == 2 || indexPath.section == 3 || indexPath.section == 4){
 //        if(!self.itemArray[indexPath.section].isOn){
             [self jumpToSetting];
+        if (indexPath.section==2) {
+            //APP埋点：隐私设置-点击通知设置
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_notification_settings" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击通知设置时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+        }else if (indexPath.section==3){
+            //APP埋点：隐私设置-点击蓝牙设置
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_bluetooth_settings" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击蓝牙设置时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+        }else{
+            //APP埋点：隐私设置-点击定位设置
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_location_settings" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击定位设置时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+        }
+        
 //        }
     }
     

@@ -148,6 +148,10 @@
         [self setLeftBtn];
         self.colletionBottomH.constant = 68;
         [self.collectionView addGestureRecognizer:self.longPress];
+        //APP埋点：进入设备编辑
+            [[AnalyticsManager sharedManager]reportEventWithName:@"enter_device_editing" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"进入设备编辑时"properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     }else{
         [self setupNavBackBtn];
         self.colletionBottomH.constant = 0;
@@ -159,6 +163,7 @@
             self.dataArr = [[NSMutableArray alloc] initWithArray:self.historyArr];
         }
     }
+    
     [self.collectionView reloadData];
 }
 
@@ -219,9 +224,9 @@
         //跳转小程序
         NSLog(@"[HomeDeviceListVC] 用户点击设备 - deviceId: %@, productId: %@", deviceModel.devId, deviceModel.productId);
         // 埋点上报：我的设备点击
-        [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:deviceModel.devId pid:deviceModel.productId];
+        [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:deviceModel.devId pid:deviceModel.uuid];
 
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype": @"prod"}];
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype": @"dev"}];
     }
 }
 
@@ -367,6 +372,10 @@
             [device resetFactory:^{
                 NSLog(@"remove success");
                 [SVProgressHUD showSuccessWithStatus:LocalString(@"删除成功")];
+                //APP埋点：手动删除设备
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"manually_delete_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"手动删除设备时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
                 
                 // 🔒 安全查找并删除设备
                 NSInteger targetIndex = NSNotFound;

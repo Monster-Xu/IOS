@@ -129,6 +129,13 @@
         if (vc) {
             [self.navigationController pushViewController:vc animated:YES];
         }
+        if ([title isEqualToString:LocalString(@"修改登录密码")]) {
+            //APP埋点：点击修改密码
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_change_login_password" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击修改密码时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+        }
+        
     }
     
 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24128" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -27,10 +27,10 @@
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SQa-vl-LgI">
-                        <rect key="frame" x="20" y="10" width="318" height="311"/>
+                        <rect key="frame" x="20" y="10" width="318" height="444"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="home_banner" translatesAutoresizingMaskIntoConstraints="NO" id="Y1e-Y0-BAR">
-                                <rect key="frame" x="0.0" y="0.0" width="343" height="311"/>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Toys_back" translatesAutoresizingMaskIntoConstraints="NO" id="Y1e-Y0-BAR">
+                                <rect key="frame" x="0.0" y="0.0" width="490" height="444"/>
                                 <constraints>
                                     <constraint firstAttribute="width" secondItem="Y1e-Y0-BAR" secondAttribute="height" multiplier="32:29" id="D24-vb-y5U"/>
                                 </constraints>
@@ -172,7 +172,7 @@
                                 </constraints>
                             </view>
                             <button opaque="NO" contentMode="scaleAspectFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="GBV-K1-6pQ">
-                                <rect key="frame" x="20" y="251" width="278" height="44"/>
+                                <rect key="frame" x="20" y="384" width="278" height="44"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="p68-lL-LXX"/>
@@ -243,16 +243,18 @@
                 <outlet property="sLabel" destination="EZ0-Fn-hwg" id="fTs-Ln-6iX"/>
                 <outlet property="sNamelabel" destination="DLT-eA-vme" id="nSF-jT-UEq"/>
                 <outlet property="storyLab" destination="61k-0D-32o" id="Qyh-vA-Mhj"/>
+                <outlet property="storyNumImage" destination="h0K-pv-Pkj" id="YLB-AJ-hmx"/>
                 <outlet property="storyNumLabel" destination="C2L-m3-oa6" id="YTl-Ai-T7r"/>
+                <outlet property="stroyTimeImage" destination="aOx-5a-0Vx" id="PjO-GI-eDz"/>
             </connections>
             <point key="canvasLocation" x="154.19847328244273" y="-13.732394366197184"/>
         </tableViewCell>
     </objects>
     <resources>
+        <image name="Toys_back" width="490" height="435"/>
         <image name="explore_toys_play" width="22" height="22"/>
         <image name="explore_toys_sounds" width="32" height="32"/>
         <image name="explore_toys_story" width="32" height="32"/>
-        <image name="home_banner" width="343" height="140"/>
         <image name="toys_try_btn_bg_active" width="283" height="44"/>
         <image name="toys_try_btn_bg_default" width="283" height="44"/>
         <systemColor name="systemBackgroundColor">

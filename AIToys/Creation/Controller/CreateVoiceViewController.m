@@ -135,6 +135,7 @@
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *faildViewConstraintHeight;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *topConstraint;
 @property (weak, nonatomic) IBOutlet UIView *faildView;
+@property (weak, nonatomic) IBOutlet UILabel *voiceSubLabel;
 
 @end
 
@@ -161,7 +162,27 @@
     }
     
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
-    
+    // 创建基础字符串
+    NSString *fullText = @"Please hold to \"Start Reading\" and read the following test clearly, expressively, and loudly. The recording must be over 30 seconds.";
+
+    // 创建可变的富文本
+    NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:fullText];
+
+    // 找到需要标红加粗的文本范围
+    NSString *highlightedText = @"clearly, expressively, and loudly";
+    NSRange highlightRange = [fullText rangeOfString:highlightedText];
+
+    if (highlightRange.location != NSNotFound) {
+        // 设置加粗
+        UIFont *boldFont = [UIFont boldSystemFontOfSize:self.voiceSubLabel.font.pointSize];
+        [attributedText addAttribute:NSFontAttributeName value:boldFont range:highlightRange];
+        
+        // 设置红色
+        [attributedText addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:highlightRange];
+    }
+
+    // 应用到UILabel
+    self.voiceSubLabel.attributedText = attributedText;
     // 初始时隐藏删除按钮
     self.deletPickImageBtn.hidden = YES;
     [self.deletPickImageBtn addTarget:self action:@selector(deletPickImage) forControlEvents:UIControlEventTouchUpInside];
@@ -1076,6 +1097,11 @@
             
             // 显示成功提示并返回
             [self showSuccessAlertWithCompletion:@"Voice information updated successfully!"];
+            
+            //APP埋点：点击声音复刻页面保存按钮
+                [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":@"success"} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
         });
         
     } failure:^(NSError * _Nonnull error) {
@@ -1096,7 +1122,10 @@
             } else {
                 errorMessage = [NSString stringWithFormat:@"Update failed: %@", error.localizedDescription];
             }
-            
+            //APP埋点：点击声音复刻页面保存按钮
+                [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":[NSString stringWithFormat:@"fail(failCode:%ld): 失败，返回失败原因:%@",error.code,errorMessage]} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
 //            [self showAlert:errorMessage];
         });
     }];
@@ -1557,11 +1586,22 @@
                 NSLog(@"\n🎤 上传完成，准备开始克隆声音...");
                 [self startVoiceCloning];
             });
+            
+            //APP埋点：长按声音录制按钮
+            [[AnalyticsManager sharedManager]reportEventWithName:@"voice_replication_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"用户在声音复刻页面点击录制声音的按钮" properties:@{@"voicereplicationResult":@"success"} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
+            
         } failure:^(NSError * _Nonnull error) {
             // ❌ 上传失败
             NSLog(@"❌ 音频上传失败!");
             NSLog(@"   错误信息: %@", error.localizedDescription);
             NSLog(@"   错误代码: %ld", (long)error.code);
+            
+            //APP埋点：长按声音录制按钮
+            [[AnalyticsManager sharedManager]reportEventWithName:@"voice_replication_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"用户在声音复刻页面点击录制声音的按钮" properties:@{@"voicereplicationResult":@"fail"} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 self.isUploading = NO;
@@ -1580,12 +1620,20 @@
     
     if (self.isCloningVoice) {
         [self showAlert:@"Cloning in progress, please wait."];
+        //APP埋点：点击声音复刻页面保存按钮
+            [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":@"fail(Cloning in progress, please wait.)"} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
         return;
     }
     
     // 检查必要参数
     if (!self.uploadedAudioFileUrl || self.uploadedAudioFileUrl.length == 0) {
         [self showAlert:@"Audio file URL does not exist"];
+        //APP埋点：点击声音复刻页面保存按钮
+            [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":@"Audio file URL does not exist)"} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
         return;
     }
     
@@ -1634,6 +1682,12 @@
             [self showSuccessAlertWithCompletion:LocalString(@"Voice cloning started!\n\nThe system is processing your voice in the background.\nPlease wait a moment and refresh to check progress.")];
         });
         
+        //APP埋点：点击声音复刻页面保存按钮
+            [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":@"success"} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
+        
+        
     } failure:^(NSError *error) {
         // ❌ 声音创建失败
         NSLog(@"\n❌ 声音克隆失败!");
@@ -1645,6 +1699,10 @@
             [SVProgressHUD dismiss];
 //            [self showAlert:[NSString stringWithFormat:@"Failed to create voice: %@", error.localizedDescription]];
         });
+        //APP埋点：点击声音复刻页面保存按钮
+            [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":[NSString stringWithFormat:@"fail(failCode:%ld): 失败，返回失败原因:%@",error.code,error]} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     }];
 }
 
@@ -1780,6 +1838,8 @@
         // ✅ 松手时停止录音（无论录音时长多少都停止）
         [self stopRecording];
     }
+    
+    
 }
 
 
@@ -2154,6 +2214,8 @@
     
     // 恢复录音标签文字
     self.speekLabel.text = NSLocalizedString(@"Hold to start recording", @"");
+    
+    
 }
 
 /// ✅ 处理录音成功的情况
@@ -2180,6 +2242,9 @@
     
     // 显示录音完成提示
     self.speekLabel.text = @"Voice cloning takes 3-5 mins, you can save now";
+    
+    
+    
 }
 
 /// 安全停止音频引擎

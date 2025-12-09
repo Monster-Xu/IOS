@@ -52,9 +52,18 @@
 - (IBAction)sureBtnClick:(id)sender {
     [self.pwdTextField resignFirstResponder];
     NSString *password = self.pwdTextField.text;
+   
+    //APP埋点：修改密码完成
+            [[AnalyticsManager sharedManager]reportEventWithName:@"login_password_changed" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"密码修改完成时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
+    
     WS(weakSelf);
     [[ThingSmartUser sharedInstance] resetPasswordByEmail:Country_Code email:self.numStr newPassword:password code:self.codeStr success:^{
         [SVProgressHUD showSuccessWithStatus:@"Password Reset Successfully"];
+        
+        
+        
         kMyUser.email = self.numStr;
         kMyUser.passWord = password;
         if(weakSelf.type == EmailType_forgetPwd){

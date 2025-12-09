@@ -19,6 +19,7 @@
     self.roleLabel.textColor = isExpire? UIColorHex(F04C4C):UIColorFromRGBA(000000, 0.5);
 }
 
+
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {
     [super setSelected:selected animated:animated];
 

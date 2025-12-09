@@ -11,13 +11,13 @@
 
 /// 所有接口请求的基础域名
 + (NSString *)baseURL {
-    ///当前环境 1、测试  2、生产
-    NSInteger type = [[NSUserDefaults standardUserDefaults] integerForKey:KCURRENT_API_TYPE];
-    if (type == 2) {
-        return @"https://app.talenpalussaastest.com/";
-    } else{
-        return @"https://app.talenpalussaastest.com/";
-    }
+//    ///当前环境 1、测试  2、生产
+//    NSInteger type = [[NSUserDefaults standardUserDefaults] integerForKey:KCURRENT_API_TYPE];
+//    if (type == 2) {
+//        return @"https://app.talenpalussaastest.com/";
+//    } else{
+//        return @"https://app.talenpalussaastest.com/";
+//    }
     return @"https://app-pre.talenpalussaastest.com/";
 }
 
@@ -198,5 +198,24 @@
 + (NSString *)getStoryLengthsUrl {
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/stories/lengths"];
 }
-
+//查询家庭组头像列表
++(NSString *)getGroupListUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-avatar/batch-mapping"];
+}
++(NSString *)getRefreshTokenUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/member/auth/refresh-token"];
+}
++ (NSString *)getuploadUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/infra/file/upload"];
+    
+}
++ (NSString *)getWifiAddUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-wifi/add"];
+}
++ (NSString *)getWifiListUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-wifi/list"];
+}
++(NSString *)getWifiRemoveUrl{
+    return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-wifi/remove"];
+}
 @end

@@ -120,12 +120,26 @@
         VC.sureBlock = ^(NSString * _Nonnull imgUrl) {
             weakSelf.itemArray[indexPath.row].value = imgUrl;
             [weakSelf.tableView reloadData];
+            //APP埋点：修改头像完成
+                [[AnalyticsManager sharedManager]reportEventWithName:@"my_profile_photo_changed" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"头像修改完成时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
+            
         };
         VC.imgUrl = weakSelf.itemArray[indexPath.row].value;
         VC.modalPresentationStyle = UIModalPresentationOverFullScreen;
         [self presentViewController:VC animated:NO completion:nil];
+        
+        //APP埋点：点击修改头像
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_change_my_profile_photo" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击修改头像时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     }else if ([title isEqualToString:LocalString(@"昵称")]){
         [self showAlertWithTextField];
+        //APP埋点：点击修改昵称
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_change_my_nickname" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击修改昵称时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     }
     
 }
@@ -139,6 +153,11 @@
             [[ThingSmartUser sharedInstance] updateNickname:str success:^{
                 [weakSelf loadData];
                 [weakSelf.tableView reloadData];
+                //APP埋点：修改昵称完成
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"my_nickname_changed" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"昵称修改完成时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+                
                 } failure:^(NSError *error) {
                     [SVProgressHUD showErrorWithStatus:error.description];
                     NSLog(@"updateNickname failure: %@", error);

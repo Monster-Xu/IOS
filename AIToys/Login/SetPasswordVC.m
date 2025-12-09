@@ -68,6 +68,10 @@
     [self.pwdAgainTextField resignFirstResponder];
     [self.pwdTextField resignFirstResponder];
     NSString *password = self.pwdTextField.text;
+    
+    
+   
+    
     WS(weakSelf);
     [[ThingSmartUser sharedInstance] registerByEmail:Country_Code email:self.numStr password:password code:self.codeStr success:^{
         [SVProgressHUD showSuccessWithStatus:@"Registered Successfully"];
@@ -93,6 +97,7 @@
                     [weakSelf.navigationController popToViewController:bankListVc animated:YES];
                 }
             }
+           
            
         } failure:^(NSError *error) {
             [weakSelf hiddenHud];

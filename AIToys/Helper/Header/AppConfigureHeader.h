@@ -10,8 +10,8 @@
 
 
 //涂鸦SDK
-#define Smart_APPID @"us4nm48mewaesxx3qaq9"
-#define Smart_AppSecret @"v94csad5tkq4fmxjg8fqgpjh5t98fw5e"
+#define Smart_APPID @"qw4keg8ydwtha9xen7ur"
+#define Smart_AppSecret @"q8dqg7gc8e44jfgyptvdxmxgs7h8p95m"
 
 // 设备ProductID
 #define DEVICE_PRODUCT_ID @"1xlikniqwnensmov"
@@ -29,7 +29,8 @@
 
 // 是否首次启动 key
 #define KEY_ISFIRSTLAUNCH @"KEY_IsFirstLaunch"
-
+// 是否首次进入首页 key
+#define KEY_ISFIRSTTOHOME @"KEY_IsFirstToHome"
 // 当前api环境
 #define KCURRENT_API_TYPE @"KCurrentApiKey"
 

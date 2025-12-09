@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UIButton *playBtn;
 @property (nonatomic, copy) void(^playBlock)(void);
 @property (nonatomic, strong) FindDollModel *model;
+@property (weak, nonatomic) IBOutlet UIImageView *storyNumImage;
+@property (weak, nonatomic) IBOutlet UIImageView *stroyTimeImage;
 @end
 
 NS_ASSUME_NONNULL_END

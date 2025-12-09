@@ -38,6 +38,11 @@
     NSTimeInterval oneDay = 24 * 60 * 60;  // 一天一共有多少秒
     appointDate = [currentDate initWithTimeIntervalSinceNow: oneDay * days];
     self.timeLab.text = [NSString stringWithFormat:@"%@ 00:00:00",[DateUtil stringFromDate:appointDate Formater:@"yyyy-MM-dd"]];
+    
+    //APP埋点：点击删除账户
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_delete_account" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击删除账户时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 //倒计时
@@ -70,6 +75,10 @@
                 [CoreArchive removeStrForKey:KCURRENT_HOME_ID];
                 [CoreArchive setBool:YES key:KACCOUNT_ISCANCEL];
                 [UserInfo showLogin];
+                //APP埋点：账户删除完成
+                        [[AnalyticsManager sharedManager]reportEventWithName:@"account_deleted" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"账户删除完成时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                                
+                        }];
             } failure:^(NSError *error) {
                 NSLog(@"cancel account failure: %@", error);
             }];

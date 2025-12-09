@@ -20,6 +20,12 @@ FOUNDATION_EXPORT NSString * const kAnalyticsLevel1_Login;
 /// 层级1 - 家庭
 FOUNDATION_EXPORT NSString * const kAnalyticsLevel1_Family;
 
+/// 层级1 - 创作
+FOUNDATION_EXPORT NSString * const kAnalyticsLevel1_Creation;
+
+/// 层级1 - 我的
+FOUNDATION_EXPORT NSString * const kAnalyticsLevel1_Mine;
+
 /// 层级2 - 添加设备
 FOUNDATION_EXPORT NSString * const kAnalyticsLevel2_AddDevice;
 

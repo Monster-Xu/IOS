@@ -15,6 +15,7 @@
 #import <ThingModuleServices/ThingMessageCenterProtocol.h>
 #import "PersonalInformationVC.h"
 #import "AvatarModel.h"
+#import "MyWebViewController.h"
 
 @interface MineViewController ()
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
@@ -49,6 +50,7 @@
         @{@"icon" : @"mine_homeManage", @"title" : LocalString(@"家庭管理"), @"toVC" : @"FamailyManageVC"},
         @{@"icon" : @"mine_msg", @"title" : LocalString(@"消息中心"), @"toVC" : @"MessageCenterVC"},
         @{@"icon" : @"mine_setting", @"title" : LocalString(@"设置"), @"toVC" : @"SettingViewController"},
+        @{@"icon":@"mine_help",@"title":LocalString(@"帮助中心"),@"toVC":@"MyWebViewController"},
         ];
 //    @{@"icon" : @"mine_help", @"title" : LocalString(@"帮助中心"), @"toVC" : @"FamailyManageVC"},
     [self.itemArray addObjectsFromArray:arr];
@@ -98,6 +100,11 @@
     PersonalInformationVC *VC = [PersonalInformationVC new];
     VC.title = LocalString(@"个人信息");
     [self.navigationController pushViewController:VC animated:YES];
+    
+    //APP埋点：点击个人档案
+        [[AnalyticsManager sharedManager]reportEventWithName:@"me_tap_my_profile" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击个人档案时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
 }
 
 
@@ -153,15 +160,36 @@
     if([title isEqualToString:LocalString(@"消息中心")]){
         id<ThingMessageCenterProtocol> impl = [[ThingSmartBizCore sharedInstance] serviceOfProtocol:@protocol(ThingMessageCenterProtocol)];
             [impl gotoMessageCenterViewControllerWithAnimated:YES];
+        
+        
+        //埋点：点击消息中心
+            [[AnalyticsManager sharedManager]reportEventWithName:@"me_tap_message_center" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击消息中心时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
     }else if ([title isEqualToString:LocalString(@"帮助中心")]){
-        id<ThingHelpCenterProtocol> impl = [[ThingSmartBizCore sharedInstance] serviceOfProtocol:@protocol(ThingHelpCenterProtocol)];
-
-        [impl gotoHelpCenter];
+        MyWebViewController * webVC = [[MyWebViewController alloc]init];
+        webVC.mainUrl = @"https://www.talenpal.com/pages/faq";
+        [self.navigationController pushViewController:webVC animated:YES];
+//        id<ThingHelpCenterProtocol> impl = [[ThingSmartBizCore sharedInstance] serviceOfProtocol:@protocol(ThingHelpCenterProtocol)];
+//
+//        [impl gotoHelpCenter];
+        
     }else{
         UIViewController* vc = [NSString stringChangeToClass:str];
         vc.title = title;
         if (vc) {
             [self.navigationController pushViewController:vc animated:YES];
+        }
+        if ([str isEqualToString:@"FamailyManageVC"]) {
+            //APP埋点：点击家庭管理
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"me_tap_home_management" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击家庭管理时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+        }else if([str isEqualToString:@"SettingViewController"]){
+            //APP埋点：点击设置
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"me_tap_settings" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击设置时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
         }
     }
     

@@ -115,20 +115,32 @@
 //退出登录
 -(void)exitLogin{
 //    WEAK_SELF
+    
     [LGBaseAlertView showAlertWithTitle:LocalString(@"确定要退出吗?") content:nil cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"确定") confirmBlock:^(BOOL isValue, id obj) {
         if (isValue){
             [SVProgressHUD showWithStatus:LocalString(@"正在安全退出，请稍后…")];
+            //APP埋点：账户已退出
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"account_logged_out" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"完成账户退出时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
             [[ThingSmartUser sharedInstance] loginOut:^{
                 [SVProgressHUD dismiss];
                 [UserInfo clearMyUser];
                 [CoreArchive removeStrForKey:KCURRENT_HOME_ID];
                 [UserInfo showLogin];
+                
+                
             } failure:^(NSError *error) {
                 [SVProgressHUD dismiss];
                 [SVProgressHUD showErrorWithStatus:@"Failed to Logout."];
             }];
         }
     }];
+    
+    //APP埋点：点击退出账户
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_account_logout" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击退出账户时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 #pragma mark -- UITableViewDataSource
@@ -167,6 +179,7 @@
                 // 异步执行缓存清理操作，避免阻塞主线程
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
                     [PublicObj clearFile];
+                    [[LogManager sharedManager]clearLogs];
                     
                     // 清理完成后回到主线程更新UI
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -178,6 +191,10 @@
                 });
             }
         }];
+        //APP埋点：点击清除缓存
+                [[AnalyticsManager sharedManager]reportEventWithName:@"tap_clear_cache" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击清除缓存时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
     }
     else if ([title isEqualToString:LocalString(@"导出日志")]){
         WEAK_SELF
@@ -193,10 +210,63 @@
                 }
                 
                 // 显示导出成功提示，告知用户文件位置
-                NSString *fileName = fileURL.lastPathComponent;
-                NSString *message = [NSString stringWithFormat:LocalString(@"Log exported successfully! \n\n Filename: %@ \n\n You can view and share it in the 'My iPhone/ExportedLogs' folder in the 'Files' app."), fileName];
+//                NSString *fileName = fileURL.lastPathComponent;
+                NSString *buildNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
+                // 获取当前日期
+                NSDate *currentDate = [NSDate date];
+
+                // 创建日历对象
+                NSCalendar *calendar = [NSCalendar currentCalendar];
+
+                // 定义要获取的日期组件
+                NSUInteger unitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay;
+
+                // 获取日期组件
+                NSDateComponents *components = [calendar components:unitFlags fromDate:currentDate];
+
+                // 提取年月日
+                NSInteger year = [components year];
+                NSInteger month = [components month];
+                NSInteger day = [components day];
+
+                NSLog(@"当前日期: %ld年%ld月%ld日", (long)year, (long)month, (long)day);
                 
-                [LGBaseAlertView showAlertWithTitle:LocalString(@"导出成功") content:message cancelBtnStr:nil confirmBtnStr:LocalString(@"我知道了") confirmBlock:^(BOOL isValue, id obj) {
+                
+                
+                NSString *message = [NSString stringWithFormat:LocalString(@"If the App encounters anomalies, crashes, or other issues, please upload the logs to help us better locate and resolve the problem. \n App Version: %@ \n SDK Version: 6.7.0 \nBuildlD:%@ \nEnviorment:test\n Client lD: %@ \n UserAccount: %@\n Date:%ld.%ld.%ld"),[self getVersion],buildNumber,[ThingSmartUser sharedInstance].uid,kMyUser.email,year,month,day];
+                
+                NSString *encodedPath = [[fileURL path] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
+                NSString *result = [NSString stringWithFormat:@"%@", encodedPath];
+                
+                
+                
+                [LGBaseAlertView showAlertWithTitle:LocalString(@"导出成功") content:message cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"上传") confirmBlock:^(BOOL isValue, id obj) {
+                    if (isValue) {
+                        
+                        
+                        
+                        // 示例3：带额外参数
+                        NSData *videoData = [NSData dataWithContentsOfFile:result];
+                        NSDictionary *params = @{
+                            @"directory": result,
+                        };
+                        [[APIManager shared]uploadSingleFile:[APIPortConfiguration getuploadUrl] fileData:videoData fileName:[NSString stringWithFormat:@"%ld_%ld_%ld_%@",(long)year,(long)month,day,kMyUser.email] parameters:params success:^(id  _Nonnull result) {
+//                            [SVProgressHUD showWithStatus:@"日志上传成功"];
+                                                } failure:^(NSError * _Nonnull error) {
+//                                                    [SVProgressHUD showWithStatus:@"日志上传失败"];
+                                                }];
+                        
+                        
+                        
+                        
+//                        [SVProgressHUD showWithStatus:LocalString(@"上传中...")];
+//                        [[APIManager shared]POST:[NSString stringWithFormat:@"%@?directory=%@",[APIPortConfiguration getuploadUrl],result] parameter:@{} success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+//                            [SVProgressHUD showWithStatus:@"日志上传成功"];
+//                                            } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+//                                                [SVProgressHUD showWithStatus:@"日志上传失败"];
+//                                            }];
+                    }
+                    
                     // 可选：导出成功后直接打开系统分享界面
                     UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:nil];
                     
@@ -217,9 +287,32 @@
         if (vc) {
             [self.navigationController pushViewController:vc animated:YES];
         }
+        
+        if ([str isEqualToString:@"PersonalInformationVC"]) {
+            //APP埋点：点击个人信息
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_personal_information" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击个人信息时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+        }else if([str isEqualToString:@"AccountSecurityVC"]){
+            //APP埋点：点击账户与安全
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_account_and_security" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击账户与安全时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
+        }else if([str isEqualToString:@"AccountSecurityVC"]){
+            
+        }
     }
 }
 
+- (NSString*)getVersion
+{
+    NSBundle *bundle = [NSBundle bundleForClass:[self class]];
+    
+    NSString *versionNum = [bundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"];
+    
+    return versionNum;
+    
+}
 /*
 #pragma mark - Navigation
 

@@ -42,6 +42,11 @@
     [super viewDidLoad];
     [self loadData];
     [self setupUI];
+    
+    //APP埋点：点击关于
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_about" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击关于时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 -(void)setupUI{
@@ -54,11 +59,12 @@
 }
 
 -(void)loadData{
+    NSString *buildNumber = [[NSBundle mainBundle] objectForInfoDictionaryKey:(NSString *)kCFBundleVersionKey];
     NSArray *arr = @[
-//        @{@"title" : LocalString(@"鼓励一下我们"),@"value" :@"", @"toVC" : @"EmaileViewController"},
+        @{@"title" : LocalString(@"鼓励一下我们"),@"value" :@"", @"toVC" : @"EmaileViewController"},
         @{@"title" : LocalString(@"开源组件许可"),@"value" :@"", @"toVC" : @"ComponentLicensesViewController"},
-        @{@"title" : LocalString(@"当前版本"),@"value" :APP_VERSION},
-//        @{@"title" : LocalString(@"检查更新"),@"value" :@"",@"toVC" : @"ComponentLicensesViewController"},
+        @{@"title" : LocalString(@"当前版本"),@"value" :[NSString stringWithFormat:@"V%@.%@",APP_VERSION,buildNumber]},
+        @{@"title" : LocalString(@"应用市场"),@"value" :@"",@"toVC" : @"ComponentLicensesViewController"},
 //        @{@"title" : LocalString(@"更新日志"),@"value" :@"", @"toVC" : @""},
         ];
     self.itemArray = [NSMutableArray arrayWithArray:[MineItemModel mj_objectArrayWithKeyValuesArray:arr]];
@@ -86,8 +92,8 @@
     MineItemModel *model = self.itemArray[indexPath.row];
      NSString *title = model.title;
      NSString *str = model.toVC;
-    if ([title isEqualToString:LocalString(@"鼓励一下我们")] || [title isEqualToString:LocalString(@"检查更新")]) {
-        NSString *localizedLink = @"https://apps.apple.com/app/id1129144823";
+    if ([title isEqualToString:LocalString(@"应用市场")] || [title isEqualToString:LocalString(@"鼓励一下我们")]) {
+        NSString *localizedLink = @"https://apps.apple.com/app/id6753179212";
         [[UIApplication sharedApplication] openURL:[NSURL URLWithString:localizedLink] options:@{} completionHandler:nil];
     }else{
         UIViewController* vc = [NSString stringChangeToClass:str];

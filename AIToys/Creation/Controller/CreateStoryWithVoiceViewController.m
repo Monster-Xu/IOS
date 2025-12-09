@@ -1363,6 +1363,8 @@
         // 创建模式：调用合成音频接口（原有逻辑）
         [self handleCreateStory];
     }
+    
+    
 }
 
 /// ✅ 处理编辑故事
@@ -1372,6 +1374,10 @@
     // 检查是否有未保存的更改
     if (!self.hasUnsavedChanges && ![self detectAnyChanges]) {
         [self showErrorAlert:@"No changes detected"];
+        //APP埋点：声音合成
+            [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(No changes detected)"]} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
         return;
     }
     
@@ -1430,6 +1436,12 @@
         
         NSLog(@"✅ 故事编辑成功: %@", response);
         
+        //APP埋点：声音合成
+            [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":@"success"} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
+        
+        
         // ✅ 更新原始数据并清除未保存状态
         [strongSelf updateOriginalDataAfterSave];
         
@@ -1446,6 +1458,12 @@
         }];
         
     } failure:^(NSError * _Nonnull error) {
+        
+        //APP埋点：声音合成
+            [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(%@)",error.localizedDescription]} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
+        
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
         
@@ -1460,12 +1478,20 @@
     // 检查是否选择了音色
     if (self.selectedVoiceIndex < 0 || self.selectedVoiceIndex >= self.voiceListArray.count) {
         [self showErrorAlert:NSLocalizedString(@"Please select a voice first", @"")];
+        //APP埋点：声音合成
+            [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(Please select a voice first)"]} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
         return;
     }
     
     // 检查故事名称是否为空
     if (!self.stroryThemeTextView.text || self.stroryThemeTextView.text.length == 0) {
         [self showErrorAlert:NSLocalizedString(@"Please enter story name", @"")];
+        //APP埋点：声音合成
+            [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(Please enter story name)"]} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
         return;
     }
     
@@ -1513,6 +1539,11 @@
         
         NSLog(@"✅ 音频合成成功: %@", response);
         
+        //APP埋点：声音合成
+            [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":@"success"} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
+        
         [LGBaseAlertView showAlertWithTitle:NSLocalizedString(@"Story is generating, expected 3-5 minutes", @"")
                                     content:NSLocalizedString(@"You can view the story in the 'Story List' later", @"")
                                cancelBtnStr:nil
@@ -1532,6 +1563,10 @@
         [SVProgressHUD dismiss];
         
         NSLog(@"❌ 音频合成失败: %@", error.localizedDescription);
+        //APP埋点：声音合成
+            [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(%@)",error.localizedDescription]} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
         
     }];
 }

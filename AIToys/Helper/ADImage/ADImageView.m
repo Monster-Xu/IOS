@@ -19,6 +19,7 @@
 @property(nonatomic,strong) NSTimer *timer;
 @property(nonatomic,assign) NSInteger times;
 @property(nonatomic,strong) UIButton *pushButton;
+@property(nonatomic,assign)BOOL isjump;
 
 @end
 
@@ -30,6 +31,7 @@
         self.userInteractionEnabled = YES;
         self.contentMode = UIViewContentModeScaleAspectFill;
         self.times = secondCount;
+        self.isjump = YES;
         [self setUI];
         [self timer];
     }
@@ -98,10 +100,18 @@
     } completion:^(BOOL finished) {
         [self removeFromSuperview];
     }];
+    if (self.isjump) {
+        //埋点：点击跳过运营页
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_skip_operation_page" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"进入app点击跳过运营页时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
+    }
+    
 }
 
 - (void)changeSecond{
     if (_times<=0) {
+        self.isjump = NO;
         [self jumpOver];
     }else{
         _times --;

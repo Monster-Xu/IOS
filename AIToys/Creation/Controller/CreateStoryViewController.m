@@ -1288,6 +1288,11 @@
         self.selectedTypeIndex = selectedIndex;
         self.typeValueLabel.text = selectedValue;
         self.typeValueLabel.textColor = [UIColor blackColor];
+        
+        //APP埋点：故事类型选项
+            [[AnalyticsManager sharedManager]reportEventWithName:@"story_type" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"用户选择故事类型时" properties:@{@"storyType":selectedValue} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     }];
     
     [picker show];
@@ -1309,6 +1314,11 @@
         self.selectedLengthIndex = selectedIndex;
         self.lengthValueLabel.text = selectedValue;
         self.lengthValueLabel.textColor = [UIColor blackColor];
+        
+        //APP埋点：故事时长选项
+            [[AnalyticsManager sharedManager]reportEventWithName:@"story_length" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"用户选择故事时长时" properties:@{@"storyLength":selectedValue} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     }];
     
     [picker show];
@@ -1324,6 +1334,10 @@
                                  confirmBlock:^(BOOL isValue, id obj) {
             // 只有确定按钮，不需要处理
         }];
+        //APP埋点：点击故事创作下一步
+            [[AnalyticsManager sharedManager]reportEventWithName:@"story_creation_nextstep_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击故事创作“下一步”按钮时" properties:@{@"storycreationResult":[NSString stringWithFormat:@"Fail:(%@)",errorMessage]} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
         return;
     }
     
@@ -1335,6 +1349,13 @@
         // 创建模式：调用创建故事接口
         [self createStoryRequest];
     }
+    //APP埋点：点击故事创作下一步
+        [[AnalyticsManager sharedManager]reportEventWithName:@"story_creation_nextstep_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击故事创作“下一步”按钮时" properties:@{@"storycreationResult":@"sucess"} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
+    
+    
+    
 }
 
 - (NSString *)validateInputs {
@@ -1434,9 +1455,18 @@
         if (response.isSuccess) {
             NSLog(@"✅ 故事创建成功");
             [strongSelf handleCreateStorySuccess:response];
+            //APP埋点：点击故事创作下一步
+                [[AnalyticsManager sharedManager]reportEventWithName:@"story_creation_nextstep_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击故事创作“下一步”按钮时" properties:@{@"storycreationResult":@"sucess"} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
+            
         } else {
             NSLog(@"❌ 故事创建失败: %@", response.errorMessage);
-            [strongSelf showErrorAlert:response.errorMessage];
+//            [strongSelf showErrorAlert:response.errorMessage];
+            //APP埋点：点击故事创作下一步
+                [[AnalyticsManager sharedManager]reportEventWithName:@"story_creation_nextstep_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击故事创作“下一步”按钮时" properties:@{@"storycreationResult":[NSString stringWithFormat:@"Fail(%@)",response.errorMessage]} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
         }
         
     } failure:^(NSError *error) {
@@ -1444,8 +1474,13 @@
         if (!strongSelf) return;
         
         [strongSelf hideLoadingAlert];
-//        NSLog(@"❌ 网络请求失败: %@", error.localizedDescription);
+        NSLog(@"❌ 网络请求失败: %@", error.localizedDescription);
+        //APP埋点：点击故事创作下一步
+            [[AnalyticsManager sharedManager]reportEventWithName:@"story_creation_nextstep_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击故事创作“下一步”按钮时" properties:@{@"storycreationResult":[NSString stringWithFormat:@"Fail(%@)",error.localizedDescription]} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 //        [strongSelf showErrorAlert:error.localizedDescription];
+        
     }];
 }
 
@@ -1575,6 +1610,7 @@
             NSLog(@"❌ 失败故事更新失败: %@", response.errorMessage);
             [strongSelf showErrorAlert:response.errorMessage];
         }
+        
         
     } failure:^(NSError *error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;

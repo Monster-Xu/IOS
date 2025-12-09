@@ -70,6 +70,11 @@
 //                
 //            }else{
                 [[ThingSmartUser sharedInstance] checkCodeWithUserName:weakSelf.numStr region:[[ThingSmartUser sharedInstance] getDefaultRegionWithCountryCode:Country_Code] countryCode:Country_Code code:weakSelf.codeStr type:codeType success:^(BOOL result) {
+//                    //埋点:注册结果
+//                    [[AnalyticsManager sharedManager]reportEventWithName:@"register_result" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"" properties:@{@"registerResult":@"success"} completion:^(BOOL success, NSString * _Nullable message) {
+//                            
+//                    }];
+                    
                     if (result) {
                         if(weakSelf.type == EmailType_forgetPwd || weakSelf.type == EmailType_modifyPwd){
                             SetNewPasswordViewController *VC = [SetNewPasswordViewController new];
@@ -87,6 +92,12 @@
                             [[ThingSmartUser sharedInstance] changBindAccount:weakSelf.numStr countryCode:Country_Code code:weakSelf.codeStr success:^{
                                 kMyUser.email = weakSelf.numStr;
                                 [SVProgressHUD showSuccessWithStatus:LocalString(@"邮箱已修改")];
+                                
+                                //APP埋点：修改邮箱完成
+                                        [[AnalyticsManager sharedManager]reportEventWithName:@"email_changed" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"邮箱修改完成时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                                                
+                                        }];
+                                
                                 //跳转到指定的targetViewController
                                 NSArray *vcsArr =  weakSelf.navigationController.viewControllers;
                                 for (UIViewController *controller in vcsArr) {
@@ -129,24 +140,26 @@
     NSTimer *timer = [NSTimer timerWithTimeInterval:1.0 block:^(NSTimer * _Nonnull timer) {
         
         if (timeValue > 0) {
-            NSString *str = [NSString stringWithFormat:@"%@：%@，%@（%ds）",NSLocalizedString(@"验证码已发送到您的邮箱", @""),self.numStr,NSLocalizedString(@"重新发送", @""),timeValue--];
+            NSString *str = [NSString stringWithFormat:@"%@：%@，%@（%ds）",NSLocalizedString(@"验证码已发送到您的邮箱", @""),self.numStr,LocalString(@"重新发送验证码"),timeValue--];
             NSMutableAttributedString *attStr=[[NSMutableAttributedString alloc]initWithString:str];
             weakSelf.subTitleLabel.attributedText = attStr;
             weakSelf.subTitleLabel.enabledClickEffect = NO;
         }else if (timeValue == 0){
             [timer invalidate];
             timeValue = 60;
-            NSString *str = [NSString stringWithFormat:@"%@：%@，%@     ",NSLocalizedString(@"验证码已发送到您的邮箱", @""),self.numStr,NSLocalizedString(@"重新发送", @"")];
+            NSString *str = [NSString stringWithFormat:@"%@：%@，%@     ",NSLocalizedString(@"验证码已发送到您的邮箱", @""),self.numStr,LocalString(@"重新发送验证码")];
             //获取要调整颜色的文字位置,调整颜色
             NSMutableAttributedString *attStr=[[NSMutableAttributedString alloc]initWithString:str];
-            NSRange range=[[attStr string]rangeOfString:NSLocalizedString(@"重新发送", @"")];
+            NSRange range=[[attStr string]rangeOfString:LocalString(@"重新发送验证码")];
             [attStr addAttribute:NSForegroundColorAttributeName value:mainColor range:range];
             weakSelf.subTitleLabel.attributedText = attStr;
             // 确保label可以响应手势
             weakSelf.subTitleLabel.enabledClickEffect = YES;
-            [weakSelf.subTitleLabel clickRichTextWithStrings:@[NSLocalizedString(@"重新发送", @"")] clickAction:^(NSString *string, NSRange range, NSInteger index) {
-                weakSelf.subTitleLabel.enabledClickEffect = NO;
+            [weakSelf.subTitleLabel clickRichTextWithStrings:@[LocalString(@"重新发送验证码")] clickAction:^(NSString *string, NSRange range, NSInteger index) {
+                
                 [weakSelf sendCode];
+                
+                weakSelf.subTitleLabel.enabledClickEffect = NO;
             }];
         }
     } repeats:YES];

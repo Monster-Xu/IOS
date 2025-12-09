@@ -87,6 +87,8 @@
         VC.numStr = weakSelf.textField.text;
         VC.type = weakSelf.type;
         [weakSelf.navigationController pushViewController:VC animated:YES];
+        
+       
     } failure:^(NSError *error) {
         sender.userInteractionEnabled = YES;
         if(error.code == 1506){

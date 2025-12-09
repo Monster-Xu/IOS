@@ -17,6 +17,7 @@
 @property (strong, nonatomic) IBOutlet UIView *headerView;
 @property (nonatomic, strong) NSMutableArray <MineItemModel *>*selcArr;
 @property (nonatomic, strong) AppSettingModel  *model;
+@property(nonatomic,assign)BOOL isEnabled;
 @end
 
 @implementation UserPermmitVC
@@ -107,17 +108,21 @@
     self.selcArr[indexPath.row].isOn = !self.selcArr[indexPath.row].isOn;
     if(indexPath.row == 0){
         // 功能体验升级计划 - 控制埋点开关
-        BOOL isEnabled = self.selcArr[indexPath.row].isOn;
-
+        self.isEnabled = self.selcArr[indexPath.row].isOn;
+        //埋点：初始化-开关用户体验计划
+            [[AnalyticsManager sharedManager]reportEventWithName:@"initialization_switch_user_experience_plan" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"切换用户体验计划开关时" properties:@{@"userExpPlanStatus":self.isEnabled ? @"1" : @"0"} completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
         // 使用新的API同步埋点开关状态（包含缓存和服务器更新）
-        [[AnalyticsManager sharedManager] setAnalyticsEnabled:isEnabled completion:^(BOOL success) {
+        [[AnalyticsManager sharedManager] setAnalyticsEnabled:self.isEnabled completion:^(BOOL success) {
             if (success) {
-                NSLog(@"[UserPermmitVC] 埋点开关设置成功: %@", isEnabled ? @"启用" : @"禁用");
+                NSLog(@"[UserPermmitVC] 埋点开关设置成功: %@", self.isEnabled ? @"启用" : @"禁用");
+                
             } else {
                 NSLog(@"[UserPermmitVC] 埋点开关设置失败");
                 // 如果设置失败，恢复UI状态
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    self.selcArr[indexPath.row].isOn = !isEnabled;
+                    self.selcArr[indexPath.row].isOn = !self.isEnabled;
                     [self.tableView reloadData];
                 });
             }
@@ -141,6 +146,11 @@
     [[APIManager shared] POSTJSON:[APIPortConfiguration getAppPropertyCreateUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         
         [weakSelf.tableView reloadData];
+        
+        //埋点：初始化-开关个性化推荐
+            [[AnalyticsManager sharedManager]reportEventWithName:@"initialization_switch_personalized_recommendation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"切换用户体验计划开关时" properties:@{@"personalizedRecommStatus":param[@"propValue"]} completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
         
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
         

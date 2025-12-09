@@ -96,10 +96,13 @@
 
         [[AnalyticsManager sharedManager] reportFamilyAddMemberWithPermission:permission
                                                                         homeId:homeId
-                                                               familyMemberId:familyMemberId
+                                                               familyMemberId:@"0"
                                                                   homeOwnerId:homeOwnerId];
 
         [weakSelf.navigationController popViewControllerAnimated:YES];
+        
+        
+        
 
     } failure:^(NSError *error) {
         [weakSelf hiddenHud];

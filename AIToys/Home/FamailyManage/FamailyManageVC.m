@@ -66,12 +66,20 @@
 -(void)createFamily{
     CreateFamailyVC *VC = [CreateFamailyVC new];
     [self.navigationController pushViewController:VC animated:YES];
+    //APP埋点：点击创建家庭
+    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_create_home" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击创建家庭时" properties:@{@"homename":@"0",@"homeid":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 //加入家庭
 -(void)joinFamily{
     JoinFamailyVC *VC = [JoinFamailyVC new];
     [self.navigationController pushViewController:VC animated:YES];
+    //APP埋点：点击加入家庭
+    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_join_home" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击加入家庭时" properties:@{@"homename":@"0",@"homeid":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     
 }
 #pragma mark -- UITableViewDataSource

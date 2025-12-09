@@ -12,6 +12,7 @@
 #import "CompressImageData.h"
 #import "NSDictionary+KeySortJoin.h"
 #import "SVProgressHUD.h"
+#import "LogManager.h"
 
 // 添加缺少的宏定义
 #ifndef WEAK_SELF
@@ -256,6 +257,13 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         [self removeTask:currentTask];
         
         NSLog(@"\n网络请求: %@\n参数: %@\n结果: %@", urlStr, parameters, responseObject);
+        if (parameters&&responseObject) {
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:responseObject
+                                                               options:NSJSONWritingPrettyPrinted
+                                                                 error:&error];
+            [[LogManager sharedManager]logAPIResponse:response data:jsonData error:error];
+        };
+       
         
         if (error) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -312,13 +320,13 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
 - (NSString *)errorMessageFromError:(NSError *)error {
     switch (error.code) {
         case NSURLErrorTimedOut:
-            return @"请求超时，请检查网络后重试";
+            return @"Request Timed Out";
         case NSURLErrorNotConnectedToInternet:
         case NSURLErrorNetworkConnectionLost:
             return netErrorMsg;
         case NSURLErrorCannotFindHost:
         case NSURLErrorCannotConnectToHost:
-            return @"服务器连接失败";
+            return @"Server Connection Failed";
         default:
             return error.localizedDescription ?: netErrorMsg;
     }
@@ -872,6 +880,9 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     if (model.userId) {
         kMyUser.userId = model.userId;
     }
+    if (model.refreshToken) {
+        kMyUser.refreshToken = model.refreshToken;
+    }
     [UserInfo saveMyUser];
 }
 
@@ -914,6 +925,301 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     return currentViewController;
 }
 
+
+// 在 APIManager.m 文件中添加以下实现
+
+#pragma mark -- 简单文件上传方法实现
+
+// 简单文件上传方法（最简版本）
+- (void)uploadSingleFile:(NSString *)urlStr
+                fileData:(NSData *)fileData
+                fileName:(NSString *)fileName
+                 success:(void (^)(id result))success
+                 failure:(void (^)(NSError *error))failure {
+    
+    [self uploadSingleFile:urlStr
+                  fileData:fileData
+                  fileName:fileName
+                  mimeType:nil
+                   success:success
+                   failure:failure];
+}
+
+// 简单文件上传方法（带MIME类型）
+- (void)uploadSingleFile:(NSString *)urlStr
+                fileData:(NSData *)fileData
+                fileName:(NSString *)fileName
+                mimeType:(NSString *)mimeType
+                 success:(void (^)(id result))success
+                 failure:(void (^)(NSError *error))failure {
+    
+    [self uploadSingleFile:urlStr
+                  fileData:fileData
+                  fileName:fileName
+                parameters:nil
+                  mimeType:mimeType
+                   success:success
+                   failure:failure];
+}
+
+// 简单文件上传方法（带参数）
+- (void)uploadSingleFile:(NSString *)urlStr
+                fileData:(NSData *)fileData
+                fileName:(NSString *)fileName
+              parameters:(NSDictionary *)parameters
+                 success:(void (^)(id result))success
+                 failure:(void (^)(NSError *error))failure {
+    
+    [self uploadSingleFile:urlStr
+                  fileData:fileData
+                  fileName:fileName
+                parameters:parameters
+                  mimeType:nil
+                   success:success
+                   failure:failure];
+}
+
+// 核心实现方法（私有）
+- (void)uploadSingleFile:(NSString *)urlStr
+                fileData:(NSData *)fileData
+                fileName:(NSString *)fileName
+              parameters:(NSDictionary *)parameters
+                mimeType:(NSString *)mimeType
+                 success:(void (^)(id result))success
+                 failure:(void (^)(NSError *error))failure {
+    
+    // 参数验证
+    if (!urlStr || urlStr.length == 0) {
+        if (failure) {
+            NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain"
+                                                 code:-1
+                                             userInfo:@{NSLocalizedDescriptionKey: @"URL不能为空"}];
+            failure(error);
+        }
+        return;
+    }
+    
+    if (!fileData || fileData.length == 0) {
+        if (failure) {
+            NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain"
+                                                 code:-2
+                                             userInfo:@{NSLocalizedDescriptionKey: @"文件数据不能为空"}];
+            failure(error);
+        }
+        return;
+    }
+    
+    if (!fileName || fileName.length == 0) {
+        fileName = @"file";
+    }
+    
+    // 如果没有指定MIME类型，根据文件扩展名自动推断
+    NSString *actualMimeType = mimeType;
+    if (!actualMimeType) {
+        actualMimeType = [APIManager mimeTypeForFileExtension:[fileName pathExtension]];
+    }
+    if (!actualMimeType) {
+        actualMimeType = @"application/octet-stream";
+    }
+    
+    // 检查网络状态
+    if (self.netStatus == NetStatus_NoNet) {
+        if (failure) {
+            NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain"
+                                                 code:-3
+                                             userInfo:@{NSLocalizedDescriptionKey: netErrorMsg}];
+            failure(error);
+        }
+        [SVProgressHUD showErrorWithStatus:netErrorMsg];
+        return;
+    }
+    
+    // 检查文件大小（默认限制20MB）
+    static NSInteger const kSimpleMaxFileSize = 20 * 1024 * 1024;
+    if (fileData.length > kSimpleMaxFileSize) {
+        if (failure) {
+            NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain"
+                                                 code:-4
+                                             userInfo:@{NSLocalizedDescriptionKey: @"文件大小不能超过20MB"}];
+            failure(error);
+        }
+        return;
+    }
+    
+    // 创建请求管理器
+    AFHTTPSessionManager *manager = [self AFHTTPSessionManager];
+    manager.requestSerializer.timeoutInterval = 30.0;
+    
+    // URL编码
+    NSString *encodedURL = [urlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
+    
+    // 显示上传提示
+    [SVProgressHUD showWithStatus:@"UpLoading..."];
+    
+    // 创建上传任务
+    NSURLSessionDataTask *uploadTask = [manager POST:encodedURL
+                                          parameters:parameters
+                                             headers:@{}
+                           constructingBodyWithBlock:^(id<AFMultipartFormData> formData) {
+        
+        // 生成唯一的文件名，避免重复
+        NSString *uniqueFileName = [self generateSimpleFileName:fileName];
+        
+        // 添加文件部分
+        [formData appendPartWithFileData:fileData
+                                    name:@"file"
+                                fileName:uniqueFileName
+                                mimeType:actualMimeType];
+        
+        // 添加额外的文件信息
+        [formData appendPartWithFormData:[fileName dataUsingEncoding:NSUTF8StringEncoding]
+                                    name:@"original_filename"];
+        
+        NSString *fileSizeStr = [NSString stringWithFormat:@"%lu", (unsigned long)fileData.length];
+        [formData appendPartWithFormData:[fileSizeStr dataUsingEncoding:NSUTF8StringEncoding]
+                                    name:@"file_size"];
+        
+    } progress:nil // 简单版本不提供进度回调
+      success:^(NSURLSessionDataTask *task, id responseObject) {
+        
+        [self removeTask:task];
+        
+        // 记录日志
+        NSLog(@"📤 文件上传成功: %@ (%lu bytes)", fileName, (unsigned long)fileData.length);
+        
+        // 主线程回调
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD showSuccessWithStatus:@"upLoad Success"];
+            
+            if (success) {
+                success(responseObject);
+            }
+        });
+        
+    } failure:^(NSURLSessionDataTask *task, NSError *error) {
+        
+        [self removeTask:task];
+        
+        // 记录错误日志
+        NSLog(@"❌ 文件上传失败: %@, 错误: %@", fileName, error.localizedDescription);
+        
+        // 生成友好的错误信息
+        NSString *errorMessage = [self simpleErrorMessageForError:error];
+        
+        // 主线程回调
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD showErrorWithStatus:errorMessage];
+            
+            if (failure) {
+                NSDictionary *userInfo = @{
+                    NSLocalizedDescriptionKey: errorMessage,
+                    NSUnderlyingErrorKey: error
+                };
+                NSError *detailedError = [NSError errorWithDomain:@"APIManagerErrorDomain"
+                                                             code:error.code
+                                                         userInfo:userInfo];
+                failure(detailedError);
+            }
+        });
+    }];
+    
+    // 添加到任务管理
+    [self addTask:uploadTask];
+}
+
+#pragma mark -- 简单方法辅助函数
+
+// 生成简单文件名
+- (NSString *)generateSimpleFileName:(NSString *)originalName {
+    if (!originalName || originalName.length == 0) {
+        originalName = @"file";
+    }
+    
+    // 获取文件扩展名
+    NSString *extension = [originalName pathExtension];
+    NSString *nameWithoutExt = [originalName stringByDeletingPathExtension];
+    
+    // 生成时间戳
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyyMMddHHmmss"];
+    NSString *timestamp = [formatter stringFromDate:[NSDate date]];
+    
+    // 组合文件名
+    if (extension.length > 0) {
+        return [NSString stringWithFormat:@"%@_%@.%@", nameWithoutExt, timestamp, extension];
+    } else {
+        return [NSString stringWithFormat:@"%@_%@", nameWithoutExt, timestamp];
+    }
+}
+
+// 简单错误信息
+- (NSString *)simpleErrorMessageForError:(NSError *)error {
+    if ([error.domain isEqualToString:NSURLErrorDomain]) {
+        switch (error.code) {
+            case NSURLErrorTimedOut:
+                return @"上传超时";
+            case NSURLErrorNotConnectedToInternet:
+                return @"网络连接失败";
+            case NSURLErrorCannotConnectToHost:
+                return @"无法连接服务器";
+            case NSURLErrorCancelled:
+                return @"上传已取消";
+            default:
+                break;
+        }
+    }
+    
+    // 根据状态码判断
+    if ([error.userInfo[AFNetworkingOperationFailingURLResponseErrorKey] isKindOfClass:[NSHTTPURLResponse class]]) {
+        NSHTTPURLResponse *response = error.userInfo[AFNetworkingOperationFailingURLResponseErrorKey];
+        if (response.statusCode == 413) {
+            return @"文件太大，服务器拒绝接收";
+        } else if (response.statusCode == 415) {
+            return @"不支持的文件类型";
+        } else if (response.statusCode >= 500) {
+            return @"服务器错误，请稍后重试";
+        }
+    }
+    
+    return @"上传失败，请重试";
+}
+
+// 根据文件扩展名获取MIME类型（类方法）
++ (NSString *)mimeTypeForFileExtension:(NSString *)extension {
+    if (!extension) return nil;
+    
+    NSString *lowerExt = [extension lowercaseString];
+    NSDictionary *mimeMap = @{
+        // 图片
+        @"jpg": @"image/jpeg",
+        @"jpeg": @"image/jpeg",
+        @"png": @"image/png",
+        @"gif": @"image/gif",
+        
+        // 文档
+        @"pdf": @"application/pdf",
+        @"doc": @"application/msword",
+        @"docx": @"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        @"xls": @"application/vnd.ms-excel",
+        @"xlsx": @"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        @"txt": @"text/plain",
+        
+        // 音频
+        @"mp3": @"audio/mpeg",
+        
+        // 视频
+        @"mp4": @"video/mp4",
+        @"mov": @"video/quicktime",
+        
+        // 压缩
+        @"zip": @"application/zip",
+        @"rar": @"application/x-rar-compressed"
+    };
+    
+    return mimeMap[lowerExt] ?: @"application/octet-stream";
+}
+
+
 @end
 
 // 如果NSString+SHA256分类不存在，添加SHA256支持
@@ -936,5 +1242,9 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     
     return output;
 }
+
+
+
+
 
 @end

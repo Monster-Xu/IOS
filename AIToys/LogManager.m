@@ -77,6 +77,9 @@
     [_fileHandle seekToEndOfFile];
     
     [self setupCrashHandler];
+    
+    // 添加自动清理设置
+       [self setupAutoCleanup];
 }
 
 #pragma mark - 自动日志记录
@@ -823,7 +826,87 @@ void uncaughtExceptionHandler(NSException *exception) {
     [_fileHandle closeFile];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
+#pragma mark - 自动清理旧日志
 
+- (void)cleanupOldLogs {
+    [self cleanupOldLogsWithDays:7];
+}
+
+- (void)cleanupOldLogsWithDays:(NSInteger)days {
+    dispatch_async(self.logQueue, ^{
+        @try {
+            NSFileManager *fileManager = [NSFileManager defaultManager];
+            NSString *logDirectory = [self.logFilePath stringByDeletingLastPathComponent];
+            
+            // 获取日志目录下的所有文件
+            NSArray *logFiles = [fileManager contentsOfDirectoryAtPath:logDirectory error:nil];
+            
+            // 计算7天前的日期
+            NSDate *sevenDaysAgo = [[NSDate date] dateByAddingTimeInterval:-days * 24 * 60 * 60];
+            
+            // 用于统计清理结果
+            NSInteger cleanedCount = 0;
+            unsigned long long cleanedSize = 0;
+            
+            for (NSString *fileName in logFiles) {
+                // 只处理日志文件
+                if ([fileName hasPrefix:@"app_log_"] && [fileName hasSuffix:@".txt"]) {
+                    NSString *filePath = [logDirectory stringByAppendingPathComponent:fileName];
+                    
+                    // 获取文件属性
+                    NSDictionary *fileAttributes = [fileManager attributesOfItemAtPath:filePath error:nil];
+                    NSDate *fileModificationDate = [fileAttributes fileModificationDate];
+                    
+                    // 如果文件修改日期早于7天前，则删除
+                    if (fileModificationDate && [fileModificationDate compare:sevenDaysAgo] == NSOrderedAscending) {
+                        unsigned long long fileSize = [fileAttributes fileSize];
+                        
+                        if ([fileManager removeItemAtPath:filePath error:nil]) {
+                            cleanedCount++;
+                            cleanedSize += fileSize;
+                            
+                            // 记录清理的日志文件信息
+                            NSString *logMessage = [NSString stringWithFormat:@"已清理旧日志文件: %@ (大小: %@, 修改时间: %@)",
+                                                   fileName,
+                                                   [self formatFileSize:fileSize],
+                                                   [self.dateFormatter stringFromDate:fileModificationDate]];
+                            [self logInfo:logMessage];
+                        }
+                    }
+                }
+            }
+            
+            // 记录清理总结
+            if (cleanedCount > 0) {
+                NSString *summary = [NSString stringWithFormat:@"日志清理完成: 删除了 %ld 个文件，共 %@",
+                                    (long)cleanedCount,
+                                    [self formatFileSize:cleanedSize]];
+                [self logInfo:summary];
+            } else {
+                [self logDebug:@"未找到需要清理的旧日志文件"];
+            }
+            
+        } @catch (NSException *exception) {
+            [self logError:[NSString stringWithFormat:@"清理旧日志时发生异常: %@", exception.reason]];
+        }
+    });
+}
+
+
+#pragma mark - 定期自动清理
+
+- (void)setupAutoCleanup {
+    // 启动时执行一次清理
+    [self cleanupOldLogs];
+    
+    // 每天自动清理一次（使用后台队列）
+    dispatch_time_t daily = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(24 * 60 * 60 * NSEC_PER_SEC));
+    dispatch_after(daily, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+        [self cleanupOldLogs];
+        // 递归调用以保持每天清理
+        [self setupAutoCleanup];
+    });
+}
 @end
 
 #pragma mark - UIViewController Category
@@ -849,6 +932,11 @@ void uncaughtExceptionHandler(NSException *exception) {
     [self log_viewWillDisappear:animated];
     [[LogManager sharedManager] logInfo:[NSString stringWithFormat:@"页面将消失: %@", NSStringFromClass([self class])]];
 }
+
+
+
+
+
 
 @end
 
@@ -928,5 +1016,7 @@ void uncaughtExceptionHandler(NSException *exception) {
     
     return [self log_dataTaskWithURL:url completionHandler:wrappedHandler];
 }
+
+
 
 @end

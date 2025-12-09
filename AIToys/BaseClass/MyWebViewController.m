@@ -21,7 +21,9 @@
     [self setupUI];
     [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:self.mainUrl?:@"http://192.168.1.74:8710/course/api/course/view/introduce/1287995003540406274"]]];
 }
-
+-(void)setMainUrl:(NSString *)mainUrl{
+    _mainUrl = mainUrl;
+}
 - (void)dealloc {
     //移除观察者
     [_webView removeObserver:self forKeyPath:@"estimatedProgress"];

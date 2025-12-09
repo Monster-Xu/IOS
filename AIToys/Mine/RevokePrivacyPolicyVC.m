@@ -28,6 +28,11 @@
 - (IBAction)revokeBtnClick:(id)sender {
     DeleteAcountViewController *VC = [DeleteAcountViewController new];
     [self.navigationController pushViewController:VC animated:YES];
+    
+    //APP埋点：已撤销同意隐私协议
+            [[AnalyticsManager sharedManager]reportEventWithName:@"privacy_policy_agreement_revoked" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"隐私协议撤销同意完成时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 /*

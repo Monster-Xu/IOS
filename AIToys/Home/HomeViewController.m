@@ -263,6 +263,12 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             NSLog(@"⚠️ 音频会话设置失败: %@", error.localizedDescription);
         }
     }
+    
+    //埋点：进入首页
+    [[AnalyticsManager sharedManager]reportEventWithName:@"enter_home" level1:kAnalyticsLevel1_Home level2:@"" level3:@""    reportTrigger:@"进入首页时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+//                   [[NSUserDefaults standardUserDefaults] setBool:YES forKey:KEY_ISFIRSTTOHOME];
+            }];
+    
 }
 -(void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
@@ -354,6 +360,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self logCurrentAudioPlaybackStatus];
     });
+    [self refreshToken];
 }
 
 - (void)setupDataCache {
@@ -467,8 +474,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [[AnalyticsManager sharedManager] debugPrintAnalyticsStatus];
 
     // 埋点上报：点击运营banner
-    [[AnalyticsManager sharedManager] reportClickBannerWithId:model.Id ?: @""
-                                                          name:model.title ?: @""];
+    [[AnalyticsManager sharedManager]reportEventWithName:@"home_tap_banner" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击banner页时" properties:@{@"bannerUrl":model.linkUrl} completion:^(BOOL success, NSString * _Nullable message) {
+            
+    }];
 
     if (!strIsEmpty(model.linkUrl) ){
         MyWebViewController* VC  = [[ MyWebViewController alloc] init];
@@ -982,6 +990,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
     [param setObject:@"explore" forKey:@"types"];
     [param setObject:@"auto" forKey:@"sortField"];
+    [param setObject:[NSString stringWithFormat:@"%lld",(long long)self.currentHome.homeId] forKey:@"ownerId"];
     
     [[APIManager shared] GET:[APIPortConfiguration getHomeExploreListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         NSLog(@"探索公仔数据请求成功");
@@ -1373,6 +1382,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             weakSelf.menu = nil;
         }];
     }
+    
+    //埋点：点击功能按钮
+        [[AnalyticsManager sharedManager]reportEventWithName:@"home_tap_function_button" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击功能按钮时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
 }
 
 - (void)jhCustomMenu:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
@@ -1385,8 +1399,14 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         FindDeviceViewController *VC = [FindDeviceViewController new];
         VC.homeId = self.currentHome.homeId;
         [self.navigationController pushViewController:VC animated:YES];
-    }else
-    {
+        
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"isHomefun"];
+        //埋点：点击添加设备
+        [[AnalyticsManager sharedManager]reportEventWithName:@"home_function_button_tap_add_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"从功能按钮点击添加设备时" properties:@{} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
+        
+    }else{
         WEAK_SELF
         SwitchFamailyVC *VC = [SwitchFamailyVC new];
         VC.homeList = self.homeList;
@@ -1412,10 +1432,19 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         VC.managerBlock = ^{
             FamailyManageVC *VC = [FamailyManageVC new];
             [weakSelf.navigationController pushViewController:VC animated:YES];
+            
+            //埋点：点击家庭管理
+                [[AnalyticsManager sharedManager]reportEventWithName:@"me_tap_home_management" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击家庭管理时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                                
+                        }];
+            
         };
         VC.modalPresentationStyle = UIModalPresentationOverFullScreen;
         [self presentViewController:VC animated:NO completion:nil];
-        
+        //埋点：功能按钮-点击切换家庭
+        [[AnalyticsManager sharedManager]reportEventWithName:@"home_function_button_tap_switch_home" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"从功能按钮点击切换家庭时" properties:@{} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
     }
     
 }
@@ -1458,7 +1487,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             cell.deviceList = self.deviceArr;
             cell.itemClickBlock = ^(NSInteger index) {
                 // 埋点上报：我的设备点击
-                [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:weakSelf.deviceArr[index].devId pid:weakSelf.deviceArr[index].productId];
+                [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:weakSelf.deviceArr[index].devId pid:weakSelf.deviceArr[index].uuid];
 
                 // 跳转小程序
                 NSLog(@"deviceId:%@,token:%@",weakSelf.deviceArr[index].devId,kMyUser.accessToken);
@@ -1469,7 +1498,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"BearerId": (kMyUser.accessToken ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"prod"
+                    @"envtype": @"dev"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1478,11 +1507,19 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:params];
             };
             cell.manageBlock = ^{
+                
                 HomeDeviceListVC *VC = [HomeDeviceListVC new];
                 VC.home = weakSelf.currentHome;
 //                VC.deviceArr = weakSelf.deviceArr;
                 VC.isEdit = YES;
                 [weakSelf.navigationController pushViewController:VC animated:YES];
+                
+//                //埋点：进入设备编辑
+//                        [[AnalyticsManager sharedManager]reportEventWithName:@"enter_device_editing" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"进入设备编辑时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+//                                
+//                        }];
+                
+                
             };
             return cell;
         }else{
@@ -1492,6 +1529,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 FindDeviceViewController *VC = [FindDeviceViewController new];
                 VC.homeId = weakSelf.currentHome.homeId;
                 [weakSelf.navigationController pushViewController:VC animated:YES];
+                [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"isHomefun"];
+                //埋点：点击添加设备
+                [[AnalyticsManager sharedManager]reportEventWithName:@"home_tap_add_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"在主页点击添加设备时" properties:@{} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
             };
             return cell;
         }
@@ -1502,6 +1544,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             cell.type = indexPath.section;
             cell.addBtnClickBlock = ^{
                 [weakSelf toysGuide];
+                
+                //APP埋点：进入主页-点击添加公仔
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"homepage_tap_add_doll" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"在主页点击添加公仔按钮时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
             };
             return cell;
         }else{
@@ -1525,7 +1572,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"homeId": (currentHomeId ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"prod"
+                    @"envtype": @"dev"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1538,6 +1585,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 VC.diyDollList = weakSelf.diyDollList;
                 VC.isEdit = YES;
                 [weakSelf.navigationController pushViewController:VC animated:YES];
+                
+                //埋点：点击管理公仔
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_manage_doll" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"在公仔列表点击“管理”时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                                    
+                            }];
             };
             return cell;
         }
@@ -1650,6 +1702,10 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             VC.home = self.currentHome;
 //            VC.deviceArr = self.deviceArr;
             [self.navigationController pushViewController:VC animated:YES];
+            //APP埋点：点击更多设备
+                [[AnalyticsManager sharedManager]reportEventWithName:@"homepage_tap_more_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击更多设备入口时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
         }
            
             break;
@@ -1658,6 +1714,12 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             HomeToysListVC *VC = [HomeToysListVC new];
             VC.diyDollList = self.diyDollList;
             [self.navigationController pushViewController:VC animated:YES];
+            
+            //埋点：点击管理公仔
+                [[AnalyticsManager sharedManager]reportEventWithName:@"tap_manage_doll" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"在公仔列表点击“管理”时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                                
+                        }];
+            
         }
             
             break;
@@ -1674,6 +1736,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     FindDeviceViewController *VC = [FindDeviceViewController new];
     VC.homeId = self.currentHome.homeId;
     [self.navigationController pushViewController:VC animated:YES];
+    
+    //埋点：点击添加设备
+    [[AnalyticsManager sharedManager]reportEventWithName:@"home_tap_add_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"在主页点击添加设备时" properties:@{} completion:^(BOOL success, NSString * _Nullable message) {
+            
+    }];
 }
 //Toys引导
 -(void)toysGuide{
@@ -1688,12 +1755,17 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 //家庭邀请弹窗
 -(void)homeInviteAlert:(ThingSmartHomeModel *)model{
+    
     WEAK_SELF
     [LGBaseAlertView showAlertWithTitle:LocalString(@"加入家庭邀请") content:[NSString stringWithFormat:@"%@%@%@",LocalString(@"您有一个加入"),model.name,LocalString(@"家庭的邀请，是否同意加入？")] cancelBtnStr:LocalString(@"暂不加入") confirmBtnStr:LocalString(@"加入家庭") confirmBlock:^(BOOL isValue, id obj) {
         ThingSmartHome *home = [ThingSmartHome homeWithHomeId:model.homeId];
         if (isValue){
             [weakSelf showHud];
             ///接受邀请
+            //埋点：家庭成员接受邀请
+            [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_accepted_invitation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"家庭成员接受邀请时" properties:@{@"familymembername":model.name,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
             [home joinFamilyWithAccept:YES success:^(BOOL result) {
                 [weakSelf hiddenHud];
                 [SVProgressHUD showSuccessWithStatus:LocalString(@"已加入家庭")];
@@ -1862,12 +1934,13 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 if ([data isKindOfClass:NSDictionary.class]) {
                     FindDollModel *model = [FindDollModel mj_objectWithKeyValues:data];
                     if([model.releaseStatus isEqualToString:@"released"]){
-                        // 判断公仔ID第18位是否为"B"（创意公仔标识）
-                        if (hardwareCode.length >= 18 && [hardwareCode characterAtIndex:17] == 'B') {
-                            // 埋点上报：发现创意公仔
-                            [[AnalyticsManager sharedManager] reportDiscoverCreativeDollWithId:model.Id ?: @""
-                                                                                          name:model.name ?: @""];
-                        }
+//                        // 判断公仔ID第18位是否为"B"（创意公仔标识）
+//                        if (hardwareCode.length >= 18 && [hardwareCode characterAtIndex:17] == 'B') {
+//                            // 埋点上报：发现创意公仔
+//                           
+//                        }
+                        [[AnalyticsManager sharedManager] reportDiscoverCreativeDollWithId:model.Id ?: @""
+                                                                                      name:model.name ?: @""];
 
                         // 显示公仔发现弹窗
                         ToysGuideFindVC *VC = [ToysGuideFindVC new];
@@ -2028,8 +2101,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.currentAudioPlayer.delegate = self;
     
     // 显示播放器并开始播放
-    [self.currentAudioPlayer showInView:self.view];
-    [self.currentAudioPlayer play];
+    [self.currentAudioPlayer playInBackground];
+//    [self.currentAudioPlayer play];
     
     // 标记音频会话为激活状态
     self.isAudioSessionActive = YES;
@@ -2321,5 +2394,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         }
     }
 }
-
+-(void)refreshToken{
+    [[APIManager shared]POST:[NSString stringWithFormat:@"%@?refreshToken=%@",[APIPortConfiguration getRefreshTokenUrl],kMyUser.refreshToken] parameter:@{} success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+            
+        if (data) {
+            kMyUser.accessToken  = data[@"accessToken"];
+            [UserInfo saveMyUser];
+        }
+        
+        } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+            
+        }];
+}
 @end

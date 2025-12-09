@@ -62,4 +62,14 @@
                                    data:nil];
 }
 
++ (instancetype)failureExtApiModel:(nullable NSString *)errorCode
+                          errorMsg:(nullable NSString *)errorMsg
+                              Data:(nullable id)data{
+    NSLog(@"[NavigateToNativePageResponseModel] 创建失败响应模型，错误码: %@，错误信息: %@", errorCode, errorMsg);
+    return [[self alloc] initWithStatus:ThingMiniAppExtApiModelStatusFailure
+                              errorCode:errorCode
+                               errorMsg:errorMsg
+                                   data:data];
+}
+
 @end

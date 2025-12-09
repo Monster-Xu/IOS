@@ -21,6 +21,8 @@
     self.titleLabel.text = LocalString(@"账号验证");
     self.alertLabel.text = [NSString stringWithFormat:@"%@%@",LocalString(@"点击获取验证码，验证码将会发送到你的邮箱："),[ThingSmartUser sharedInstance].email];
     [self.surBtn setTitle:NSLocalizedString(@"获取验证码", @"") forState:0];
+    
+    
 }
 
 //获取验证码

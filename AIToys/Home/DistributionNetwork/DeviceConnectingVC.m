@@ -122,11 +122,12 @@
         
         
         
-        // 埋点上报：添加设备成功
-//        [[AnalyticsManager sharedManager] reportAddDeviceSuccessWithDeviceId:deviceModel.devId ?: @""
-//                                                                         pid:self.deviceInfo.productId ?: @""];
+        //埋点：添加设备结果(成功)
+        [[AnalyticsManager sharedManager]reportEventWithName:@"device_adding_result" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"设备添加返回结果时" properties:@{@"deviceAddResult":@"success",@"deviceModel":@"TalenpalPlayer",@"addPath":[[NSUserDefaults standardUserDefaults] objectForKey:@"isHomefun"]?@"1":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
 //
-//        self.status = AddStatusType_success;
+        self.status = AddStatusType_success;
 //        [PublicObj makeButtonEnable:self.doneBtn];
         //在配网结束后调用
         [[ThingSmartBLEWifiActivator sharedInstance] stopDiscover];
@@ -137,8 +138,10 @@
         [self.navigationController pushViewController:successVC animated:YES];
         
         //error.code 1.设备接收的数据包格式错误 2.设备找不到路由器
-        // 埋点上报：添加设备失败
-        [[AnalyticsManager sharedManager] reportAddDeviceFailedWithErrorCode:error.code];
+        //埋点：添加设备结果(失败)
+        [[AnalyticsManager sharedManager]reportEventWithName:@"device_adding_result" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"设备添加返回结果时" properties:@{@"deviceAddResult":[NSString stringWithFormat:@"fail:%ld",(long)error.code],@"addPath":[[NSUserDefaults standardUserDefaults] objectForKey:@"isHomefun"]?@"1":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
 
         if(error.code == 3){
             //Wi-Fi 密码错误

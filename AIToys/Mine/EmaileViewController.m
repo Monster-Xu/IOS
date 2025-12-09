@@ -30,6 +30,11 @@
     self.emailLabel.text = [ThingSmartUser sharedInstance].email;
     [self.changeBtn setTitle:LocalString(@"更换邮箱") forState:0];
     self.alertLabel.text = LocalString(@"更换邮箱后，下次登录可使用新邮箱登录");
+    
+    //APP埋点：点击账户
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_account" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击账户时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 }
 
 //更换邮箱
@@ -37,6 +42,10 @@
     RegistViewController *VC = [RegistViewController new];
     VC.type = EmailType_change;
     [self.navigationController pushViewController:VC animated:YES];
+    //APP埋点：点击修改账户邮箱
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_change_email" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击修改账户邮箱时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
 //    ChangeEmailViewController *VC = [ChangeEmailViewController new];
 //    [self.navigationController pushViewController:VC animated:YES];
 }

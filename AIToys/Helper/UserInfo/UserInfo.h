@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic,copy) NSString *userId;
 @property (nonatomic,copy) NSString *accessToken;
+@property (nonatomic,copy) NSString *refreshToken;
 
 
 + (instancetype)shared;

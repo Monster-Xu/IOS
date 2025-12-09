@@ -22,6 +22,7 @@
 @property(assign, nonatomic) BOOL isMember;//是否是家庭成员
 @property(strong, nonatomic) ThingSmartHomeManager *homeManager;
 @property(assign, nonatomic) long long currentMemberId;//当前成员ID
+@property(strong, nonatomic) NSMutableArray * avatarUrldataArr;
 @end
 
 @implementation FamailySettingVC
@@ -50,6 +51,7 @@
     } failure:^(NSError *error) {
         
     }];
+    
     
 //    [self loadDataRefreshOrPull:0];
 }
@@ -93,9 +95,28 @@
     });
     
     dispatch_group_notify(group, dispatch_get_main_queue(), ^{
-        [weakSelf hiddenHud];
-        [weakSelf.tableView endLoading];
-        [weakSelf.tableView reloadData];
+        
+        NSMutableArray * uidArr = [[NSMutableArray alloc]init];
+        self.avatarUrldataArr = [[NSMutableArray alloc]init];
+        for (ThingSmartHomeMemberModel *obj in self.dataArr) {
+            [uidArr addObject:obj.uid];
+        };
+        
+        [[APIManager shared]POSTJSON:[APIPortConfiguration getGroupListUrl] parameter:@{@"uidList":uidArr} success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+            [weakSelf hiddenHud];
+            
+                weakSelf.avatarUrldataArr = data;
+                [weakSelf.tableView endLoading];
+                [weakSelf.tableView reloadData];
+            
+            
+            
+                } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+                    [weakSelf hiddenHud];
+                }];
+        
+    
+       
     });
     
 }
@@ -151,6 +172,11 @@
             [weakSelf.home updateHomeInfoWithName:str geoName:self.homeModel.geoName latitude:self.homeModel.latitude longitude:self.homeModel.longitude success:^{
                 weakSelf.homeModel.name = str;
                 [weakSelf.tableView reloadData];
+                
+                //APP埋点：家庭名称修改成功
+                [[AnalyticsManager sharedManager]reportEventWithName:@"my_home_name_changed" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"家庭名称修改成功时" properties:@{@"homename":str,@"homeid":[NSString stringWithFormat:@"%lld",weakSelf.homeModel.homeId]}completion:^(BOOL success, NSString * _Nullable message) {
+                                
+                        }];
             } failure:^(NSError *error) {
                 [SVProgressHUD showErrorWithStatus:error.localizedDescription];
             }];
@@ -190,13 +216,20 @@
             [homeMember removeHomeMemberWithMemberId:weakSelf.currentMemberId success:^{
                 [weakSelf hiddenHud];
                 [weakSelf.navigationController popViewControllerAnimated:YES];
+                //APP埋点：删除家庭完成
+                [[AnalyticsManager sharedManager]reportEventWithName:@"home_deleted" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"家庭已被删除时" properties:@{@"homename":self.homeModel.name,@"homeid":@(self.homeModel.homeId)} completion:^(BOOL success, NSString * _Nullable message) {
+                                
+                        }];
             } failure:^(NSError *error) {
                 [weakSelf hiddenHud];
                 [SVProgressHUD showErrorWithStatus:error.localizedDescription];
             }];
         }
     }];
-   
+    //APP埋点：点击删除家庭
+    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_delete_home" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击删除家庭时" properties:@{@"homename":self.homeModel.name,@"homeid":@(self.homeModel.homeId)} completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     
 }
 
@@ -206,6 +239,11 @@
     AddFamailyMemeberVC *VC = [AddFamailyMemeberVC new];
     VC.homeModel = self.homeModel;
     [self.navigationController pushViewController:VC animated:YES];
+    
+    //APP埋点：点击添加家庭成员
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_add_home_member" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击添加家庭成员时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+                    
+            }];
     
 }
 
@@ -226,6 +264,10 @@
                 [weakSelf loadDataRefreshOrPull:1];
             }
         }];
+        //APP埋点：点击邀请家庭成员
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_invite_home_member" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击邀请家庭成员时" properties:@{@"familymembername":@"0",@"familymemberid":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
     } failure:^(NSError *error) {
         btn.userInteractionEnabled = YES;
         [SVProgressHUD showErrorWithStatus:error.localizedDescription];
@@ -253,6 +295,7 @@
     }else if(indexPath.section == 1){
         FamailyMemberCell *cell = [tableView dequeueReusableCellWithIdentifier:@"FamailyMemberCell" forIndexPath:indexPath];
         cell.isExpire = NO;
+        [cell.avatar sd_setImageWithURL:self.avatarUrldataArr[indexPath.row][@"avatarUrl"]];
         cell.nameLabel.text = self.dataArr[indexPath.row].name;
         NSString *phoneStr = @"";
         switch (self.dataArr[indexPath.row].dealStatus) {
@@ -274,6 +317,7 @@
         FamailyMemberCell *cell = [tableView dequeueReusableCellWithIdentifier:@"FamailyMemberCell" forIndexPath:indexPath];
         cell.nameLabel.text = self.inviteArr[indexPath.row].name;
         cell.isExpire = YES;
+        cell.avatar.image = [UIImage imageNamed:@"member_avater_default"];
         cell.phoneLabel.text = self.inviteArr[indexPath.row].dealStatus == ThingHomeStatusPending ?LocalString(@"待加入") : LocalString(@"已超时");
         if(self.inviteArr[indexPath.row].dealStatus == ThingHomeStatusPending){
             NSInteger time = self.inviteArr[indexPath.row].validTime;
@@ -348,17 +392,63 @@
     if(indexPath.section == 0){
         if(!self.isMember){
             [self showAlertWithTextField];
+            
+            //APP埋点：点击修改家庭名称
+            [[AnalyticsManager sharedManager]reportEventWithName:@"tap_change_my_home_name" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击修改家庭名称时" properties:@{@"homename":self.homeModel.name,@"homeid":[NSString stringWithFormat:@"%lld",self.home.homeId]} completion:^(BOOL success, NSString * _Nullable message) {
+                            
+                    }];
         }
     }else{
         FamailyMemeberVC *VC = [FamailyMemeberVC new];
         VC.homeModel = self.homeModel;
+        NSString *roleStr = LocalString(@"未知");
         if(indexPath.section == 1){
             VC.memberModel = self.dataArr[indexPath.row];
+            switch (self.dataArr[indexPath.row].role) {
+                case ThingHomeRoleType_Owner:
+                    roleStr = @"Home Owner";
+                    break;
+                case ThingHomeRoleType_Member:
+                    roleStr = @"Common Member";
+                    break;
+                case ThingHomeRoleType_Admin:
+                    roleStr = @"Admin";
+                    break;
+                    
+                default:
+                    
+                    break;
+            }
         }else{
             VC.inviteModel = self.inviteArr[indexPath.row];
+            switch (self.inviteArr[indexPath.row].role) {
+                case ThingHomeRoleType_Owner:
+                    roleStr = @"Home Owner";
+                    break;
+                case ThingHomeRoleType_Member:
+                    roleStr = @"Common Member";
+                    break;
+                case ThingHomeRoleType_Admin:
+                    roleStr = @"Admin";
+                    break;
+                    
+                default:
+                    
+                    break;
+            }
         }
         VC.smartHomeInvitation = self.smartHomeInvitation;
+        if (indexPath.section==1) {
+            VC.avatarUrl = self.avatarUrldataArr[indexPath.row][@"avatarUrl"];
+        }
+        
         [self.navigationController pushViewController:VC animated:YES];
+    
+        //APP埋点：点击查看家庭成员
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_home_member" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击查看家庭成员时" properties:@{@"memberRole":roleStr} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
+        
     }
     
 }

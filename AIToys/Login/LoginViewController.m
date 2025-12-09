@@ -41,6 +41,11 @@
 - (IBAction)loginBtnClick:(UIButton *)sender {
     AcountLoginViewController *VC = [AcountLoginViewController new];
     [self.navigationController pushViewController:VC animated:YES];
+    
+//    //埋点：点击登录
+//    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_login" level1:@"LoginVC" level2:@"" level3:@"" reportTrigger:@"" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+//            
+//    }];
 }
 
 //注册
@@ -48,6 +53,10 @@
     RegistViewController *VC = [RegistViewController new];
     VC.type = EmailType_regist;
     [self.navigationController pushViewController:VC animated:YES];
+//    //埋点：点击注册
+//    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_register" level1:@"LoginVC" level2:@"" level3:@"" reportTrigger:@"" properties:@{@"accessEntrance":@"startPage"} completion:^(BOOL success, NSString * _Nullable message) {
+//            
+//    }];
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

@@ -61,9 +61,13 @@
     HomeExploreToysCell *cell = [tableView dequeueReusableCellWithIdentifier:@"HomeExploreToysCell"];
     WEAK_SELF
     cell.playBlock = ^{
-        // 埋点上报：探索页面点击公仔
-        [[AnalyticsManager sharedManager] reportExploreClickDollWithId:weakSelf.model.Id ?: @""
-                                                                  name:weakSelf.model.name ?: @""];
+        
+        
+        
+        //埋点：查看探索公仔
+        [[AnalyticsManager sharedManager]reportEventWithName:@"homepage_check_explore_doll" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击探索公仔（new arrivals）音频播放时" properties:@{@"dollName":weakSelf.model.name,@"dollID":weakSelf.model.Id} completion:^(BOOL success, NSString * _Nullable message) {
+                        
+                }];
         //试听一下点击
         [[NSNotificationCenter defaultCenter] postNotificationName:@"auditionNotification"
                                                             object:nil

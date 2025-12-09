@@ -1030,6 +1030,11 @@
         return;
     }
     
+    //埋点：点击创建音色
+    [[AnalyticsManager sharedManager]reportEventWithName:@"create voice_click" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击“创建音色”按钮时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
+            
+    }];
+    
     CreateVoiceViewController *vc = [[CreateVoiceViewController alloc]init];
     vc.isEditMode = NO;
     [self.navigationController pushViewController:vc animated:YES];

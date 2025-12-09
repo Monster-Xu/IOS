@@ -29,19 +29,18 @@
 }
 -(void)loadDate{
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
-    [param setValue:@"connectedWifi" forKey:@"propKey"];
+//    [param setValue:@"connectedWifi" forKey:@"propKey"];
     
     WEAK_SELF
-    [[APIManager shared] GET:[APIPortConfiguration getAppPropertyByKeyUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+    [[APIManager shared] GET:[APIPortConfiguration getWifiListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         [SVProgressHUD dismiss];
         NSDictionary * dic = [NSDictionary dictionaryWithDictionary:result];
         // 修复：正确获取数据路径 - 从 dic[@"data"][@"list"] 获取
         if([dic[@"code"] integerValue] == 0){
-            NSDictionary * dataDict = dic[@"data"];
+            NSArray * dataArr = [NSArray arrayWithArray:dic[@"data"]];
             // 修复：检查dataDict是否有效且不为空
-            if(dataDict && ![dataDict isKindOfClass:[NSNull class]] && [dataDict count] > 0){
-                NSArray * listArray = @[dataDict];
-                weakSelf.dataArr = [NSMutableArray arrayWithArray:listArray];
+            if(dataArr && ![dataArr isKindOfClass:[NSNull class]] && [dataArr count] > 0){
+                weakSelf.dataArr = [NSMutableArray arrayWithArray:dataArr];
                 weakSelf.emptyView.hidden = YES;
             }else{
                 weakSelf.dataArr = [NSMutableArray new];
@@ -63,13 +62,13 @@
     NSDictionary * wifiData = self.dataArr[indexPath.section];
     if(wifiData){
         // 根据WiFiListTableViewCell的属性来赋值，示例：
-         cell.wifiNameLabel.text = wifiData[@"propValue"];
+         cell.wifiNameLabel.text = wifiData[@"ssid"];
         // cell.timeLabel.text = [self formatTimeFromTimeStamp:[wifiData[@"createTime"] longLongValue]];
         // 这里需要根据你的cell具体属性来修改
     }
     
     cell.clickItemBlock = ^{
-        [self deleteDateWithId:self.dataArr[indexPath.section][@"id"]];
+        [self deleteDateWithId:self.dataArr[indexPath.section][@"ssid"]];
     };
     return cell;
 }
@@ -102,9 +101,9 @@
 }
 -(void)deleteDateWithId:(NSString *)wifiId{
     NSMutableDictionary * param = [NSMutableDictionary new];
-    [param setValue:wifiId forKey:@"id"];
+    [param setValue:wifiId forKey:@"ssid"];
     WEAK_SELF
-    [[APIManager shared] DELETE:[APIPortConfiguration getDeleteProPertUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+    [[APIManager shared] DELETE:[APIPortConfiguration getWifiRemoveUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         NSDictionary * dic = [NSDictionary dictionaryWithDictionary:result];
         if ([dic[@"code"] integerValue] == 0) {
             [SVProgressHUD showSuccessWithStatus:@"Successfully Deleted"];
@@ -113,7 +112,7 @@
         // 找到并删除该项
         for(NSInteger i = 0; i < weakSelf.dataArr.count; i++){
             NSDictionary * item = weakSelf.dataArr[i];
-            if([item[@"id"] isEqual:wifiId] || [[item[@"id"] stringValue] isEqualToString:[NSString stringWithFormat:@"%@", wifiId]]){
+            if([item[@"ssid"] isEqual:wifiId] || [[item[@"ssid"] stringValue] isEqualToString:[NSString stringWithFormat:@"%@", wifiId]]){
                 [weakSelf.dataArr removeObjectAtIndex:i];
                 break;
             }
