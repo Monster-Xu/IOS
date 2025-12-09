@@ -155,7 +155,7 @@
             weakSelf.subTitleLabel.attributedText = attStr;
             // 确保label可以响应手势
             weakSelf.subTitleLabel.enabledClickEffect = YES;
-            [weakSelf.subTitleLabel clickRichTextWithStrings:@[LocalString(@"重新发送验证码")] clickAction:^(NSString *string, NSRange range, NSInteger index) {
+            [weakSelf.subTitleLabel clickRichTextWithStrings:@[@"com，Resend Code"] clickAction:^(NSString *string, NSRange range, NSInteger index) {
                 
                 [weakSelf sendCode];
                 

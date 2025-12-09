@@ -34,7 +34,7 @@
             NSLog(@"getFirmwareUpgradeInfo success");
         
         if (success) {
-            success([NavigateToNativePageResponseModel successExtApiModelWithData:@{@"success":@"true",@"data":@{@"deviceId": deviceId,@"upgradeInfoList":upgradeModelList},@"code":@"",@"error":@""}]);
+            success([NavigateToNativePageResponseModel successExtApiModelWithData:@{@"deviceId": deviceId,@"upgradeInfoList":upgradeModelList}]);
         }else if(fail){
             fail([NavigateToNativePageResponseModel failureExtApiModel:@"" errorMsg:@"" Data:@{@"success":@"fail",@"data":@"",@"code":@"",@"error":@""}]);
         }

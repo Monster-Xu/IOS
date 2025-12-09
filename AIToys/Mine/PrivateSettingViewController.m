@@ -162,7 +162,7 @@
                 [param setValue:@"功能体验升级计划" forKey:@"description"];
                 [weakSelf modifySettingWithParam:param];
                 //APP埋点：隐私设置-开关用户体验计划
-                [[AnalyticsManager sharedManager]reportEventWithName:@"switch_improvement_plan" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"切换用户体验计划开关时" properties:@{@"improvementPlanStatus":on?@"0":@"1"} completion:^(BOOL success, NSString * _Nullable message) {
+                [[AnalyticsManager sharedManager]reportEventWithName:@"switch_improvement_plan" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"切换用户体验计划开关时" properties:@{@"improvementPlanStatus":on?@"1":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
                                 
                         }];
             }else{

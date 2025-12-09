@@ -163,7 +163,7 @@
     
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     // 创建基础字符串
-    NSString *fullText = @"Please hold to \"Start Reading\" and read the following test clearly, expressively, and loudly. The recording must be over 30 seconds.";
+    NSString *fullText = @"Please hold to \"Start Reading\" and read the following text clearly, expressively, and loudly. The recording must be over 30 seconds.";
 
     // 创建可变的富文本
     NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:fullText];

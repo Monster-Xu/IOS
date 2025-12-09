@@ -408,7 +408,7 @@
     
     for (int i = 0; i < range.length ; i++) {
         
-        [string appendString:@" "];
+        [string appendString:@""];
     }
     return string;
 }
