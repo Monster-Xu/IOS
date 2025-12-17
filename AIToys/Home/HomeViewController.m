@@ -360,7 +360,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [self logCurrentAudioPlaybackStatus];
     });
-    [self refreshToken];
+    
 }
 
 - (void)setupDataCache {
@@ -746,11 +746,14 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }];
     
     // 优化：分别处理每个请求，不等待所有完成
+    [self loadHomeAndDeviceData];
     [self loadBannerData];
     [self loadDiyDollData];
-    [self loadExploreDollData];
     [self loadDisplayModeConfig];
-    [self loadHomeAndDeviceData];
+    if (self.currentHome.homeId) {
+      [self loadExploreDollData];
+    }
+
 }
 
 // 🔧 新增：轻量级更新（只更新必要的数据）
@@ -1061,6 +1064,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     [[NSNotificationCenter defaultCenter] postNotificationName:@"SwitchHome" object:@(weakSelf.currentHome.homeId)];
                     weakSelf.currentHome.delegate = weakSelf;
                     [weakSelf updateCurrentFamilyProtocol];
+                    [weakSelf loadExploreDollData];
                 } else {
                     NSLog(@"⚠️ 家庭列表为空，无法初始化当前家庭");
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1498,7 +1502,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"BearerId": (kMyUser.accessToken ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"dev"
+                    @"envtype": @"prod"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1572,7 +1576,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"homeId": (currentHomeId ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"dev"
+                    @"envtype": @"prod"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1853,6 +1857,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 -(void)auditionClick:(NSNotification *)notification{
     
+    self.view.userInteractionEnabled = NO;
+    [self.currentAudioPlayer stop];
     [self getDollDetailListWithId:notification.userInfo[@"DollId"]];
 }
 -(void)getDollDetailListWithId:(NSString * )Id{
@@ -1862,6 +1868,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [param setObject:Id forKey:@"dollModelId"];
     [[APIManager shared] GET:[APIPortConfiguration getdollListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         [SVProgressHUD dismiss];
+        self.view.userInteractionEnabled = YES;
         // 添加安全检查
         if ([data isKindOfClass:NSArray.class] && ((NSArray *)data).count > 0) {
             NSDictionary * dataDic = data[0];
@@ -1881,6 +1888,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
         [SVProgressHUD dismiss];
         NSLog(@"❌ 获取音频详情失败: %@", msg);
+        self.view.userInteractionEnabled = YES;
         [SVProgressHUD showErrorWithStatus:@"音频加载失败"];
     }];
 }
@@ -2195,7 +2203,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.currentCoverImageURL = nil;
     
     // 清理系统媒体控制中心的播放信息
-    [self clearNowPlayingInfo];
+//    [self clearNowPlayingInfo];
     
     // 释放音频会话
     NSError *error = nil;
@@ -2394,16 +2402,5 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         }
     }
 }
--(void)refreshToken{
-    [[APIManager shared]POST:[NSString stringWithFormat:@"%@?refreshToken=%@",[APIPortConfiguration getRefreshTokenUrl],kMyUser.refreshToken] parameter:@{} success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
-            
-        if (data) {
-            kMyUser.accessToken  = data[@"accessToken"];
-            [UserInfo saveMyUser];
-        }
-        
-        } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
-            
-        }];
-}
+
 @end

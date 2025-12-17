@@ -41,7 +41,7 @@
     WKWebViewConfiguration *config = [[WKWebViewConfiguration alloc] init];
     config.userContentController = userContentController;
     
-    _webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight) configuration:config];
+    _webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight-Nav_And_Tabbar_Height) configuration:config];
     _webView.navigationDelegate = self;
     _webView.UIDelegate = self;
     _webView.backgroundColor = [UIColor whiteColor];

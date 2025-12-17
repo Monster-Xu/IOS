@@ -58,7 +58,7 @@ IS_iPhoneX = [[UIApplication sharedApplication] delegate].window.safeAreaInsets.
 // 状态栏高度
 #define    StatusBar_Height    CGRectGetHeight([UIApplication sharedApplication].statusBarFrame)
 
-#define KNavigationBarHeight 44.0
+#define KNavigationBarHeight 34.0
 
 //导航栏 + 状态栏高度
 #define    Nav_And_Tabbar_Height    (StatusBar_Height + KNavigationBarHeight)

@@ -75,8 +75,8 @@
     
     //启动广告图
     [self loadAD];
-    
-    
+    //刷新Token
+    [self refreshToken];
     return [[ThingModuleManager sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
 
 }
@@ -317,5 +317,20 @@
     [[AnalyticsManager sharedManager]reportEventWithName:@"close_app" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"切到后台时" properties:@{@"closeType":@"background"} completion:^(BOOL success, NSString * _Nullable message) {
             
     }];
+}
+-(void)refreshToken{
+    if (kMyUser.refreshToken) {
+        [[APIManager shared]POST:[NSString stringWithFormat:@"%@?refreshToken=%@",[APIPortConfiguration getRefreshTokenUrl],kMyUser.refreshToken] parameter:@{} success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+                
+            if (data) {
+                kMyUser.accessToken  = data[@"accessToken"];
+                [UserInfo saveMyUser];
+            }
+            
+            } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+                
+            }];
+    }
+    
 }
 @end
