@@ -76,6 +76,7 @@
 @property (weak, nonatomic) IBOutlet UIImageView *voiceGifImageView;
 @property (weak, nonatomic) IBOutlet UIButton *deletPickImageBtn;
 @property (weak, nonatomic) IBOutlet UITextField *voiceNameTextView;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *voiceTextTopConstraint;
 
 // 语音识别相关
 @property (nonatomic, strong) SFSpeechRecognizer *speechRecognizer;
@@ -136,6 +137,8 @@
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *topConstraint;
 @property (weak, nonatomic) IBOutlet UIView *faildView;
 @property (weak, nonatomic) IBOutlet UILabel *voiceSubLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *voiceImage;
+@property (weak, nonatomic) IBOutlet UILabel *voiceTitleLabel;
 
 @end
 
@@ -157,8 +160,16 @@
     // 根据模式设置标题
     if (self.isEditMode && self.editingVoice) {
         self.title = NSLocalizedString(@"Edit Voice", @"");
+        self.voiceTextTopConstraint.constant = -50;
+        self.voiceSubLabel.hidden = YES;
+        self.voiceTitleLabel.hidden  = YES;
+        self.voiceImage.hidden  = YES;
     } else {
         self.title = NSLocalizedString(@"Create Voice", @"");
+        self.voiceTextTopConstraint.constant = 10;
+        self.voiceSubLabel.hidden = NO;
+        self.voiceTitleLabel.hidden  = NO;
+        self.voiceImage.hidden  = NO;
     }
     
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];

@@ -349,7 +349,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [self setUpUI];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceSortChanged:) name:@"HomeDeviceRefresh" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(auditionClick:) name:@"auditionNotification" object:nil];
-    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(DeletToysSuccess:) name:@"DeletToysSuccess" object:nil];
     // 监听音频会话中断通知，处理后台播放冲突
     [[NSNotificationCenter defaultCenter] addObserver:self 
                                              selector:@selector(handleAudioSessionInterruption:)
@@ -746,10 +746,10 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }];
     
     // 优化：分别处理每个请求，不等待所有完成
-    [self loadHomeAndDeviceData];
-    [self loadBannerData];
-    [self loadDiyDollData];
     [self loadDisplayModeConfig];
+    [self loadBannerData];
+    [self loadHomeAndDeviceData];
+    [self loadDiyDollData];
     if (self.currentHome.homeId) {
       [self loadExploreDollData];
     }
@@ -1431,6 +1431,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 weakSelf.lastHardwareCode = nil;
                 [weakSelf reloadDeviceData:YES];
                 [weakSelf reloadDollData];
+                [weakSelf loadExploreDollData];
             }
         };
         VC.managerBlock = ^{
@@ -1502,7 +1503,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"BearerId": (kMyUser.accessToken ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"prod"
+                    @"envtype": @"dev"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1576,7 +1577,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"homeId": (currentHomeId ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"prod"
+                    @"envtype": @"dev"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1763,11 +1764,12 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     WEAK_SELF
     [LGBaseAlertView showAlertWithTitle:LocalString(@"加入家庭邀请") content:[NSString stringWithFormat:@"%@%@%@",LocalString(@"您有一个加入"),model.name,LocalString(@"家庭的邀请，是否同意加入？")] cancelBtnStr:LocalString(@"暂不加入") confirmBtnStr:LocalString(@"加入家庭") confirmBlock:^(BOOL isValue, id obj) {
         ThingSmartHome *home = [ThingSmartHome homeWithHomeId:model.homeId];
+        
         if (isValue){
             [weakSelf showHud];
-            ///接受邀请
             //埋点：家庭成员接受邀请
-            [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_accepted_invitation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"家庭成员接受邀请时" properties:@{@"familymembername":model.name,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+            
+            [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_accepted_invitation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"家庭成员接受邀请时" properties:@{@"familymembername":[PublicObj isEmptyObject:[ThingSmartUser sharedInstance].nickname] ? @"Talenpal" : [ThingSmartUser sharedInstance].nickname,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
                             
                     }];
             [home joinFamilyWithAccept:YES success:^(BOOL result) {
@@ -1851,7 +1853,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 - (void)serviceConnectedSuccess {
     // 去云端查询当前家庭的详情，然后去刷新 UI
 }
-
+-(void)DeletToysSuccess:(NSNotification *)notification{
+    [self loadExploreDollData];
+}
 - (void)deviceSortChanged:(NSNotification *)notification {
     [self reloadDeviceData:YES];
 }
@@ -1958,6 +1962,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                             // 需要延迟执行的代码
                             [weakSelf reloadDollData];
+                            [weakSelf loadExploreDollData];
                         });
 
                     }

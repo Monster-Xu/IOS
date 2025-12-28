@@ -709,13 +709,18 @@ void uncaughtExceptionHandler(NSException *exception) {
             NSString *exportFileName = [NSString stringWithFormat:@"AppLogs_%@.txt", [exportFormatter stringFromDate:[NSDate date]]];
             NSString *exportPath = [exportDirectory stringByAppendingPathComponent:exportFileName];
             
-            // 合并所有日志文件
+            // 合并最近7天的日志文件
             NSMutableString *allLogs = [NSMutableString string];
             [allLogs appendString:@"========== 应用日志导出 ==========\n"];
             [allLogs appendFormat:@"导出时间: %@\n", [self.dateFormatter stringFromDate:[NSDate date]]];
             [allLogs appendFormat:@"应用版本: %@\n", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]];
             [allLogs appendFormat:@"系统版本: %@\n", [[UIDevice currentDevice] systemVersion]];
             [allLogs appendFormat:@"设备型号: %@\n\n", [self getDeviceModel]];
+            
+            // 计算7天前的日期
+            NSDate *sevenDaysAgo = [[NSDate date] dateByAddingTimeInterval:-7 * 24 * 60 * 60];
+            NSDateFormatter *fileNameFormatter = [[NSDateFormatter alloc] init];
+            [fileNameFormatter setDateFormat:@"yyyy-MM-dd"];
             
             // 按日期排序日志文件
             NSArray *sortedLogFiles = [logFiles sortedArrayUsingComparator:^NSComparisonResult(NSString *file1, NSString *file2) {
@@ -724,13 +729,27 @@ void uncaughtExceptionHandler(NSException *exception) {
             
             for (NSString *fileName in sortedLogFiles) {
                 if ([fileName hasPrefix:@"app_log_"]) {
-                    NSString *filePath = [logDirectory stringByAppendingPathComponent:fileName];
-                    NSString *content = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
-                    if (content) {
-                        [allLogs appendFormat:@"\n========== %@ ==========\n", fileName];
-                        [allLogs appendString:content];
+                    // 从文件名中提取日期
+                    NSString *dateString = [fileName stringByReplacingOccurrencesOfString:@"app_log_" withString:@""];
+                    dateString = [dateString stringByReplacingOccurrencesOfString:@".txt" withString:@""];
+                    
+                    NSDate *fileDate = [fileNameFormatter dateFromString:dateString];
+                    
+                    // 只处理最近7天的日志文件
+                    if (fileDate && [fileDate compare:sevenDaysAgo] != NSOrderedAscending) {
+                        NSString *filePath = [logDirectory stringByAppendingPathComponent:fileName];
+                        NSString *content = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
+                        if (content) {
+                            [allLogs appendFormat:@"\n========== %@ ==========\n", fileName];
+                            [allLogs appendString:content];
+                        }
                     }
                 }
+            }
+            
+            // 如果没有找到最近7天的日志文件，添加提示
+            if (allLogs.length <= 200) { // 只有头部信息
+                [allLogs appendString:@"\n⚠️ 最近7天内没有日志记录\n"];
             }
             
             // 写入导出文件

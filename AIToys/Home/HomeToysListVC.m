@@ -292,7 +292,7 @@
                 [weakSelf.dataArr removeObjectAtIndex:temp];
                 weakSelf.historyArr = weakSelf.dataArr;
                 [self.collectionView reloadData];
-                
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"DeletToysSuccess" object:nil];
                 
                 //删除设备不退出编辑状态
 //                [weakSelf dealViewEditStatus:NO];

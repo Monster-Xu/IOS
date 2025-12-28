@@ -115,10 +115,16 @@
     if(indexPath.section == 0){
         if(self.homeList[indexPath.row].dealStatus == 1){
             WEAK_SELF
+           
             [LGBaseAlertView showAlertWithTitle:LocalString(@"加入家庭邀请") content:[NSString stringWithFormat:@"%@%@%@",LocalString(@"您有一个加入"),self.homeList[indexPath.row].name,LocalString(@"家庭的邀请，是否同意加入？")] cancelBtnStr:LocalString(@"暂不加入") confirmBtnStr:LocalString(@"加入家庭") confirmBlock:^(BOOL isValue, id obj) {
                 ThingSmartHome *home = [ThingSmartHome homeWithHomeId:weakSelf.homeList[indexPath.row].homeId];
                 if (isValue){
                     [weakSelf showHud];
+                    //埋点：家庭成员接受邀请
+                    
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_accepted_invitation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"家庭成员接受邀请时" properties:@{@"familymembername":[PublicObj isEmptyObject:[ThingSmartUser sharedInstance].nickname] ? @"Talenpal" : [ThingSmartUser sharedInstance].nickname,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+                                    
+                            }];
                     ///接受邀请
                     [home joinFamilyWithAccept:YES success:^(BOOL result) {
                         [weakSelf hiddenHud];

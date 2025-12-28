@@ -25,9 +25,12 @@
                 <outlet property="topConstraint" destination="Q3W-7p-LLy" id="GPF-U5-gjl"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
                 <outlet property="voiceGifImageView" destination="8Ch-bC-hAE" id="01s-D2-Fbw"/>
+                <outlet property="voiceImage" destination="PAO-by-fEB" id="R9B-fx-akm"/>
                 <outlet property="voiceNameTextView" destination="skU-4s-5RK" id="FHG-qt-azi"/>
                 <outlet property="voiceSubLabel" destination="BYH-t1-vku" id="LGf-kj-gxD"/>
                 <outlet property="voiceTextLabel" destination="JWu-Un-hmE" id="36h-6e-tyF"/>
+                <outlet property="voiceTextTopConstraint" destination="fao-le-vdD" id="DyW-WH-hVO"/>
+                <outlet property="voiceTitleLabel" destination="pST-P0-9yE" id="G1J-sv-xw8"/>
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>

@@ -137,7 +137,7 @@
     }
     
     
-    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_delete_home_member" level1:kAnalyticsLevel2_RemoveMember level2:@"" level3:@"" reportTrigger:@"点击移除家庭成员时" properties:@{@"memberStatus":dealStr,@"familymembername":self.memberModel.name,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_delete_home_member" level1:kAnalyticsLevel2_RemoveMember level2:@"" level3:@"" reportTrigger:@"点击移除家庭成员时" properties:@{@"memberStatus":dealStr,@"familymembername":self.memberModel.name,@"familymemberid":[NSString stringWithFormat:@"%@",self.memberModel.uid]} completion:^(BOOL success, NSString * _Nullable message) {
                     
             }];
     [LGBaseAlertView showAlertWithTitle:LocalString(@"移除成员") content:LocalString(@"确定要移除该成员吗？") cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"删除") confirmBlock:^(BOOL isValue, id obj) {
@@ -148,9 +148,9 @@
                 [weakSelf hiddenHud];
 
                 // 埋点上报：家庭空间移除成员
-                NSString *homeId = [NSString stringWithFormat:@"%lld", (long long)weakSelf.homeModel.homeId];
-                NSString * homename = [NSString stringWithFormat:@"%@",weakSelf.memberModel.name];
-                [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_deleted" level1:kAnalyticsLevel2_RemoveMember level2:@"" level3:@"" reportTrigger:@"家庭成员移除成功时" properties:@{@"familymembername":homename,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+//                NSString *memberid = [NSString stringWithFormat:@"%lld", (long long)weakSelf.memberModel.uid];
+//                NSString * homename = [NSString stringWithFormat:@"%@",weakSelf.memberModel.name];
+                [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_deleted" level1:kAnalyticsLevel2_RemoveMember level2:@"" level3:@"" reportTrigger:@"家庭成员移除成功时" properties:@{@"familymembername":self.memberModel.name,@"familymemberid":[NSString stringWithFormat:@"%@",self.memberModel.uid]} completion:^(BOOL success, NSString * _Nullable message) {
                                 
                         }];
 
@@ -190,7 +190,7 @@
                 [homeMember updateHomeMemberInfoWithMemberRequestModel:requestModel success:^{
                     [self hiddenHud];
                     //埋点：家庭成员重命名成功
-                    [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_renamed" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"重命名家庭成员成功时" properties:@{@"familymembername":requestModel.name,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_renamed" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"重命名家庭成员成功时" properties:@{@"familymembername":requestModel.name,@"familymemberid":self.memberModel.uid} completion:^(BOOL success, NSString * _Nullable message) {
                                     
                             }];
 
@@ -234,7 +234,7 @@
         [SVProgressHUD showErrorWithStatus:error.localizedDescription];
     }];
     //埋点：点击重新邀请家庭成员
-    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_resend_home_member" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击重新邀请家庭成员时" properties:@{@"familymembername":self.memberModel.name,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_resend_home_member" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击重新邀请家庭成员时" properties:@{@"familymembername":self.inviteModel.name,@"familymemberid":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
                     
             }];
     
@@ -262,7 +262,7 @@
 //撤销
 -(void)revoke{
     //埋点：点击取消家庭成员邀请
-        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_revoke_home_member_invitation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击取消家庭成员邀请时" properties:@{@"familymembername":self.memberModel.name,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_revoke_home_member_invitation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击取消家庭成员邀请时" properties:@{@"familymembername":self.inviteModel.name,@"familymemberid":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
                         
                 }];
     
@@ -274,7 +274,7 @@
                     [SVProgressHUD showSuccessWithStatus:LocalString(@"撤销成功")];
                     [weakSelf.navigationController popViewControllerAnimated:YES];
                     //埋点：家庭成员邀请已取消
-                        [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_invitaion_revoked" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"家庭成员邀请已被取消时" properties:@{@"familymembername":self.memberModel.name,@"familymemberid":[ThingSmartUser sharedInstance].uid} completion:^(BOOL success, NSString * _Nullable message) {
+                    [[AnalyticsManager sharedManager]reportEventWithName:@"home_member_invitaion_revoked" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"家庭成员邀请已被取消时" properties:@{@"familymembername":self.inviteModel.name,@"familymemberid":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
                                         
                                 }];
                     
@@ -347,9 +347,9 @@
     }
     
     NSString *name = self.memberModel ? self.memberModel.name : self.inviteModel.name;
-    NSString *familymemberid = self.memberModel ? [NSString stringWithFormat:@"%lld",self.memberModel.memberId] : [NSString stringWithFormat:@"%@",self.inviteModel.invitationID];
+    NSString *familymemberid = self.memberModel ? [NSString stringWithFormat:@"%@",self.memberModel.uid] : [NSString stringWithFormat:@"%@",self.inviteModel.invitationID];
     //埋点：点击重命名家庭成员
-    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_rename_home_member" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击重命名家庭成员时" properties:@{@"homename":name,@"homeid":familymemberid} completion:^(BOOL success, NSString * _Nullable message) {
+    [[AnalyticsManager sharedManager]reportEventWithName:@"tap_rename_home_member" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击重命名家庭成员时" properties:@{@"familymembername":name,@"familymemberid":familymemberid} completion:^(BOOL success, NSString * _Nullable message) {
                     
             }];
     

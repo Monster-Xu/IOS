@@ -257,12 +257,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         [self removeTask:currentTask];
         
         NSLog(@"\n网络请求: %@\n参数: %@\n结果: %@", urlStr, parameters, responseObject);
-        if (parameters&&responseObject) {
-            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:responseObject
-                                                               options:NSJSONWritingPrettyPrinted
-                                                                 error:&error];
-            [[LogManager sharedManager]logAPIResponse:response data:jsonData error:error];
-        };
+        
        
         
         if (error) {
@@ -270,10 +265,16 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
                 NSString *errorMsg = [self errorMessageFromError:error];
                 if (failure) failure(error, errorMsg);
                 [SVProgressHUD showErrorWithStatus:errorMsg];
+                [[LogManager sharedManager]logAPIResponse:response data:nil error:error];
             });
             return;
         }
-        
+        if (parameters&&responseObject) {
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:responseObject
+                                                               options:NSJSONWritingPrettyPrinted
+                                                                 error:&error];
+            [[LogManager sharedManager]logAPIResponse:response data:jsonData error:error];
+        };
         // 统一响应处理
         [self handleResponse:responseObject
                       urlStr:urlStr

@@ -438,7 +438,7 @@
             }
         }
         VC.smartHomeInvitation = self.smartHomeInvitation;
-        if (indexPath.section==1) {
+        if (indexPath.section==1&&self.avatarUrldataArr.count>0) {
             VC.avatarUrl = self.avatarUrldataArr[indexPath.row][@"avatarUrl"];
         }
         

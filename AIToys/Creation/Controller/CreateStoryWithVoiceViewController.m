@@ -213,11 +213,10 @@
     self.voiceHeaderView.hidden = YES;  // ✅ 保持插画头部视图隐藏，不参与高度计算
     self.storyView.hidden = NO;
     self.chooseVoiceView.hidden = NO;
-    self.saveStoryBtn.hidden = NO;
-    self.deletBtn.hidden = NO;
+    
     
     // ✅ 第二步：强制布局，确保所有frame计算完成
-    [self.contentView layoutIfNeeded];
+//    [self.contentView layoutIfNeeded];
     
     // ✅ 第三步：更新scrollview的contentSize
     [self updateMainScrollViewContentSize];
@@ -231,8 +230,6 @@
         self.voiceHeaderView.alpha = 1.0;
         self.storyView.alpha = 1.0;
         self.chooseVoiceView.alpha = 1.0;
-        self.saveStoryBtn.alpha = 1.0;
-        self.deletBtn.alpha = 1.0;
     } completion:^(BOOL finished) {
         if (finished) {
             NSLog(@"🎉 内容显示动画完成");
@@ -702,8 +699,8 @@
     // ✅ 稍微延迟一下，让渲染完成
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         // 再次确保布局和contentSize是最新的
-        [self.contentView layoutIfNeeded];
-        [self updateMainScrollViewContentSize];
+//        [self.contentView layoutIfNeeded];
+//        [self updateMainScrollViewContentSize];
         
         CGSize contentSize = self.mainScrollView.contentSize;
         CGSize boundsSize = self.mainScrollView.bounds.size;
@@ -718,17 +715,25 @@
                   contentSize.height, boundsSize.height, bottomOffset);
             
             // ✅ 带动画滚动到底部，让用户看到滚动过程
-            [self.mainScrollView setContentOffset:bottomPoint animated:YES];
+//            [self.mainScrollView setContentOffset:bottomPoint animated:YES];
             
             // ✅ 第六步：等待滚动动画完成后（约0.3秒），最后隐藏loading
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self hideCustomLoadingView];
                 NSLog(@"✅ 所有动作完成，loading已隐藏");
+                self.saveStoryBtn.hidden = NO;
+                self.deletBtn.hidden = NO;
+                self.saveStoryBtn.alpha = 1.0;
+                self.deletBtn.alpha = 1.0;
             });
         } else {
             NSLog(@"📱 内容未超出可视区域，无需滚动");
             // ✅ 不需要滚动时，也要隐藏loading
             [self hideCustomLoadingView];
+            self.saveStoryBtn.hidden = NO;
+            self.deletBtn.hidden = NO;
+            self.saveStoryBtn.alpha = 1.0;
+            self.deletBtn.alpha = 1.0;
             NSLog(@"✅ 所有动作完成，loading已隐藏");
         }
     });
@@ -911,7 +916,7 @@
 
 /// ✅ 优化的主滚动视图内容大小更新 - 避免重复计算
 - (void)updateMainScrollViewContentSize {
-    [self updateMainScrollViewContentSizeWithExtraHeight:@(0)];
+    [self updateMainScrollViewContentSizeWithExtraHeight:@(20)];
 }
 
 /// ✅ 优化的主滚动视图内容大小更新（带额外高度）- 避免重复计算
@@ -1207,37 +1212,37 @@
     self.storyTextField.textColor = [UIColor blackColor];
     
     // 设置内边距，让文字充满背景
-    self.storyTextField.textContainerInset = UIEdgeInsetsMake(12, 12, 12, 12);
-    self.storyTextField.textContainer.lineFragmentPadding = 0; // 去除默认的左右边距
+//    self.storyTextField.textContainerInset = UIEdgeInsetsMake(12, 12, 12, 12);
+//    self.storyTextField.textContainer.lineFragmentPadding = 0; // 去除默认的左右边距
     
-    // ✅ 修改滚动配置，避免与主滚动视图冲突
-    self.storyTextField.scrollEnabled = NO; // 禁用内部滚动，使用主滚动视图
-    self.storyTextField.showsVerticalScrollIndicator = NO;
-    self.storyTextField.showsHorizontalScrollIndicator = NO;
-    self.storyTextField.bounces = NO;
+//    // ✅ 修改滚动配置，避免与主滚动视图冲突
+//    self.storyTextField.scrollEnabled = YES; // 禁用内部滚动，使用主滚动视图
+//    self.storyTextField.showsVerticalScrollIndicator = NO;
+//    self.storyTextField.showsHorizontalScrollIndicator = NO;
+//    self.storyTextField.bounces = NO;
     
     // 键盘和输入配置
-    self.storyTextField.returnKeyType = UIReturnKeyDefault;
-    self.storyTextField.autocorrectionType = UITextAutocorrectionTypeDefault;
-    self.storyTextField.autocapitalizationType = UITextAutocapitalizationTypeSentences;
-    self.storyTextField.spellCheckingType = UITextSpellCheckingTypeDefault;
+//    self.storyTextField.returnKeyType = UIReturnKeyDefault;
+//    self.storyTextField.autocorrectionType = UITextAutocorrectionTypeDefault;
+//    self.storyTextField.autocapitalizationType = UITextAutocapitalizationTypeSentences;
+//    self.storyTextField.spellCheckingType = UITextSpellCheckingTypeDefault;
     
     // 文本布局配置
     self.storyTextField.textAlignment = NSTextAlignmentLeft;
     
     // 圆角和边框（可选）
-    self.storyTextField.layer.cornerRadius = 8.0;
-    self.storyTextField.layer.masksToBounds = YES;
+//    self.storyTextField.layer.cornerRadius = 8.0;
+//    self.storyTextField.layer.masksToBounds = YES;
     
     // 确保文本容器充满整个视图
-    self.storyTextField.textContainer.widthTracksTextView = YES;
-    self.storyTextField.textContainer.heightTracksTextView = YES; // 让高度自动适应内容
-    self.storyTextField.textContainer.maximumNumberOfLines = 0; // 无限行数
+//    self.storyTextField.textContainer.widthTracksTextView = YES;
+//    self.storyTextField.textContainer.heightTracksTextView = YES; // 让高度自动适应内容
+//    self.storyTextField.textContainer.maximumNumberOfLines = 0; // 无限行数
     
     // 设置键盘外观
-    if (@available(iOS 13.0, *)) {
-        self.storyTextField.keyboardAppearance = UIKeyboardAppearanceDefault;
-    }
+//    if (@available(iOS 13.0, *)) {
+//        self.storyTextField.keyboardAppearance = UIKeyboardAppearanceDefault;
+//    }
     
     // ✅ 添加文本变化监听，用于实时调整高度
     [[NSNotificationCenter defaultCenter] addObserver:self
