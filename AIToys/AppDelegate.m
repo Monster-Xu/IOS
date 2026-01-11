@@ -17,6 +17,8 @@
 #import <ThingModuleManager/ThingModuleManager.h>
 #import "NavigateToNativePageAPI.h"
 #import "getOTAInfo.h"
+#import "saveAutoUpgradeSwitchInfo.h"
+#import "startFirmwareUpgrade.h"
 #import "AnalyticsManager.h"
 #import "LogManager.h"
 #import <AVFoundation/AVFoundation.h>
@@ -29,6 +31,9 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+//    //刷新Token
+//    [self refreshToken];
     // 验证SF Pro Rounded字体加载
     [FontValidationHelper validateFontsInAppDelegate];
     // ⭐️ 只需要这一行代码，即可开始全局自动记录 ⭐️
@@ -75,8 +80,7 @@
     
     //启动广告图
     [self loadAD];
-    //刷新Token
-    [self refreshToken];
+    
     return [[ThingModuleManager sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
 
 }
@@ -266,7 +270,9 @@
     NSLog(@"创建 NavigateToNativePageAPI 实例...");
     NavigateToNativePageAPI *navigateAPI = [[NavigateToNativePageAPI alloc] init];
     getOTAInfo * otaInfoAPI = [[getOTAInfo alloc]init];
-    NSLog(@"NavigateToNativePageAPI 实例创建成功: %@", navigateAPI);
+    saveAutoUpgradeSwitchInfo * UpgradeSwitchInfoAPI = [[saveAutoUpgradeSwitchInfo alloc]init];
+    startFirmwareUpgrade * startFirmwareUpgradeAPI = [[startFirmwareUpgrade alloc]init];
+    NSLog(@"NavigateToNativePageAPI 实例创建成功: %@,%@,%@", navigateAPI,UpgradeSwitchInfoAPI,startFirmwareUpgradeAPI);
 
     NSLog(@"获取 ThingMiniAppClient developClient...");
     id<ThingMiniAppDevelopProtocol> developClient = [ThingMiniAppClient developClient];
@@ -275,12 +281,18 @@
     NSLog(@"注册 API 到 developClient...");
     [developClient addExtApiImpl:navigateAPI];
     [developClient addExtApiImpl:otaInfoAPI];
+    [developClient addExtApiImpl:UpgradeSwitchInfoAPI];
+    [developClient addExtApiImpl:startFirmwareUpgradeAPI];
 
     NSLog(@"✅ 自定义 MiniApp API 注册完成!");
     NSLog(@"API 名称: %@", navigateAPI.apiName);
     NSLog(@"API 是否可用: %@", [navigateAPI canIUseExtApi] ? @"YES" : @"NO");
     NSLog(@"API 名称: %@", otaInfoAPI.apiName);
     NSLog(@"API 是否可用: %@", [otaInfoAPI canIUseExtApi] ? @"YES" : @"NO");
+    NSLog(@"API 名称: %@", UpgradeSwitchInfoAPI.apiName);
+    NSLog(@"API 是否可用: %@", [UpgradeSwitchInfoAPI canIUseExtApi] ? @"YES" : @"NO");
+    NSLog(@"API 名称: %@", startFirmwareUpgradeAPI.apiName);
+    NSLog(@"API 是否可用: %@", [startFirmwareUpgradeAPI canIUseExtApi] ? @"YES" : @"NO");
     NSLog(@"========== 自定义 MiniApp API 注册结束 ==========");
 }
 // 处理远程控制事件
@@ -314,6 +326,7 @@
 }
 -(void)applicationDidEnterBackground:(UIApplication *)application{
     //APP埋点：进入后台
+    [self refreshToken];
     [[AnalyticsManager sharedManager]reportEventWithName:@"close_app" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"切到后台时" properties:@{@"closeType":@"background"} completion:^(BOOL success, NSString * _Nullable message) {
             
     }];
@@ -321,9 +334,10 @@
 -(void)refreshToken{
     if (kMyUser.refreshToken) {
         [[APIManager shared]POST:[NSString stringWithFormat:@"%@?refreshToken=%@",[APIPortConfiguration getRefreshTokenUrl],kMyUser.refreshToken] parameter:@{} success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
-                
+            
             if (data) {
                 kMyUser.accessToken  = data[@"accessToken"];
+                kMyUser.refreshToken = data[@"refreshToken"];
                 [UserInfo saveMyUser];
             }
             
@@ -333,4 +347,5 @@
     }
     
 }
+
 @end

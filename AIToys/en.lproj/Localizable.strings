@@ -38,7 +38,7 @@
 "创作协议" = "Creative Agreement";
 "请勾选协议" = "Please check the agreement";
 "新密码" = "New Password";
-"小朋友，你好！" = "Talen-spark,make big story！";
+"小朋友，你好！" = "Talen-spark, make big story！";
 "我的设备" = "My Devices";
 "更多" = "More";
 "我的公仔" = "My Talens";
@@ -123,7 +123,7 @@
 "打开蓝牙" = "Turn on Bluetooth";
 "打开wifi" = "Turn on Wi-Fi";
 "未发现设备" = "No nearby devices has been found";
-"请选择「手动添加」按照指引复位设备，或者点击「重新扫描」重新搜索设备。" = "Please select 'Add Manually' and ensure the device is in pairing mode，or choose  'Try Again' to scan device again.";
+"请选择「手动添加」按照指引复位设备，或者点击「重新扫描」重新搜索设备。" = "Please ensure the device is in pairing mode, or choose 'Try Again' toscan device again.";
 "重新扫描" = "Try Again";
 "发现设备..." = "Discovered devices...";
 "手动添加" = "Add Manually";

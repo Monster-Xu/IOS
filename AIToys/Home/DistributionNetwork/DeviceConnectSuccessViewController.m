@@ -50,15 +50,15 @@
     }];
 }
 - (IBAction)startUseBtnClick:(id)sender {
-    
+    ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.deviceModel.devId];
     if (![self.deviceNameTextView.text isEqualToString:self.deviceModel.name]) {
-        ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.deviceModel.devId];
+        
         [device updateName:self.deviceNameTextView.text success:^{
                 NSLog(@"updateName success");
             [SVProgressHUD showSuccessWithStatus:LocalString(@"Modification successful, start using.")];
             // 跳转小程序
             NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
-            [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"dev"}];
+            [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"prod"}];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self.navigationController popToRootViewControllerAnimated:NO];
             });
@@ -68,12 +68,17 @@
             }];
     }else{
         NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"dev"}];
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"prod"}];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self.navigationController popToRootViewControllerAnimated:NO];
         });
     }
-   
+    NSInteger status = 1; // 0：关闭, 1：开启。此处样例为：关闭
+        [device saveUpgradeInfoWithSwitchValue:status success:^{
+            NSLog(@"save auto switch status success.");
+        } failure:^(NSError *error) {
+            NSLog(@"save auto switch status fail. %@", error);
+        }];
     
 }
 // 实现监听方法

@@ -1503,7 +1503,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"BearerId": (kMyUser.accessToken ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"dev"
+                    @"envtype": @"prod"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1577,7 +1577,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"homeId": (currentHomeId ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"dev"
+                    @"envtype": @"prod"
                 }];
                 
                 // 添加音频播放状态参数

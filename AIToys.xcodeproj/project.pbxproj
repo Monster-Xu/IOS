@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		18019EE52EB3AF6F00232D13 /* loading.gif in Resources */ = {isa = PBXBuildFile; fileRef = 18019EE42EB3AF6F00232D13 /* loading.gif */; };
+		1804043B2F06C8DD00C4438D /* 启动页背景@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1804043A2F06C8DD00C4438D /* 启动页背景@1x.png */; };
+		1804043E2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1804043D2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m */; };
+		180404412F0FE3B000C4438D /* startFirmwareUpgrade.m in Sources */ = {isa = PBXBuildFile; fileRef = 180404402F0FE3B000C4438D /* startFirmwareUpgrade.m */; };
+		1861562D2F042F3F00E9BBA8 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */; };
 		187647D52E86B1F20025E3A2 /* NegotiateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 187647D32E86B1F20025E3A2 /* NegotiateViewController.m */; };
 		187647D62E86B1F20025E3A2 /* NegotiateViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 187647D42E86B1F20025E3A2 /* NegotiateViewController.xib */; };
 		187647DB2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647DA2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx */; };
@@ -311,7 +315,6 @@
 		E49272162E01BD2F00DB6A2A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = E49272152E01BD2F00DB6A2A /* ViewController.m */; };
 		E49272192E01BD2F00DB6A2A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E49272172E01BD2F00DB6A2A /* Main.storyboard */; };
 		E492721B2E01BD3100DB6A2A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E492721A2E01BD3100DB6A2A /* Assets.xcassets */; };
-		E492721E2E01BD3100DB6A2A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E492721C2E01BD3100DB6A2A /* LaunchScreen.storyboard */; };
 		E49272212E01BD3100DB6A2A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E49272202E01BD3100DB6A2A /* main.m */; };
 		E492722B2E01BD3200DB6A2A /* AIToysTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E492722A2E01BD3200DB6A2A /* AIToysTests.m */; };
 		E49272352E01BD3200DB6A2A /* AIToysUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = E49272342E01BD3200DB6A2A /* AIToysUITests.m */; };
@@ -407,6 +410,12 @@
 
 /* Begin PBXFileReference section */
 		18019EE42EB3AF6F00232D13 /* loading.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = loading.gif; sourceTree = "<group>"; };
+		1804043A2F06C8DD00C4438D /* 启动页背景@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "启动页背景@1x.png"; sourceTree = "<group>"; };
+		1804043C2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saveAutoUpgradeSwitchInfo.h; sourceTree = "<group>"; };
+		1804043D2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = saveAutoUpgradeSwitchInfo.m; sourceTree = "<group>"; };
+		1804043F2F0FE3B000C4438D /* startFirmwareUpgrade.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = startFirmwareUpgrade.h; sourceTree = "<group>"; };
+		180404402F0FE3B000C4438D /* startFirmwareUpgrade.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = startFirmwareUpgrade.m; sourceTree = "<group>"; };
+		1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		187647D22E86B1F20025E3A2 /* NegotiateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NegotiateViewController.h; sourceTree = "<group>"; };
 		187647D32E86B1F20025E3A2 /* NegotiateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NegotiateViewController.m; sourceTree = "<group>"; };
 		187647D42E86B1F20025E3A2 /* NegotiateViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NegotiateViewController.xib; sourceTree = "<group>"; };
@@ -952,7 +961,6 @@
 		E49272152E01BD2F00DB6A2A /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		E49272182E01BD2F00DB6A2A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		E492721A2E01BD3100DB6A2A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		E492721D2E01BD3100DB6A2A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E492721F2E01BD3100DB6A2A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E49272202E01BD3100DB6A2A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		E49272262E01BD3200DB6A2A /* AIToysTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AIToysTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1017,11 +1025,9 @@
 		E49272A22E01C1D000DB6A2A /* LoginViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = LoginViewController.xib; sourceTree = "<group>"; };
 		E49272A32E01C1D000DB6A2A /* LoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LoginViewController.h; sourceTree = "<group>"; };
 		E49272A82E01C6A300DB6A2A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
-		E49272A92E01C6A300DB6A2A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		E49272AD2E01C70A00DB6A2A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E49272AF2E01C70E00DB6A2A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		E49272B12E01C78300DB6A2A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
-		E49272B32E01C78E00DB6A2A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		E49272B82E01C80700DB6A2A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E49272BA2E01C80900DB6A2A /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/InfoPlist.strings"; sourceTree = "<group>"; };
 		E49272BC2E01CA3C00DB6A2A /* MyTabBarController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MyTabBarController.h; sourceTree = "<group>"; };
@@ -2177,6 +2183,10 @@
 				E84D75752E545081004D9740 /* NavigateToNativePageResponseModel.m */,
 				18E8C74D2EE71E4700366022 /* getOTAInfo.h */,
 				18E8C74E2EE71E4700366022 /* getOTAInfo.m */,
+				1804043C2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.h */,
+				1804043D2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m */,
+				1804043F2F0FE3B000C4438D /* startFirmwareUpgrade.h */,
+				180404402F0FE3B000C4438D /* startFirmwareUpgrade.m */,
 				E49272822E01C1C300DB6A2A /* APIManager.h */,
 				E49272832E01C1C300DB6A2A /* APIManager.m */,
 				E4C4BDAF2E12F21000243DA2 /* GlobalBluetoothManager.h */,
@@ -2253,6 +2263,8 @@
 				E49272142E01BD2F00DB6A2A /* ViewController.h */,
 				E49272152E01BD2F00DB6A2A /* ViewController.m */,
 				E49272172E01BD2F00DB6A2A /* Main.storyboard */,
+				1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */,
+				1804043A2F06C8DD00C4438D /* 启动页背景@1x.png */,
 				E492721A2E01BD3100DB6A2A /* Assets.xcassets */,
 				E492721F2E01BD3100DB6A2A /* Info.plist */,
 				DC3E06942E2A3AF80099A9FB /* PrivacyInfo.xcprivacy */,
@@ -2261,7 +2273,6 @@
 				E49272202E01BD3100DB6A2A /* main.m */,
 				E49272AE2E01C70A00DB6A2A /* Localizable.strings */,
 				E49272B92E01C80700DB6A2A /* InfoPlist.strings */,
-				E492721C2E01BD3100DB6A2A /* LaunchScreen.storyboard */,
 			);
 			name = "Supporting Files";
 			sourceTree = "<group>";
@@ -2545,6 +2556,7 @@
 				E42A8A2F2E06CBAA00AD0BD9 /* HomeToysCell.xib in Resources */,
 				E42A8A252E06BB7000AD0BD9 /* HomeDeviceItem.xib in Resources */,
 				DC70F1EC2E1E56C200C4D646 /* UserPermmitCell.xib in Resources */,
+				1804043B2F06C8DD00C4438D /* 启动页背景@1x.png in Resources */,
 				E49272E82E03102300DB6A2A /* SetPasswordVC.xib in Resources */,
 				E4A62AF22E251B4D00C9E0B6 /* FamailyOperationCell.xib in Resources */,
 				DCA5A1A82E290E8500096913 /* PrivateSettingCell.xib in Resources */,
@@ -2561,6 +2573,7 @@
 				E8FC13B02E50CAA0008A2621 /* SFProRoundedRegular.otf in Resources */,
 				E8FC13B12E50CAA0008A2621 /* SFProRoundedSemibold.ttf in Resources */,
 				DC862AC02E093370001A4793 /* FamailyManageCell.xib in Resources */,
+				1861562D2F042F3F00E9BBA8 /* Launch Screen.storyboard in Resources */,
 				DC984F092E0D3B8000CD9E7B /* HomeExploreToysCell.xib in Resources */,
 				DC862AD42E094FCC001A4793 /* AddFamailyMemeberVC.xib in Resources */,
 				DC3E06952E2A3AF80099A9FB /* PrivacyInfo.xcprivacy in Resources */,
@@ -2596,7 +2609,6 @@
 				E46F39812E0FE5BF0039CE33 /* DeviceManuallyAddItem.xib in Resources */,
 				DC3E06A72E2A51CA0099A9FB /* ComponentLicensesViewController.xib in Resources */,
 				E49272A52E01C1D000DB6A2A /* LoginViewController.xib in Resources */,
-				E492721E2E01BD3100DB6A2A /* LaunchScreen.storyboard in Resources */,
 				DCEA01092E127BEA00170D8C /* ConnectWifiVC.xib in Resources */,
 				E46F39992E1147990039CE33 /* GuideOpenCell.xib in Resources */,
 				DC2B32122E4B211500427A06 /* UnReceiveCodeView.xib in Resources */,
@@ -2770,6 +2782,7 @@
 				DC481E2C2E0A99C50048354E /* LGBaseAlertView.m in Sources */,
 				DC481E2D2E0A99C50048354E /* LGImageView.m in Sources */,
 				DC5667732E0CDFC700379234 /* SwitchFamailyCell.m in Sources */,
+				1804043E2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m in Sources */,
 				E42F14EE2E225C1A00376855 /* JXCategoryTitleVerticalZoomCell.m in Sources */,
 				E42F14DB2E225C1A00376855 /* RTLManager.m in Sources */,
 				E42F14E92E225C1A00376855 /* JXCategoryTitleCellModel.m in Sources */,
@@ -2937,6 +2950,7 @@
 				DC1AA07F2E04319200BADB1C /* UILabel+ClickIndex.m in Sources */,
 				E42F14F62E225C1A00376855 /* JXCategoryIndicatorImageView.m in Sources */,
 				E492729D2E01C1C300DB6A2A /* MineInfoModel.m in Sources */,
+				180404412F0FE3B000C4438D /* startFirmwareUpgrade.m in Sources */,
 				DC984F082E0D3B8000CD9E7B /* HomeExploreToysCell.m in Sources */,
 				DCA5A19E2E29011300096913 /* PrivacyPolicyManagementVC.m in Sources */,
 				E42F14EF2E225C1A00376855 /* JXCategoryTitleVerticalZoomView.m in Sources */,
@@ -3049,16 +3063,6 @@
 				E49272B12E01C78300DB6A2A /* en */,
 			);
 			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		E492721C2E01BD3100DB6A2A /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				E492721D2E01BD3100DB6A2A /* Base */,
-				E49272A92E01C6A300DB6A2A /* zh-Hans */,
-				E49272B32E01C78E00DB6A2A /* en */,
-			);
-			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
 		};
 		E49272AE2E01C70A00DB6A2A /* Localizable.strings */ = {
@@ -3215,7 +3219,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/AIToys/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIToys/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = TalenpalDEV;
+				INFOPLIST_KEY_CFBundleDisplayName = Talenpal;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
@@ -3226,7 +3230,7 @@
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "授予相册权限以开启截图录像功能";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "允许使用语音识别功能以完成声音转换";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
@@ -3235,8 +3239,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.01;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
+				MARKETING_VERSION = 1.2.10;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -3264,7 +3268,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/AIToys/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIToys/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = TalenpalDEV;
+				INFOPLIST_KEY_CFBundleDisplayName = Talenpal;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
@@ -3275,7 +3279,7 @@
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "授予相册权限以开启截图录像功能";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "允许使用语音识别功能以完成声音转换";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
@@ -3284,8 +3288,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.01;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
+				MARKETING_VERSION = 1.2.10;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
