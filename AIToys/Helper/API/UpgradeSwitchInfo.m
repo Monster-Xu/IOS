@@ -1,25 +1,26 @@
 //
-//  saveAutoUpgradeSwitchInfo.m
+//  UpgradeSwitchInfoAPI.m
 //  AIToys
 //
-//  Created by xuxuxu on 2026/1/8.
+//  Created by xuxuxu on 2026/1/12.
 //
 
-#import "saveAutoUpgradeSwitchInfo.h"
+#import "UpgradeSwitchInfo.h"
 #import "NavigateToNativePageResponseModel.h"
 
-@implementation saveAutoUpgradeSwitchInfo
+@implementation UpgradeSwitchInfo
+
 #pragma mark - ThingMiniAppExtApiProtocol Required Methods
 
 - (NSString *)apiName {
-    NSLog(@"[saveAutoUpgradeSwitchInfo] apiName 被调用，返回: saveAutoUpgradeSwitchInfo");
-    return @"saveAutoUpgradeSwitchInfo";
+    NSLog(@"[UpgradeSwitchInfoAPI] apiName 被调用，返回: UpgradeSwitchInfoAPI");
+    return @"UpgradeSwitchInfoAPI";
 }
 
 #pragma mark - ThingMiniAppExtApiProtocol Optional Methods
 
 - (BOOL)canIUseExtApi {
-    NSLog(@"[saveAutoUpgradeSwitchInfo] canIUseExtApi 被调用，返回: YES");
+    NSLog(@"[UpgradeSwitchInfoAPI] canIUseExtApi 被调用，返回: YES");
     return YES;
 }
 
@@ -37,6 +38,8 @@
         } failure:^(NSError *error) {
             fail([NavigateToNativePageResponseModel failureExtApiModel:@"" errorMsg:@"" Data:@{@"success":@"0",@"error":error}]);
         }];
+    
+    
 }
 
 - (id<ThingMiniAppExtApiModelProtocol>)invokeExtApiSync:(nonnull id<ThingMiniAppExtApiContext>)context
@@ -63,4 +66,5 @@
 - (void)onMiniAppDestroy{
     
 }
+
 @end

@@ -2,24 +2,25 @@
 //  startFirmwareUpgrade.m
 //  AIToys
 //
-//  Created by xuxuxu on 2026/1/8.
+//  Created by xuxuxu on 2026/1/12.
 //
 
 #import "startFirmwareUpgrade.h"
 #import "NavigateToNativePageResponseModel.h"
 
 @implementation startFirmwareUpgrade
+
 #pragma mark - ThingMiniAppExtApiProtocol Required Methods
 
 - (NSString *)apiName {
-    NSLog(@"[startFirmwareUpgrade] apiName 被调用，返回: startFirmwareUpgrade");
-    return @"startFirmwareUpgrade";
+    NSLog(@"[startFirmwareUpgradeAPI] apiName 被调用，返回: startFirmwareUpgradeAPI");
+    return @"startFirmwareUpgradeAPI";
 }
 
 #pragma mark - ThingMiniAppExtApiProtocol Optional Methods
 
 - (BOOL)canIUseExtApi {
-    NSLog(@"[startFirmwareUpgrade] canIUseExtApi 被调用，返回: YES");
+    NSLog(@"[startFirmwareUpgradeAPI] canIUseExtApi 被调用，返回: YES");
     return YES;
 }
 
@@ -41,7 +42,7 @@
         fail([NavigateToNativePageResponseModel failureExtApiModel:@"" errorMsg:@"" Data:@{@"success":@"0",@"error":error}]);
     }];
     
-
+    
 }
 
 - (id<ThingMiniAppExtApiModelProtocol>)invokeExtApiSync:(nonnull id<ThingMiniAppExtApiContext>)context
@@ -68,4 +69,5 @@
 - (void)onMiniAppDestroy{
     
 }
+
 @end

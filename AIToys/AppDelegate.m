@@ -17,7 +17,7 @@
 #import <ThingModuleManager/ThingModuleManager.h>
 #import "NavigateToNativePageAPI.h"
 #import "getOTAInfo.h"
-#import "saveAutoUpgradeSwitchInfo.h"
+#import "UpgradeSwitchInfo.h"
 #import "startFirmwareUpgrade.h"
 #import "AnalyticsManager.h"
 #import "LogManager.h"
@@ -270,7 +270,7 @@
     NSLog(@"创建 NavigateToNativePageAPI 实例...");
     NavigateToNativePageAPI *navigateAPI = [[NavigateToNativePageAPI alloc] init];
     getOTAInfo * otaInfoAPI = [[getOTAInfo alloc]init];
-    saveAutoUpgradeSwitchInfo * UpgradeSwitchInfoAPI = [[saveAutoUpgradeSwitchInfo alloc]init];
+    UpgradeSwitchInfo * UpgradeSwitchInfoAPI = [[UpgradeSwitchInfo alloc]init];
     startFirmwareUpgrade * startFirmwareUpgradeAPI = [[startFirmwareUpgrade alloc]init];
     NSLog(@"NavigateToNativePageAPI 实例创建成功: %@,%@,%@", navigateAPI,UpgradeSwitchInfoAPI,startFirmwareUpgradeAPI);
 

@@ -9,8 +9,8 @@
 /* Begin PBXBuildFile section */
 		18019EE52EB3AF6F00232D13 /* loading.gif in Resources */ = {isa = PBXBuildFile; fileRef = 18019EE42EB3AF6F00232D13 /* loading.gif */; };
 		1804043B2F06C8DD00C4438D /* 启动页背景@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1804043A2F06C8DD00C4438D /* 启动页背景@1x.png */; };
-		1804043E2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1804043D2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m */; };
-		180404412F0FE3B000C4438D /* startFirmwareUpgrade.m in Sources */ = {isa = PBXBuildFile; fileRef = 180404402F0FE3B000C4438D /* startFirmwareUpgrade.m */; };
+		180404D42F15236700C4438D /* UpgradeSwitchInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 180404D32F15236700C4438D /* UpgradeSwitchInfo.m */; };
+		180404D72F15300100C4438D /* startFirmwareUpgrade.m in Sources */ = {isa = PBXBuildFile; fileRef = 180404D62F15300100C4438D /* startFirmwareUpgrade.m */; };
 		1861562D2F042F3F00E9BBA8 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */; };
 		187647D52E86B1F20025E3A2 /* NegotiateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 187647D32E86B1F20025E3A2 /* NegotiateViewController.m */; };
 		187647D62E86B1F20025E3A2 /* NegotiateViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 187647D42E86B1F20025E3A2 /* NegotiateViewController.xib */; };
@@ -411,10 +411,10 @@
 /* Begin PBXFileReference section */
 		18019EE42EB3AF6F00232D13 /* loading.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = loading.gif; sourceTree = "<group>"; };
 		1804043A2F06C8DD00C4438D /* 启动页背景@1x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "启动页背景@1x.png"; sourceTree = "<group>"; };
-		1804043C2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = saveAutoUpgradeSwitchInfo.h; sourceTree = "<group>"; };
-		1804043D2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = saveAutoUpgradeSwitchInfo.m; sourceTree = "<group>"; };
-		1804043F2F0FE3B000C4438D /* startFirmwareUpgrade.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = startFirmwareUpgrade.h; sourceTree = "<group>"; };
-		180404402F0FE3B000C4438D /* startFirmwareUpgrade.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = startFirmwareUpgrade.m; sourceTree = "<group>"; };
+		180404D22F15236700C4438D /* UpgradeSwitchInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UpgradeSwitchInfo.h; sourceTree = "<group>"; };
+		180404D32F15236700C4438D /* UpgradeSwitchInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UpgradeSwitchInfo.m; sourceTree = "<group>"; };
+		180404D52F15300100C4438D /* startFirmwareUpgrade.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = startFirmwareUpgrade.h; sourceTree = "<group>"; };
+		180404D62F15300100C4438D /* startFirmwareUpgrade.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = startFirmwareUpgrade.m; sourceTree = "<group>"; };
 		1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		187647D22E86B1F20025E3A2 /* NegotiateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NegotiateViewController.h; sourceTree = "<group>"; };
 		187647D32E86B1F20025E3A2 /* NegotiateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NegotiateViewController.m; sourceTree = "<group>"; };
@@ -2183,10 +2183,10 @@
 				E84D75752E545081004D9740 /* NavigateToNativePageResponseModel.m */,
 				18E8C74D2EE71E4700366022 /* getOTAInfo.h */,
 				18E8C74E2EE71E4700366022 /* getOTAInfo.m */,
-				1804043C2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.h */,
-				1804043D2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m */,
-				1804043F2F0FE3B000C4438D /* startFirmwareUpgrade.h */,
-				180404402F0FE3B000C4438D /* startFirmwareUpgrade.m */,
+				180404D22F15236700C4438D /* UpgradeSwitchInfo.h */,
+				180404D32F15236700C4438D /* UpgradeSwitchInfo.m */,
+				180404D52F15300100C4438D /* startFirmwareUpgrade.h */,
+				180404D62F15300100C4438D /* startFirmwareUpgrade.m */,
 				E49272822E01C1C300DB6A2A /* APIManager.h */,
 				E49272832E01C1C300DB6A2A /* APIManager.m */,
 				E4C4BDAF2E12F21000243DA2 /* GlobalBluetoothManager.h */,
@@ -2774,6 +2774,7 @@
 				E42F14DF2E225C1A00376855 /* JXCategoryBaseView.m in Sources */,
 				DC862AE82E095B42001A4793 /* CreateFamailyVC.m in Sources */,
 				E42F14F82E225C1A00376855 /* JXCategoryIndicatorComponentView.m in Sources */,
+				180404D72F15300100C4438D /* startFirmwareUpgrade.m in Sources */,
 				DCD5A26F2E55CDF200531779 /* NSDictionary+KeySortJoin.m in Sources */,
 				DC481E292E0A99C50048354E /* LGAuditView.m in Sources */,
 				DC481E2A2E0A99C50048354E /* LGAlertView.m in Sources */,
@@ -2782,7 +2783,7 @@
 				DC481E2C2E0A99C50048354E /* LGBaseAlertView.m in Sources */,
 				DC481E2D2E0A99C50048354E /* LGImageView.m in Sources */,
 				DC5667732E0CDFC700379234 /* SwitchFamailyCell.m in Sources */,
-				1804043E2F0FE20900C4438D /* saveAutoUpgradeSwitchInfo.m in Sources */,
+				180404D42F15236700C4438D /* UpgradeSwitchInfo.m in Sources */,
 				E42F14EE2E225C1A00376855 /* JXCategoryTitleVerticalZoomCell.m in Sources */,
 				E42F14DB2E225C1A00376855 /* RTLManager.m in Sources */,
 				E42F14E92E225C1A00376855 /* JXCategoryTitleCellModel.m in Sources */,
@@ -2950,7 +2951,6 @@
 				DC1AA07F2E04319200BADB1C /* UILabel+ClickIndex.m in Sources */,
 				E42F14F62E225C1A00376855 /* JXCategoryIndicatorImageView.m in Sources */,
 				E492729D2E01C1C300DB6A2A /* MineInfoModel.m in Sources */,
-				180404412F0FE3B000C4438D /* startFirmwareUpgrade.m in Sources */,
 				DC984F082E0D3B8000CD9E7B /* HomeExploreToysCell.m in Sources */,
 				DCA5A19E2E29011300096913 /* PrivacyPolicyManagementVC.m in Sources */,
 				E42F14EF2E225C1A00376855 /* JXCategoryTitleVerticalZoomView.m in Sources */,
@@ -3219,7 +3219,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/AIToys/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIToys/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Talenpal;
+				INFOPLIST_KEY_CFBundleDisplayName = TalenpalDEV;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
@@ -3240,7 +3240,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.2.10;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -3268,7 +3268,7 @@
 				GCC_PREFIX_HEADER = "$(SRCROOT)/AIToys/PrefixHeader.pch";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIToys/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = Talenpal;
+				INFOPLIST_KEY_CFBundleDisplayName = TalenpalDEV;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
 				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
@@ -3289,7 +3289,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.2.10;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
