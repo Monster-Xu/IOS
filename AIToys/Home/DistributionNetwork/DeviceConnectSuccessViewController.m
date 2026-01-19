@@ -33,8 +33,13 @@
     // 在初始化textField后，添加事件监听
     [self.deviceNameTextView addTarget:self action:@selector(textFieldDidChange:) forControlEvents:UIControlEventEditingChanged];
     self.deviceNameTextView.text = self.deviceModel.name;
-    
-   
+    ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.deviceModel.devId];
+    NSInteger status = 1; // 0：关闭, 1：开启。此处样例为：关闭
+        [device saveUpgradeInfoWithSwitchValue:status success:^{
+            NSLog(@"save auto switch status success.");
+        } failure:^(NSError *error) {
+            NSLog(@"save auto switch status fail. %@", error);
+        }];
     
     
     // Do any additional setup after loading the view from its nib.
@@ -73,12 +78,7 @@
             [self.navigationController popToRootViewControllerAnimated:NO];
         });
     }
-    NSInteger status = 1; // 0：关闭, 1：开启。此处样例为：关闭
-        [device saveUpgradeInfoWithSwitchValue:status success:^{
-            NSLog(@"save auto switch status success.");
-        } failure:^(NSError *error) {
-            NSLog(@"save auto switch status fail. %@", error);
-        }];
+    
     
 }
 // 实现监听方法
