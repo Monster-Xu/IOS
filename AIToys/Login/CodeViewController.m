@@ -29,13 +29,13 @@
 
 - (void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
-    [IQKeyboardManager sharedManager].enable = YES;
+//    [IQKeyboardManager sharedManager].enable = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated{
     
     [super viewWillAppear:animated];
-    [IQKeyboardManager sharedManager].enable = NO;
+//    [IQKeyboardManager sharedManager].enable = NO;
 
 }
 

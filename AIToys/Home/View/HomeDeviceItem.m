@@ -50,7 +50,8 @@
     [self.imgView sd_setImageWithURL:[NSURL URLWithString:model.iconUrl]];
     self.onlineImgview.image = model.isOnline ? [UIImage imageNamed:@"icon_online"] : [UIImage imageNamed:@"icon_offline"];
     self.onlineLabel.text = model.isOnline ? LocalString(@"在线"):LocalString(@"离线");
-    self.batteryView.hidden = !model.isOnline;
+//    self.batteryView.hidden = !model.isOnline;
+    
     if(![PublicObj isEmptyObject:model.dps]){
         NSString *charging = model.dps[@"4"];
         NSInteger batterryValue =  [model.dps[@"128"] intValue];
@@ -81,6 +82,15 @@
                 }
             }
         }
+    }
+    
+    if (model.isOnline) {
+        self.batteryImageW.constant = 18;
+        self.batteryLabel.hidden = YES;
+    }else{
+        self.batteryImageW.constant = 0;
+        self.batteryLabel.hidden = NO;
+        self.batteryLabel.text =  @" Change Wi-Fi > ";
     }
     
 }

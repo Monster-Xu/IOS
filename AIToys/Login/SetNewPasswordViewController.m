@@ -40,6 +40,7 @@
     self.subAlertLabel.text = NSLocalizedString(@"密码支持6-20位，必须包含字母和数字", @"");
     [self.surBtn setTitle:NSLocalizedString(@"确定", @"") forState:0];
     [PublicObj makeButtonUnEnable:self.surBtn];
+    self.view.backgroundColor = [UIColor whiteColor];
 }
 
 //查看明文密码

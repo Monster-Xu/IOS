@@ -68,6 +68,7 @@
         @{@"title" : LocalString(@"隐私政策"),@"value" :@"", @"toVC" : @"MyWebViewController"},
         @{@"title" : LocalString(@"用户协议"),@"value" :@"", @"toVC" : @"MyWebViewController"},
         @{@"title" : LocalString(@"儿童协议"),@"value" :@"", @"toVC" : @"MyWebViewController"},
+        @{@"title" : LocalString(@"Ai对话协议"),@"value" :@"", @"toVC" : @"MyWebViewController"},
         @{@"title" : LocalString(@"第三方信息共享和SDK服务清单"),@"value" :@"", @"toVC" : @"MyWebViewController"},
         ];
     self.itemArray = [NSMutableArray arrayWithArray:[MineItemModel mj_objectArrayWithKeyValuesArray:arr]];
@@ -162,7 +163,18 @@
         }];
         
         
-    } else if (indexPath.row==3) {
+    }else if (indexPath.row==3) {
+        //儿童协议
+        NSLog(@"点击了Ai对话协议");
+        [self pushToNegotiateVCWithTitle:NSLocalizedString(@"Ai对话协议", @"") type:3];
+        //埋点：点击协议
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@4} completion:^(BOOL success, NSString * _Nullable message) {
+                
+        }];
+        
+        
+    }
+    else if (indexPath.row==4) {
         //三方SDK
         NSLog(@"三方SDK收集");
         ThirdPartySDKInfoViewController * vc  = [[ThirdPartySDKInfoViewController alloc]init];

@@ -21,6 +21,7 @@
 #import "startFirmwareUpgrade.h"
 #import "AnalyticsManager.h"
 #import "LogManager.h"
+#import "StarteBLEListening.h"
 #import <AVFoundation/AVFoundation.h>
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
@@ -272,6 +273,7 @@
     getOTAInfo * otaInfoAPI = [[getOTAInfo alloc]init];
     UpgradeSwitchInfo * UpgradeSwitchInfoAPI = [[UpgradeSwitchInfo alloc]init];
     startFirmwareUpgrade * startFirmwareUpgradeAPI = [[startFirmwareUpgrade alloc]init];
+    StarteBLEListening *StarteBLEListeningAPI = [[StarteBLEListening alloc]init];
     NSLog(@"NavigateToNativePageAPI 实例创建成功: %@,%@,%@", navigateAPI,UpgradeSwitchInfoAPI,startFirmwareUpgradeAPI);
 
     NSLog(@"获取 ThingMiniAppClient developClient...");
@@ -283,6 +285,7 @@
     [developClient addExtApiImpl:otaInfoAPI];
     [developClient addExtApiImpl:UpgradeSwitchInfoAPI];
     [developClient addExtApiImpl:startFirmwareUpgradeAPI];
+    [developClient addExtApiImpl:StarteBLEListeningAPI];
 
     NSLog(@"✅ 自定义 MiniApp API 注册完成!");
     NSLog(@"API 名称: %@", navigateAPI.apiName);

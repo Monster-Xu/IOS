@@ -20,7 +20,7 @@
     [super viewWillAppear:animated];
     // 导航栏颜色
     if (self.changeNavColor) {
-        [self.navigationController.navigationBar setBarTintColor:UIColor.whiteColor];
+        [self.navigationController.navigationBar setBarTintColor:UIColorHex(0x1EAAFD)];
         [self configUIBarAppearance];
     }
     
@@ -128,6 +128,8 @@ NSArray *allSubviews(UIView *aView) {
         self.navigationController.navigationBar.scrollEdgeAppearance = naviBarAppearance;
         
         
+
+        
         ///ToolBar
         UIToolbarAppearance *toolBarAppearance = [[UIToolbarAppearance alloc] init];
         if (self.navigationController.toolbar.isTranslucent) {
@@ -141,6 +143,7 @@ NSArray *allSubviews(UIView *aView) {
             self.navigationController.toolbar.scrollEdgeAppearance = toolBarAppearance;
         }
     }
+    [UINavigationBar appearance].titleTextAttributes = @{NSForegroundColorAttributeName: [UIColor whiteColor]}; // 设置标题颜色
 }
 
 ///监听push下一个或 pop 上一个，是否隐藏导航栏

@@ -11,6 +11,13 @@
 		1804043B2F06C8DD00C4438D /* 启动页背景@1x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1804043A2F06C8DD00C4438D /* 启动页背景@1x.png */; };
 		180404D42F15236700C4438D /* UpgradeSwitchInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 180404D32F15236700C4438D /* UpgradeSwitchInfo.m */; };
 		180404D72F15300100C4438D /* startFirmwareUpgrade.m in Sources */ = {isa = PBXBuildFile; fileRef = 180404D62F15300100C4438D /* startFirmwareUpgrade.m */; };
+		180406432F1E669600C4438D /* LocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 180406422F1E669600C4438D /* LocationManager.m */; };
+		180406462F22599F00C4438D /* StarterGuideView.m in Sources */ = {isa = PBXBuildFile; fileRef = 180406452F22599F00C4438D /* StarterGuideView.m */; };
+		180406482F2259B200C4438D /* StarterGuideView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 180406472F2259B200C4438D /* StarterGuideView.xib */; };
+		1804064B2F22625F00C4438D /* StarterGuideViewTwo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1804064A2F22625F00C4438D /* StarterGuideViewTwo.m */; };
+		1804064D2F22627A00C4438D /* StartGuideViewTwo.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1804064C2F22627A00C4438D /* StartGuideViewTwo.xib */; };
+		180406E02F25011200C4438D /* StarteBLEListening.m in Sources */ = {isa = PBXBuildFile; fileRef = 180406DF2F25011200C4438D /* StarteBLEListening.m */; };
+		180407742F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx in Resources */ = {isa = PBXBuildFile; fileRef = 180407732F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx */; };
 		1861562D2F042F3F00E9BBA8 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */; };
 		187647D52E86B1F20025E3A2 /* NegotiateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 187647D32E86B1F20025E3A2 /* NegotiateViewController.m */; };
 		187647D62E86B1F20025E3A2 /* NegotiateViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 187647D42E86B1F20025E3A2 /* NegotiateViewController.xib */; };
@@ -415,6 +422,17 @@
 		180404D32F15236700C4438D /* UpgradeSwitchInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = UpgradeSwitchInfo.m; sourceTree = "<group>"; };
 		180404D52F15300100C4438D /* startFirmwareUpgrade.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = startFirmwareUpgrade.h; sourceTree = "<group>"; };
 		180404D62F15300100C4438D /* startFirmwareUpgrade.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = startFirmwareUpgrade.m; sourceTree = "<group>"; };
+		180406412F1E669600C4438D /* LocationManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocationManager.h; sourceTree = "<group>"; };
+		180406422F1E669600C4438D /* LocationManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LocationManager.m; sourceTree = "<group>"; };
+		180406442F22599F00C4438D /* StarterGuideView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StarterGuideView.h; sourceTree = "<group>"; };
+		180406452F22599F00C4438D /* StarterGuideView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StarterGuideView.m; sourceTree = "<group>"; };
+		180406472F2259B200C4438D /* StarterGuideView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StarterGuideView.xib; sourceTree = "<group>"; };
+		180406492F22625F00C4438D /* StarterGuideViewTwo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StarterGuideViewTwo.h; sourceTree = "<group>"; };
+		1804064A2F22625F00C4438D /* StarterGuideViewTwo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StarterGuideViewTwo.m; sourceTree = "<group>"; };
+		1804064C2F22627A00C4438D /* StartGuideViewTwo.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StartGuideViewTwo.xib; sourceTree = "<group>"; };
+		180406DE2F25011200C4438D /* StarteBLEListening.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StarteBLEListening.h; sourceTree = "<group>"; };
+		180406DF2F25011200C4438D /* StarteBLEListening.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StarteBLEListening.m; sourceTree = "<group>"; };
+		180407732F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal_AI_Conversation_User_Agreement_EN 2.docx"; sourceTree = "<group>"; };
 		1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		187647D22E86B1F20025E3A2 /* NegotiateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NegotiateViewController.h; sourceTree = "<group>"; };
 		187647D32E86B1F20025E3A2 /* NegotiateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NegotiateViewController.m; sourceTree = "<group>"; };
@@ -1130,6 +1148,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		180406402F1E666B00C4438D /* LocationManager */ = {
+			isa = PBXGroup;
+			children = (
+				180406412F1E669600C4438D /* LocationManager.h */,
+				180406422F1E669600C4438D /* LocationManager.m */,
+			);
+			path = LocationManager;
+			sourceTree = "<group>";
+		};
 		68A0715CB115E9CAA61B5483 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -2001,6 +2028,12 @@
 				DCEA00FC2E12702300170D8C /* WifiManuallyInputCell.h */,
 				DCEA00FD2E12702300170D8C /* WifiManuallyInputCell.m */,
 				DCEA00FE2E12702300170D8C /* WifiManuallyInputCell.xib */,
+				180406442F22599F00C4438D /* StarterGuideView.h */,
+				180406452F22599F00C4438D /* StarterGuideView.m */,
+				180406472F2259B200C4438D /* StarterGuideView.xib */,
+				180406492F22625F00C4438D /* StarterGuideViewTwo.h */,
+				1804064A2F22625F00C4438D /* StarterGuideViewTwo.m */,
+				1804064C2F22627A00C4438D /* StartGuideViewTwo.xib */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -2089,6 +2122,7 @@
 		E49272542E01C1C300DB6A2A /* Helper */ = {
 			isa = PBXGroup;
 			children = (
+				180406402F1E666B00C4438D /* LocationManager */,
 				E80BED9A2E575FF500F33EA9 /* Analytics */,
 				E822B0AB2E4DBCFE00714498 /* FontManager */,
 				DC17BE9E2E20EFE400FF4EB7 /* ADImage */,
@@ -2187,6 +2221,8 @@
 				180404D32F15236700C4438D /* UpgradeSwitchInfo.m */,
 				180404D52F15300100C4438D /* startFirmwareUpgrade.h */,
 				180404D62F15300100C4438D /* startFirmwareUpgrade.m */,
+				180406DE2F25011200C4438D /* StarteBLEListening.h */,
+				180406DF2F25011200C4438D /* StarteBLEListening.m */,
 				E49272822E01C1C300DB6A2A /* APIManager.h */,
 				E49272832E01C1C300DB6A2A /* APIManager.m */,
 				E4C4BDAF2E12F21000243DA2 /* GlobalBluetoothManager.h */,
@@ -2256,6 +2292,7 @@
 				187647D92E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx */,
 				187647DF2E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx */,
 				187647DA2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx */,
+				180407732F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx */,
 				DC4876FD2E60909000967B2D /* configList.json */,
 				DC4876FE2E60909000967B2D /* deviceDetailConfig.json */,
 				DC4876FF2E60909000967B2D /* thing_custom_config.json */,
@@ -2568,6 +2605,7 @@
 				E45B01D22E27F05A00CC3A5A /* ChangeEmailViewController.xib in Resources */,
 				E4B5C6E22E236A7A00950B7D /* SettingCell.xib in Resources */,
 				E8FC13AD2E50CAA0008A2621 /* SFProRoundedHeavy.otf in Resources */,
+				1804064D2F22627A00C4438D /* StartGuideViewTwo.xib in Resources */,
 				E8FC13AE2E50CAA0008A2621 /* SFProRoundedMedium.ttf in Resources */,
 				E8FC13AF2E50CAA0008A2621 /* SFProRoundedBold.ttf in Resources */,
 				E8FC13B02E50CAA0008A2621 /* SFProRoundedRegular.otf in Resources */,
@@ -2595,6 +2633,7 @@
 				E46F39722E0FDE900039CE33 /* DeviceUnfindCell.xib in Resources */,
 				DCA5A1A32E29085A00096913 /* RevokePrivacyPolicyVC.xib in Resources */,
 				E46A38D52E0C354B00C930D3 /* my_gif.gif in Resources */,
+				180407742F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx in Resources */,
 				E49272AC2E01C70A00DB6A2A /* Localizable.strings in Resources */,
 				E42A8A202E0678A400AD0BD9 /* HomeNoDeviceCell.xib in Resources */,
 				DC4877002E60909000967B2D /* configList.json in Resources */,
@@ -2614,6 +2653,7 @@
 				DC2B32122E4B211500427A06 /* UnReceiveCodeView.xib in Resources */,
 				DCD5A2692E55B00400531779 /* SwitchConfigViewController.xib in Resources */,
 				E49272EB2E0313F100DB6A2A /* CodeViewController.xib in Resources */,
+				180406482F2259B200C4438D /* StarterGuideView.xib in Resources */,
 				DC2B32172E4C927200427A06 /* SelectBirthdayView.xib in Resources */,
 				1896661F2EB397DB00D7C9EA /* WiFiListTableViewCell.xib in Resources */,
 				E46F39942E1138130039CE33 /* GuideOpenAppPermmitCell.xib in Resources */,
@@ -2791,6 +2831,7 @@
 				DC481E2F2E0A99C50048354E /* LGAgreementView.m in Sources */,
 				DC481E302E0A99C50048354E /* LGRemindDialogView.m in Sources */,
 				DC481E312E0A99C50048354E /* LGTipView.m in Sources */,
+				180406462F22599F00C4438D /* StarterGuideView.m in Sources */,
 				DC17BE9D2E20EC1C00FF4EB7 /* BannerModel.m in Sources */,
 				DC481E322E0A99C50048354E /* LGGuideCollectionViewCell.m in Sources */,
 				DC481E332E0A99C50048354E /* LGNoDataView.m in Sources */,
@@ -2930,6 +2971,7 @@
 				E4A62AF12E251B4D00C9E0B6 /* FamailyOperationCell.m in Sources */,
 				E46F397B2E0FE4070039CE33 /* DeviceHavenFindItem.m in Sources */,
 				E46F39712E0FDE900039CE33 /* DeviceUnfindCell.m in Sources */,
+				180406432F1E669600C4438D /* LocationManager.m in Sources */,
 				DCCD62BE2E0E2EE7008988A9 /* FindDeviceViewController.m in Sources */,
 				DC984F0C2E0D446D00CD9E7B /* HomeExploreToysView.m in Sources */,
 				E46F39762E0FE24C0039CE33 /* DeviceHavenFindCell.m in Sources */,
@@ -2972,6 +3014,7 @@
 				E42A8A1A2E0677F200AD0BD9 /* HomeDeviceCell.m in Sources */,
 				E492729B2E01C1C300DB6A2A /* FormatFactory.m in Sources */,
 				E42F15052E225C8200376855 /* JXCategoryTitleImageView.m in Sources */,
+				1804064B2F22625F00C4438D /* StarterGuideViewTwo.m in Sources */,
 				E46A38C12E08179300C930D3 /* PresentAlertVC.m in Sources */,
 				DCEE59FB2E0928AE00408120 /* JHCustomMenu.m in Sources */,
 				E42A8A242E06BB7000AD0BD9 /* HomeDeviceItem.m in Sources */,
@@ -3009,6 +3052,7 @@
 				DC7C43B02E25E0EB0069CBA4 /* UIColor+JXAdd.m in Sources */,
 				DC7C43B12E25E0EB0069CBA4 /* JXCategoryFactory.m in Sources */,
 				DC7C43B22E25E0EB0069CBA4 /* JXCategoryListContainerView.m in Sources */,
+				180406E02F25011200C4438D /* StarteBLEListening.m in Sources */,
 				DC7C43B32E25E0EB0069CBA4 /* JXCategoryListVCContainerView.m in Sources */,
 				DC7C43B42E25E0EB0069CBA4 /* JXCategoryViewAnimator.m in Sources */,
 				DC7C43B52E25E0EB0069CBA4 /* JXCategoryIndicatorParamsModel.m in Sources */,
@@ -3239,7 +3283,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.10;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3288,7 +3332,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2.10;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

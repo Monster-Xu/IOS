@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UILabel *rankLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *chooseImgView;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *nameLabelTrail;
+@property (weak, nonatomic) IBOutlet NSLayoutConstraint *batteryImageW;
 
 
 @property (nonatomic, strong) ThingSmartDeviceModel *model;

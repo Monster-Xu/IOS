@@ -14,12 +14,17 @@ target 'AIToys' do
   pod 'MBProgressHUD+JDragon','0.0.3'
   pod 'YYCategories', '~> 1.0.4'
   pod 'MJExtension', '~> 3.1.2'
-  pod 'ThingSmartHomeKit', '~> 6.7.0'
+  pod 'ThingSmartHomeKit', '~> 6.7.0.3'
   pod 'DACircularProgress'
   # 添加UI业务包
   pod 'ThingSmartHelpCenterBizBundle', '~> 6.7.0'
   pod 'ThingSmartMessageBizBundle', '~> 6.7.0'
   pod 'ThingSmartCryption', :path => './ios_core_sdk'
+  
+  pod 'ThingSmartBLEKit', :path=>'./local_pods/ThingSmartBLEKit/'
+  pod 'ThingSmartBLECoreKit', :path=>'./local_pods/ThingSmartBLECoreKit/'
+  pod 'ThingSmartDeviceCoreKit', :path=>'./local_pods/ThingSmartDeviceCoreKit/'
+  
   # 添加MiniAPP
    pod "ThingSmartMiniAppBizBundle", '~> 6.7.0'
    pod "ThingSmartHomeKitBizBundle", '~> 6.7.0'

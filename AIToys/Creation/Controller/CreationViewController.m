@@ -1382,6 +1382,12 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 - (void)viewGuideButtonTapped {
     NSLog(@"点击了查看指南按钮");
     // TODO: 实现查看指南功能
+        MyWebViewController* VC  = [[ MyWebViewController alloc] init];
+         VC.changeNavColor = YES;
+//       [VC setNavigationBarColor:[UIColor redColor]];
+        VC.title =@"View the Guide";
+        VC.mainUrl = @"https://app-pre.talenpalussaastest.com/static/Guidingdiagram.png";
+        [self.navigationController pushViewController:VC animated:YES];
     // 可以跳转到教程页面或显示使用说明
 }
 

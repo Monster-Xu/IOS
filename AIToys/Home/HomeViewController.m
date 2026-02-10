@@ -40,6 +40,8 @@
 #import "AnalyticsManager.h"
 #import "AppSettingModel.h"
 #import "AudioPlayerView.h"
+#import "StarterGuideView.h"
+#import "StarterGuideViewTwo.h"
 
 static const CGFloat JXPageheightForHeaderInSection = 100;
 
@@ -71,6 +73,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @property (nonatomic, strong) dispatch_queue_t dataQueue;
 @property (nonatomic, copy) NSString *lastHardwareCode;//最新一次toyID
 @property (nonatomic, copy) NSString *homeDisplayMode; // 首页显示模式控制，从propValue获取
+@property (nonatomic, copy) NSString *homeGuideMode; // 首页显示模式控制，从propValue获取
 
 // 🔧 新增：数据加载状态管理
 @property (nonatomic, assign) BOOL hasInitialDataLoaded; // 标记是否已经完成初始数据加载
@@ -327,7 +330,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.view.backgroundColor = tableBgColor;
     self.topView.hidden = YES;
     self.titleLabel.text = NSLocalizedString(@"小朋友，你好！", @"");
-    
+//    [[ThingSmartBLEManager sharedInstance] startListening:YES];
     // 初始化音频会话状态
     self.isAudioSessionActive = NO;
     
@@ -747,6 +750,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     // 优化：分别处理每个请求，不等待所有完成
     [self loadDisplayModeConfig];
+    [self loadGuideModeConfig];
     [self loadBannerData];
     [self loadHomeAndDeviceData];
     [self loadDiyDollData];
@@ -1049,7 +1053,42 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         });
     }];
 }
+- (void)loadGuideModeConfig{
+    WEAK_SELF
+    NSMutableDictionary *param = [NSMutableDictionary dictionary];
+    [param setObject:@"FIRST_TUTORIAL" forKey:@"propKey"];
+    
+    [[APIManager shared] GET:[APIPortConfiguration getAppPropertyByKeyUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+        if (![data isKindOfClass:NSDictionary.class]) {
+            StarterGuideView * view = [[StarterGuideView alloc]initWithFrame:[UIScreen mainScreen].bounds];
+            [view show];
+            view.nextBlock = ^{
+                StarterGuideViewTwo * view = [[StarterGuideViewTwo alloc]initWithFrame:[UIScreen mainScreen].bounds];
+                [view show];
+            };
+            [weakSelf createGuideMode];
+        }
+                
+    } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+        
+    }];
+}
+-(void)createGuideMode{
+        
+        // 同步到服务器
+        NSMutableDictionary *param = [NSMutableDictionary dictionary];
+        [param setValue:[PublicObj isEmptyObject:kMyUser.userId] ? @"" : kMyUser.userId forKey:@"memberUserId"];
+        [param setValue:@"FIRST_TUTORIAL" forKey:@"propKey"];
+        [param setValue:@"0" forKey:@"propValue"];
+        [param setValue:@"首次弹出新手教程" forKey:@"description"];
 
+        [[APIManager shared] POSTJSON:[APIPortConfiguration getAppPropertyCreateUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+            
+        } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+            
+        }];
+        
+}
 - (void)loadHomeAndDeviceData {
     WEAK_SELF
     [self.homeManager getHomeListWithSuccess:^(NSArray<ThingSmartHomeModel *> *homes) {
@@ -1503,7 +1542,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"BearerId": (kMyUser.accessToken ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"prod"
+                    @"envtype": @"dev"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1577,7 +1616,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"homeId": (currentHomeId ?: @""),
                     @"langType": @"en",
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"prod"
+                    @"envtype": @"dev"
                 }];
                 
                 // 添加音频播放状态参数

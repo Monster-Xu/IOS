@@ -41,7 +41,7 @@
             break;
 
         case 3:
-            fileURL = [bundle URLForResource:@"Talenpal_Content_Creation_User_Agreement_EN" withExtension:@"docx"];
+            fileURL = [bundle URLForResource:@"Talenpal_AI_Conversation_User_Agreement_EN 2" withExtension:@"docx"];
             break;
 
         default:

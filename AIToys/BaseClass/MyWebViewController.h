@@ -11,6 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MyWebViewController : BaseViewController
 @property (nonatomic, copy) NSString *mainUrl;
+
+-(void)setNavigationBarColor:(UIColor *)color;
 @end
 
 NS_ASSUME_NONNULL_END

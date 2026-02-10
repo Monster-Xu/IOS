@@ -20,6 +20,8 @@
 #import "FindDollModel.h"
 #import "AnalyticsManager.h"
 #import "SelectWifiVC.h"
+#import "LocationManager.h"
+#import "LogManager.h"
 
 @interface FindDeviceViewController ()<UITableViewDelegate,UITableViewDataSource,RYFTableViewDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate>
 @property (nonatomic, strong)RYFTableView *tableView;
@@ -100,6 +102,7 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(faildBack) name:@"faildBackChange" object:nil];
     
     [self setupPemissionData];
+    [self updateLatitude];
 }
 
 -(void)dealloc{
@@ -416,7 +419,27 @@
         }
     }];
 }
-
+//上报位置信息
+-(void)updateLatitude{
+    
+    [[LocationManager sharedInstance]getCurrentLocationWithCompletion:^(double latitude, double longitude, NSError *error) {
+        
+        if (error) {
+                    NSLog(@"定位失败: %@", error.localizedDescription);
+        } else {
+            NSLog(@"纬度: %f, 经度: %f", latitude, longitude);
+            
+            
+            [[ThingSmartSDK sharedInstance] updateLatitude:latitude longitude:longitude];
+            [[LogManager sharedManager]logInfo:[NSString stringWithFormat:@"上报用户位置：纬度：%.6f，经度：%.6f",latitude,longitude]];
+        }
+        
+       
+    }];
+    
+    
+    
+}
 //检查Wifi弹窗
 - (void)chenckWifiAlert{
     WEAK_SELF
