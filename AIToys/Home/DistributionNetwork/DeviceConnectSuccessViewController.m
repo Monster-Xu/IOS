@@ -17,6 +17,12 @@
 @end
 
 @implementation DeviceConnectSuccessViewController
+
+- (NSString *)currentMiniAppLangType {
+    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
+    return [preferredLanguage hasPrefix:@"ar"] ? @"ar" : @"en";
+}
+
 -(void)setWifiName:(NSString *)wifiName{
     _wifiName = wifiName;
 }
@@ -63,7 +69,7 @@
             [SVProgressHUD showSuccessWithStatus:LocalString(@"Modification successful, start using.")];
             // 跳转小程序
             NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
-            [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"prod"}];
+            [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":[self currentMiniAppLangType],@"initialEntry":@"1",@"envtype": @"prod"}];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self.navigationController popToRootViewControllerAnimated:NO];
             });
@@ -73,7 +79,7 @@
             }];
     }else{
         NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en",@"initialEntry":@"1",@"envtype": @"prod"}];
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":[self currentMiniAppLangType],@"initialEntry":@"1",@"envtype": @"prod"}];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self.navigationController popToRootViewControllerAnimated:NO];
         });

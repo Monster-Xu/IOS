@@ -11,14 +11,16 @@
 
 /// 所有接口请求的基础域名
 + (NSString *)baseURL {
-//    ///当前环境 1、测试  2、生产
-//    NSInteger type = [[NSUserDefaults standardUserDefaults] integerForKey:KCURRENT_API_TYPE];
-//    if (type == 2) {
-//        return @"https://app.talenpalussaastest.com/";
-//    } else{
-//        return @"https://app.talenpalussaastest.com/";
-//    }
-    return @"https://app-pre.talenpalussaastest.com/";
+    NSString *bundleId = [[NSBundle mainBundle] bundleIdentifier] ?: @"";
+    if ([bundleId isEqualToString:@"com.talenpal.talenpalapp"]) {
+        return @"https://app.talenpalussaastest.com/";
+    }
+    if ([bundleId isEqualToString:@"com.talenpal.talenpalappdev"]) {
+        return @"https://app-pre.talenpalussaastest.com/";
+    }
+
+    // 默认值（保持现有行为）
+    return @"https://app.talenpalussaastest.com/";
 }
 
 /// 登录接口

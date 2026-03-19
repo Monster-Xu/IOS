@@ -33,7 +33,7 @@
     [self.alertView addSubview:titleLabel];
     [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.alertView).offset(20);
-        make.left.equalTo(self.alertView).offset(20);
+        make.leading.equalTo(self.alertView).offset(20);
         make.height.mas_equalTo(30);
     }];
     
@@ -42,7 +42,7 @@
     [closeBtn addTarget:self action:@selector(close) forControlEvents:UIControlEventTouchUpInside];
     [self.alertView addSubview:closeBtn];
     [closeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.right.mas_equalTo(self.alertView);
+        make.top.trailing.mas_equalTo(self.alertView);
         make.height.mas_equalTo(40);
         make.width.mas_equalTo(50);
     }];
@@ -71,8 +71,8 @@
     [sureBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(topImgView.mas_bottom).offset(35);
         make.height.mas_equalTo(48);
-        make.left.equalTo(self.alertView).offset(24);
-        make.right.equalTo(self.alertView).offset(-24);
+        make.leading.equalTo(self.alertView).offset(24);
+        make.trailing.equalTo(self.alertView).offset(-24);
         make.bottom.equalTo(self.alertView).offset(-25);
     }];
     

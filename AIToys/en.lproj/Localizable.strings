@@ -118,6 +118,14 @@
 "撤销成功" = "Revoke success";
 "取消" = "Cancel";
 "确定" = "Confirm";
+"切换语言" = "Switch Language";
+"语言" = "Language";
+"简体中文" = "Simplified Chinese";
+"英语" = "English";
+"法语" = "French";
+"德语" = "German";
+"西班牙语" = "Spanish";
+"阿拉伯语" = "Arabic";
 "请至少保留一个家庭" = "Please keep at least one family";
 "删除家庭不可恢复，您的家庭成员将会被清退，是否继续？" = "Deleting a family cannot be restored, and your family members will be removed. Do you want to continue?";
 "添加设备" = "Add Device";
@@ -304,3 +312,11 @@
 "按住说话" = "Hold to speak";
 "温馨提示" = "Friendly Reminder";
 "应用市场" = "APP Store";
+"切换多语言后，APP将会重启，是否继续？" = "The app will restart to apply the language change. Continue?";
+"请先创建家庭" = "Please create a home first";
+"音频加载中..." = "Loading audio...";
+"音频URL为空" = "Audio URL is empty";
+"音频数据为空" = "Audio data is empty";
+"音频加载失败" = "Failed to load audio";
+"已经是第一首了" = "This is already the first track.";
+"已经是最后一首了" = "This is already the last track.";

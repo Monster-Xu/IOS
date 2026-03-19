@@ -48,7 +48,7 @@
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.mas_equalTo(self.alertView).offset(StatusBar_Height);
         make.bottom.mas_equalTo(self.alertView).offset(-60);
-        make.left.right.mas_equalTo(self.alertView);
+        make.leading.trailing.mas_equalTo(self.alertView);
     }];
     
     UIView *lineView = [[UIView alloc] init];
@@ -56,8 +56,8 @@
     [self.alertView addSubview:lineView];
     [lineView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.tableView.mas_bottom).offset(2);
-        make.left.equalTo(self.alertView).offset(20);
-        make.right.equalTo(self.alertView).offset(-20);
+        make.leading.equalTo(self.alertView).offset(20);
+        make.trailing.equalTo(self.alertView).offset(-20);
         make.height.mas_equalTo(1);
     }];
     
@@ -65,14 +65,14 @@
     [self.alertView addSubview:bottomView];
     [bottomView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.tableView.mas_bottom).offset(2);
-        make.left.right.bottom.equalTo(self.alertView);
+        make.leading.trailing.bottom.equalTo(self.alertView);
         make.height.mas_equalTo(bottomViewH);
     }];
     
     UIImageView *imgView = [[UIImageView alloc] initWithImage:QD_IMG(@"icon_famaily_manager")];
     [bottomView addSubview:imgView];
     [imgView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(bottomView).offset(20);
+        make.leading.equalTo(bottomView).offset(20);
         make.size.mas_equalTo(CGSizeMake(24, 24));
         make.centerY.equalTo(bottomView);
     }];
@@ -83,7 +83,7 @@
     nameLabel.textColor = UIColorFromRGBA(000000, 0.9);
     [bottomView addSubview:nameLabel];
     [nameLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(imgView.mas_right).offset(12);
+        make.leading.equalTo(imgView.mas_trailing).offset(12);
         make.centerY.equalTo(bottomView);
     }];
        

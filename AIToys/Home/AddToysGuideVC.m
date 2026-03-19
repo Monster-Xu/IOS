@@ -32,7 +32,7 @@
     topImgView.image = QD_IMG(@"toys_guide_bg");
     [self.alertView addSubview:topImgView];
     [topImgView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.left.right.mas_equalTo(self.alertView);
+        make.top.leading.trailing.mas_equalTo(self.alertView);
     }];
     
     UIButton *closeBtn = [[UIButton alloc] init];
@@ -40,7 +40,7 @@
     [closeBtn addTarget:self action:@selector(close) forControlEvents:UIControlEventTouchUpInside];
     [self.alertView addSubview:closeBtn];
     [closeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.right.mas_equalTo(self.alertView);
+        make.top.trailing.mas_equalTo(self.alertView);
         make.height.mas_equalTo(40);
         make.width.mas_equalTo(50);
     }];
@@ -54,8 +54,8 @@
     [self.alertView addSubview:contentLabel];
     [contentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.mas_equalTo(topImgView.mas_bottom).offset(25);
-        make.left.equalTo(self.alertView).offset(24);
-        make.right.equalTo(self.alertView).offset(-24);
+        make.leading.equalTo(self.alertView).offset(24);
+        make.trailing.equalTo(self.alertView).offset(-24);
     }];
     
     UIButton *sureBtn = [[UIButton alloc] init];
@@ -70,8 +70,8 @@
     [sureBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(contentLabel.mas_bottom).offset(25);
         make.height.mas_equalTo(48);
-        make.left.equalTo(self.alertView).offset(24);
-        make.right.equalTo(self.alertView).offset(-24);
+        make.leading.equalTo(self.alertView).offset(24);
+        make.trailing.equalTo(self.alertView).offset(-24);
         make.bottom.equalTo(self.alertView).offset(-25);
     }];
     

@@ -88,10 +88,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @property (nonatomic, copy) NSString *currentAudioURL;
 @property (nonatomic, copy) NSString *currentStoryTitle;
 @property (nonatomic, copy) NSString *currentCoverImageURL;
+@property (nonatomic, copy) NSArray<NSString *> *cachedBannerMediaURLs;
 
 @end
 
 @implementation HomeViewController
+
+- (NSString *)currentMiniAppLangType {
+    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
+    return [preferredLanguage hasPrefix:@"ar"] ? @"ar" : @"en";
+}
 
 // 添加数组安全访问方法
 - (id)safeObjectAtIndex:(NSUInteger)index fromArray:(NSArray *)array {
@@ -306,6 +312,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 - (void)dealloc{
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"HomeDeviceRefresh" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"auditionNotification" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"DeletToysSuccess" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:AVAudioSessionInterruptionNotification object:nil];
     
     // 清理音频播放器
@@ -329,7 +337,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.hj_NavIsHidden = YES;
     self.view.backgroundColor = tableBgColor;
     self.topView.hidden = YES;
-    self.titleLabel.text = NSLocalizedString(@"小朋友，你好！", @"");
+    self.titleLabel.text = LocalString(@"小朋友，你好！");
 //    [[ThingSmartBLEManager sharedInstance] startListening:YES];
     // 初始化音频会话状态
     self.isAudioSessionActive = NO;
@@ -546,8 +554,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         [self updateExploreDollUI];
     }
     
-    // 立即刷新表格
-    [self.pageListView.mainTableView reloadData];
+    // 缓存命中时只刷新前两段，避免整表重载引发卡顿
+    [self reloadSectionSafely:0];
+    [self reloadSectionSafely:1];
     
     NSLog(@"✅ UI已使用缓存数据立即刷新");
 }
@@ -680,8 +689,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     // 温和地刷新表格数据
     [UIView performWithoutAnimation:^{
         // 只刷新设备相关的section
-        NSIndexSet *sections = [NSIndexSet indexSetWithIndex:0];
-        [self.pageListView.mainTableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+        [self reloadSectionSafely:0];
     }];
 }
 
@@ -867,7 +875,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:dataToCache requiringSecureCoding:NO error:&error];
         if (data && !error) {
             [[NSUserDefaults standardUserDefaults] setObject:data forKey:@"CachedHomeBanners"];
-            [[NSUserDefaults standardUserDefaults] synchronize];
         }
     }
 }
@@ -887,7 +894,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:dataToCache requiringSecureCoding:NO error:&error];
         if (data && !error) {
             [[NSUserDefaults standardUserDefaults] setObject:data forKey:@"CachedExploreDolls"];
-            [[NSUserDefaults standardUserDefaults] synchronize];
         }
     }
 }
@@ -908,7 +914,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         NSData *data = [NSKeyedArchiver archivedDataWithRootObject:dataToCache requiringSecureCoding:NO error:&error];
         if (data && !error) {
             [[NSUserDefaults standardUserDefaults] setObject:data forKey:[NSString stringWithFormat:@"CachedDiyDolls_%@", currentHomeId]];
-            [[NSUserDefaults standardUserDefaults] synchronize];
         }
     }
 }
@@ -972,18 +977,21 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [[APIManager shared] GET:[APIPortConfiguration getHomeDoolListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         NSLog(@"创意公仔数据请求成功");
         NSArray *dataArr = @[];
+        NSArray<HomeDollModel *> *newDiyDollList = @[];
         if ([data isKindOfClass:NSDictionary.class]) {
             if ([data[@"list"] isKindOfClass:NSArray.class]) {
                 dataArr = (NSArray *)data[@"list"];
-                weakSelf.diyDollList = [NSMutableArray arrayWithArray:[HomeDollModel mj_objectArrayWithKeyValuesArray:dataArr]];
+                newDiyDollList = [HomeDollModel mj_objectArrayWithKeyValuesArray:dataArr];
             }
         }
-        
-        // 缓存数据
-        [weakSelf cacheDiyDollData];
-        
-        // 立即更新我的公仔部分UI
+
         dispatch_async(dispatch_get_main_queue(), ^{
+            if ([weakSelf isDiyDollArrayEqual:weakSelf.diyDollList newArray:newDiyDollList]) {
+                NSLog(@"🔧 我的公仔数据未变化，跳过UI更新");
+                return;
+            }
+            weakSelf.diyDollList = [NSMutableArray arrayWithArray:newDiyDollList];
+            [weakSelf cacheDiyDollData];
             [weakSelf updateDiyDollUI];
         });
         
@@ -1002,16 +1010,19 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [[APIManager shared] GET:[APIPortConfiguration getHomeExploreListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         NSLog(@"探索公仔数据请求成功");
         NSArray *dataArr = @[];
+        NSArray<FindDollModel *> *newExploreDollList = @[];
         if ([data isKindOfClass:NSArray.class]) {
             dataArr = (NSArray *)data;
-            weakSelf.exploreDollList = [NSMutableArray arrayWithArray:[FindDollModel mj_objectArrayWithKeyValuesArray:dataArr]];
+            newExploreDollList = [FindDollModel mj_objectArrayWithKeyValuesArray:dataArr];
         }
-        
-        // 缓存数据
-        [weakSelf cacheExploreDollData];
-        
-        // 立即更新探索公仔部分UI
+
         dispatch_async(dispatch_get_main_queue(), ^{
+            if ([weakSelf isExploreDollArrayEqual:weakSelf.exploreDollList newArray:newExploreDollList]) {
+                NSLog(@"🔧 探索公仔数据未变化，跳过UI更新");
+                return;
+            }
+            weakSelf.exploreDollList = [NSMutableArray arrayWithArray:newExploreDollList];
+            [weakSelf cacheExploreDollData];
             [weakSelf updateExploreDollUI];
         });
         
@@ -1019,10 +1030,45 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         NSLog(@"探索公仔请求失败: %@", msg);
         // 不使用默认数据，保持空状态
         dispatch_async(dispatch_get_main_queue(), ^{
+            if (weakSelf.exploreDollList.count == 0) {
+                return;
+            }
             [weakSelf.exploreDollList removeAllObjects];
             [weakSelf updateExploreDollUI];
         });
     }];
+}
+
+- (BOOL)isDiyDollArrayEqual:(NSArray<HomeDollModel *> *)oldArray newArray:(NSArray<HomeDollModel *> *)newArray {
+    if (oldArray.count != newArray.count) {
+        return NO;
+    }
+    for (NSInteger i = 0; i < oldArray.count; i++) {
+        HomeDollModel *oldModel = oldArray[i];
+        HomeDollModel *newModel = newArray[i];
+        NSString *oldId = oldModel.Id ?: @"";
+        NSString *newId = newModel.Id ?: @"";
+        if (![oldId isEqualToString:newId]) {
+            return NO;
+        }
+    }
+    return YES;
+}
+
+- (BOOL)isExploreDollArrayEqual:(NSArray<FindDollModel *> *)oldArray newArray:(NSArray<FindDollModel *> *)newArray {
+    if (oldArray.count != newArray.count) {
+        return NO;
+    }
+    for (NSInteger i = 0; i < oldArray.count; i++) {
+        FindDollModel *oldModel = oldArray[i];
+        FindDollModel *newModel = newArray[i];
+        NSString *oldId = oldModel.Id ?: @"";
+        NSString *newId = newModel.Id ?: @"";
+        if (![oldId isEqualToString:newId]) {
+            return NO;
+        }
+    }
+    return YES;
 }
 
 - (void)loadDisplayModeConfig {
@@ -1158,7 +1204,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }
     
     // 🔧 优化：避免不必要的UI更新
-    static NSArray *lastBannerUrls = nil;
     NSMutableArray *currentBannerUrls = [NSMutableArray array];
     
     if(self.bannerImgArray.count > 0){
@@ -1169,13 +1214,13 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         }
         
         // 检查是否需要更新
-        if ([currentBannerUrls isEqualToArray:lastBannerUrls]) {
+        if ([currentBannerUrls isEqualToArray:self.cachedBannerMediaURLs]) {
             NSLog(@"🔧 轮播图数据未变化，跳过UI更新");
             return;
         }
         
         // 更新记录
-        lastBannerUrls = [currentBannerUrls copy];
+        self.cachedBannerMediaURLs = [currentBannerUrls copy];
         
         if(!self.cycleScrollView){
             self.pageListView.mainTableView.tableHeaderView = [self setupHeaderView];
@@ -1234,17 +1279,26 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     // 🔧 优化：使用performWithoutAnimation避免闪动
     [UIView performWithoutAnimation:^{
-        NSIndexSet *sections = [NSIndexSet indexSetWithIndex:1];
-        [self.pageListView.mainTableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+        [self reloadSectionSafely:1];
     }];
 }
 
 - (void)updateDeviceUI {
     // 🔧 优化：使用performWithoutAnimation避免闪动
     [UIView performWithoutAnimation:^{
-        NSIndexSet *sections = [NSIndexSet indexSetWithIndex:0];
-        [self.pageListView.mainTableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+        [self reloadSectionSafely:0];
     }];
+}
+
+- (void)reloadSectionSafely:(NSInteger)section {
+    UITableView *tableView = self.pageListView.mainTableView;
+    NSInteger sectionCount = [self numberOfSectionsInTableView:tableView];
+    if (section >= 0 && section < sectionCount) {
+        NSIndexSet *sections = [NSIndexSet indexSetWithIndex:section];
+        [tableView reloadSections:sections withRowAnimation:UITableViewRowAnimationNone];
+    } else {
+        [tableView reloadData];
+    }
 }
 
 - (void)updateExploreDollUI {
@@ -1436,7 +1490,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 {
     if (indexPath.row == 0) {
         if(self.homeList.count == 0){
-            [SVProgressHUD showErrorWithStatus:@"请先创建家庭"];
+            [SVProgressHUD showErrorWithStatus:LocalString(@"请先创建家庭")];
             return;
         }
         FindDeviceViewController *VC = [FindDeviceViewController new];
@@ -1530,6 +1584,10 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             HomeDeviceCell *cell = [tableView dequeueReusableCellWithIdentifier:@"HomeDeviceCell" forIndexPath:indexPath];
             cell.deviceList = self.deviceArr;
             cell.itemClickBlock = ^(NSInteger index) {
+                if (index < 0 || index >= weakSelf.deviceArr.count) {
+                    NSLog(@"⚠️ 设备索引越界: index=%ld, count=%lu", (long)index, (unsigned long)weakSelf.deviceArr.count);
+                    return;
+                }
                 // 埋点上报：我的设备点击
                 [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:weakSelf.deviceArr[index].devId pid:weakSelf.deviceArr[index].uuid];
 
@@ -1540,9 +1598,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
                     @"deviceId": weakSelf.deviceArr[index].devId,
                     @"BearerId": (kMyUser.accessToken ?: @""),
-                    @"langType": @"en",
+                    @"langType": [weakSelf currentMiniAppLangType],
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"dev"
+                    @"envtype": @"prod"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1599,6 +1657,10 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             HomeToysCell *cell = [tableView dequeueReusableCellWithIdentifier:@"HomeToysCell" forIndexPath:indexPath];
             cell.dataArr = self.diyDollList;
             cell.itemClickBlock = ^(NSInteger index) {
+                if (index < 0 || index >= weakSelf.diyDollList.count) {
+                    NSLog(@"⚠️ 公仔索引越界: index=%ld, count=%lu", (long)index, (unsigned long)weakSelf.diyDollList.count);
+                    return;
+                }
                 // 埋点上报：我的公仔点击
                 HomeDollModel *dollModel = weakSelf.diyDollList[index];
                 [[AnalyticsManager sharedManager] reportMyDollClickWithId:dollModel.dollModelId ?: @""
@@ -1614,9 +1676,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     @"dollId": weakSelf.diyDollList[index].Id,
                     @"BearerId": (kMyUser.accessToken ?: @""),
                     @"homeId": (currentHomeId ?: @""),
-                    @"langType": @"en",
+                    @"langType": [weakSelf currentMiniAppLangType],
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"dev"
+                    @"envtype": @"prod"
                 }];
                 
                 // 添加音频播放状态参数
@@ -1666,9 +1728,10 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     UILabel *titleLab = [UILabel new];
     titleLab.textColor = UIColorHex(131516);
     titleLab.font = [ATFontManager boldSystemFontOfSize:20];
+    titleLab.textAlignment = NSTextAlignmentNatural;
     [headView addSubview:titleLab];
     [titleLab mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(headView).offset(15);
+        make.leading.equalTo(headView).offset(15);
         make.centerY.equalTo(headView);
     }];
     if(section == 0){
@@ -1677,7 +1740,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         [addBtn addTarget:self action:@selector(addDevice) forControlEvents:UIControlEventTouchUpInside];
         [headView addSubview:addBtn];
         [addBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.left.equalTo(titleLab.mas_right).offset(0);
+            make.leading.equalTo(titleLab.mas_trailing).offset(0);
             make.top.bottom.equalTo(headView);
             make.width.mas_equalTo(40);
         }];
@@ -1688,7 +1751,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         [infoBtn addTarget:self action:@selector(toysGuide) forControlEvents:UIControlEventTouchUpInside];
         [headView addSubview:infoBtn];
         [infoBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.left.equalTo(titleLab.mas_right).offset(0);
+            make.leading.equalTo(titleLab.mas_trailing).offset(0);
             make.top.bottom.equalTo(headView);
             make.width.mas_equalTo(40);
         }];
@@ -1696,16 +1759,23 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     if(section ==0 || section ==1){
         UIButton *moreBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [moreBtn setTitle:NSLocalizedString(@"更多", @"")  forState:UIControlStateNormal];
-        [moreBtn setImage:QD_IMG(@"home_section_more") forState:UIControlStateNormal];
+        [moreBtn setTitle:LocalString(@"更多") forState:UIControlStateNormal];
+        UIImage *moreImage = QD_IMG(@"home_section_more");
+        if (@available(iOS 9.0, *)) {
+            moreImage = [moreImage imageFlippedForRightToLeftLayoutDirection];
+        }
+        [moreBtn setImage:moreImage forState:UIControlStateNormal];
         [moreBtn setTitleColor:UIColorHex(1DA9FF) forState:UIControlStateNormal];
         moreBtn.titleLabel.font = [ATFontManager systemFontOfSize:14];
+        moreBtn.titleLabel.textAlignment = NSTextAlignmentNatural;
         moreBtn.tag = section + 100;
         [moreBtn addTarget:self action:@selector(viewMore:) forControlEvents:UIControlEventTouchUpInside];
-        [moreBtn layoutWithStyle:HKBtnImagePosition_Right space:15];
+        UIUserInterfaceLayoutDirection direction = [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:headView.semanticContentAttribute];
+        HKBtnImagePosition imagePosition = direction == UIUserInterfaceLayoutDirectionRightToLeft ? HKBtnImagePosition_Left : HKBtnImagePosition_Right;
+        [moreBtn layoutWithStyle:imagePosition space:15];
         [headView addSubview:moreBtn];
         [moreBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.right.equalTo(headView.mas_right).offset(-15);
+            make.trailing.equalTo(headView.mas_trailing).offset(-15);
             make.top.bottom.equalTo(headView);
             make.width.mas_equalTo(60);
         }];
@@ -1718,13 +1788,13 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     switch (section) {
         case 0:
-            titleLab.text = NSLocalizedString(@"我的设备", @"");
+            titleLab.text = LocalString(@"我的设备");
             break;
         case 1:
-            titleLab.text = NSLocalizedString(@"我的公仔", @"") ;
+            titleLab.text = LocalString(@"我的公仔");
             break;
         case 2:
-            titleLab.text = NSLocalizedString(@"探索公仔", @"") ;
+            titleLab.text = LocalString(@"探索公仔");
             break;
         default:
             break;
@@ -1774,7 +1844,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 //添加设备
 -(void)addDevice{
     if(self.homeList.count == 0){
-        [SVProgressHUD showErrorWithStatus:@"请先创建家庭"];
+        [SVProgressHUD showErrorWithStatus:LocalString(@"请先创建家庭")];
         return;
     }
     FindDeviceViewController *VC = [FindDeviceViewController new];
@@ -1905,7 +1975,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [self getDollDetailListWithId:notification.userInfo[@"DollId"]];
 }
 -(void)getDollDetailListWithId:(NSString * )Id{
-    [SVProgressHUD showWithStatus:@"Audio loading..."];
+    [SVProgressHUD showWithStatus:LocalString(@"音频加载中...")];
     WEAK_SELF
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
     [param setObject:Id forKey:@"dollModelId"];
@@ -1922,17 +1992,17 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                                    coverImageURL:dataDic[@"assetCoverImg"]];
             } else {
                 NSLog(@"⚠️ 音频URL为空");
-                [SVProgressHUD showErrorWithStatus:@"音频URL为空"];
+                [SVProgressHUD showErrorWithStatus:LocalString(@"音频URL为空")];
             }
         } else {
             NSLog(@"⚠️ 返回的数据为空或格式错误");
-            [SVProgressHUD showErrorWithStatus:@"音频数据为空"];
+            [SVProgressHUD showErrorWithStatus:LocalString(@"音频数据为空")];
         }
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
         [SVProgressHUD dismiss];
         NSLog(@"❌ 获取音频详情失败: %@", msg);
         self.view.userInteractionEnabled = YES;
-        [SVProgressHUD showErrorWithStatus:@"音频加载失败"];
+        [SVProgressHUD showErrorWithStatus:LocalString(@"音频加载失败")];
     }];
 }
 #pragma mark - ThingSmartHomeDelegate
@@ -2306,12 +2376,12 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 - (void)audioPlayerDidTapPrevious {
     NSLog(@"用户点击了上一首按钮");
-    [SVProgressHUD showErrorWithStatus:@"This is already the first song."];
+    [SVProgressHUD showErrorWithStatus:LocalString(@"已经是第一首了")];
 }
 
 - (void)audioPlayerDidTapNext {
     NSLog(@"用户点击了下一首按钮");
-    [SVProgressHUD showErrorWithStatus:@"This is the last song."];
+    [SVProgressHUD showErrorWithStatus:LocalString(@"已经是最后一首了")];
 }
 
 

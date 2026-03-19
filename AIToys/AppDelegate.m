@@ -39,7 +39,11 @@
     [FontValidationHelper validateFontsInAppDelegate];
     // ⭐️ 只需要这一行代码，即可开始全局自动记录 ⭐️
     [LogManager startAutoLogging];
-    [[ThingSmartSDK sharedInstance] startWithAppKey:Smart_APPID secretKey:Smart_AppSecret];
+    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
+    BOOL isReleaseBundle = [bundleId isEqualToString:@"com.talenpal.talenpalapp"];
+    NSString *appKey = isReleaseBundle ? Smart_APPID : Smart_APPIDDEV;
+    NSString *appSecret = isReleaseBundle ? Smart_AppSecret : Smart_AppSecretDEV;
+    [[ThingSmartSDK sharedInstance] startWithAppKey:appKey secretKey:appSecret];
     // App 启动时初始化涂鸦小程序
     [[ThingMiniAppClient initialClient] initialize];
     // 开启 vConsole 调试开关

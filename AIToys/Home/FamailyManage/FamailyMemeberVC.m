@@ -88,7 +88,7 @@
     [inviteBtn addTarget:self action:@selector(inviteAgain) forControlEvents:UIControlEventTouchUpInside];
     [btnView addSubview:inviteBtn];
     [inviteBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.left.right.equalTo(btnView);
+        make.top.leading.trailing.equalTo(btnView);
         make.height.mas_equalTo(64);
     }];
     
@@ -100,7 +100,7 @@
     [btnView addSubview:revokeBtn];
     [revokeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(inviteBtn.mas_bottom).offset(0);
-        make.bottom.left.right.equalTo(btnView);
+        make.bottom.leading.trailing.equalTo(btnView);
         make.height.mas_equalTo(64);
     }];
     

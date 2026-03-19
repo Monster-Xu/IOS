@@ -21,6 +21,11 @@
 
 @implementation SwitchConfigViewController
 
+- (NSString *)currentMiniAppLangType {
+    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
+    return [preferredLanguage hasPrefix:@"ar"] ? @"ar" : @"en";
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
 //    self.productConfigBtn im
@@ -33,9 +38,17 @@
         self.testConfigBtn.selected = YES;
         self.productConfigBtn.selected = NO;
     }
-    [self.testConfigBtn layoutWithStyle:HKBtnImagePosition_Left space:15];
+    UIUserInterfaceLayoutDirection direction = [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:self.view.semanticContentAttribute];
+    HKBtnImagePosition imagePosition = direction == UIUserInterfaceLayoutDirectionRightToLeft ? HKBtnImagePosition_Right : HKBtnImagePosition_Left;
+    [self.testConfigBtn layoutWithStyle:imagePosition space:15];
+    [self.productConfigBtn layoutWithStyle:imagePosition space:15];
     
-    [self.productConfigBtn layoutWithStyle:HKBtnImagePosition_Left space:15];
+    self.nameLabel.textAlignment = NSTextAlignmentNatural;
+    self.testConfigBtn.titleLabel.textAlignment = NSTextAlignmentNatural;
+    self.productConfigBtn.titleLabel.textAlignment = NSTextAlignmentNatural;
+    self.scanBtn.titleLabel.textAlignment = NSTextAlignmentNatural;
+    self.testConfigBtn.contentHorizontalAlignment = direction == UIUserInterfaceLayoutDirectionRightToLeft ? UIControlContentHorizontalAlignmentRight : UIControlContentHorizontalAlignmentLeft;
+    self.productConfigBtn.contentHorizontalAlignment = direction == UIUserInterfaceLayoutDirectionRightToLeft ? UIControlContentHorizontalAlignmentRight : UIControlContentHorizontalAlignmentLeft;
 }
 
 //扫码
@@ -44,7 +57,7 @@
     WCQRCodeScanningVC *WBVC = [[WCQRCodeScanningVC alloc] init];
     WBVC.scanResultBlock = ^(NSString *result) {
         // 通过二维码打开小程序
-        [[ThingMiniAppClient coreClient] openMiniAppByQrcode:result params:@{@"BearerId":(kMyUser.accessToken?:@""),@"langType":@"en"}];
+        [[ThingMiniAppClient coreClient] openMiniAppByQrcode:result params:@{@"BearerId":(kMyUser.accessToken?:@""),@"langType":[self currentMiniAppLangType]}];
     };
     [self QRCodeScanVC:WBVC];
 }

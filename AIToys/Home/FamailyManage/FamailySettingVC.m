@@ -148,7 +148,7 @@
         [inviteBtn addTarget:self action:@selector(inviteMember:) forControlEvents:UIControlEventTouchUpInside];
         [btnView addSubview:inviteBtn];
         [inviteBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.top.left.right.equalTo(btnView);
+            make.top.leading.trailing.equalTo(btnView);
             make.height.mas_equalTo(64);
         }];
         deleteBtnTop = 64;
@@ -362,7 +362,7 @@
         nameLabel.text = LocalString(@"添加成员");
         [footerView addSubview:nameLabel];
         [nameLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.left.equalTo(footerView).offset(15);
+            make.leading.equalTo(footerView).offset(15);
             make.top.bottom.equalTo(footerView);
         }];
         UIButton *addBtn = [UIButton buttonWithType:UIButtonTypeCustom];

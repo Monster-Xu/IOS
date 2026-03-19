@@ -422,10 +422,12 @@
 //上报位置信息
 -(void)updateLatitude{
     
+    
     [[LocationManager sharedInstance]getCurrentLocationWithCompletion:^(double latitude, double longitude, NSError *error) {
         
         if (error) {
                     NSLog(@"定位失败: %@", error.localizedDescription);
+            [[LogManager sharedManager]logInfo:[NSString stringWithFormat:@"上报用户位置失败:%@",error.localizedDescription]];
         } else {
             NSLog(@"纬度: %f, 经度: %f", latitude, longitude);
             

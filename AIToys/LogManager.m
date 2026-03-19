@@ -7,6 +7,53 @@
 #import <UIKit/UIKit.h>
 #import <objc/runtime.h>
 #import <sys/utsname.h>
+#import <signal.h>
+#import <execinfo.h>
+#import <unistd.h>
+#import <fcntl.h>
+#import <string.h>
+
+static int gCrashLogFD = -1;
+
+static const char *crashSignalName(int signal) {
+    switch (signal) {
+        case SIGABRT: return "SIGABRT";
+        case SIGSEGV: return "SIGSEGV";
+        case SIGBUS:  return "SIGBUS";
+        case SIGILL:  return "SIGILL";
+        case SIGFPE:  return "SIGFPE";
+        case SIGTRAP: return "SIGTRAP";
+        default:      return "UNKNOWN";
+    }
+}
+
+static void writeCrashSignalLog(int signal) {
+    if (gCrashLogFD < 0) {
+        return;
+    }
+    const char *signalName = crashSignalName(signal);
+    char header[256];
+    int headerLen = snprintf(header, sizeof(header),
+                             "\n========== Signal Crash ==========\nSignal: %s (%d)\n",
+                             signalName, signal);
+    if (headerLen > 0) {
+        write(gCrashLogFD, header, (size_t)headerLen);
+    }
+
+    void *callstack[128];
+    int frames = backtrace(callstack, 128);
+    backtrace_symbols_fd(callstack, frames, gCrashLogFD);
+
+    const char *footer = "===============================\n";
+    write(gCrashLogFD, footer, strlen(footer));
+}
+
+static void signalCrashHandler(int signo) {
+    writeCrashSignalLog(signo);
+
+    signal(signo, SIG_DFL);
+    kill(getpid(), signo);
+}
 
 @interface LogManager ()
 
@@ -270,17 +317,56 @@
 
 - (void)setupCrashHandler {
     NSSetUncaughtExceptionHandler(&uncaughtExceptionHandler);
+    [self setupSignalHandlers];
+}
+
+- (void)setupSignalHandlers {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        if (gCrashLogFD < 0) {
+            gCrashLogFD = open(self.logFilePath.UTF8String, O_WRONLY | O_APPEND);
+        }
+        signal(SIGABRT, signalCrashHandler);
+        signal(SIGSEGV, signalCrashHandler);
+        signal(SIGBUS, signalCrashHandler);
+        signal(SIGILL, signalCrashHandler);
+        signal(SIGFPE, signalCrashHandler);
+        signal(SIGTRAP, signalCrashHandler);
+    });
 }
 
 void uncaughtExceptionHandler(NSException *exception) {
-    NSString *crashLog = [NSString stringWithFormat:@"\n========== 崩溃日志 ==========\n时间: %@\n异常名称: %@\n异常原因: %@\n堆栈信息:\n%@\n==========================\n",
-                         [[LogManager sharedManager].dateFormatter stringFromDate:[NSDate date]],
+    LogManager *manager = [LogManager sharedManager];
+    NSString *timestamp = [manager.dateFormatter stringFromDate:[NSDate date]];
+    NSString *appVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] ?: @"unknown";
+    NSString *appBuild = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] ?: @"unknown";
+    NSString *systemVersion = [[UIDevice currentDevice] systemVersion] ?: @"unknown";
+    NSString *deviceModel = [manager getDeviceModel] ?: @"unknown";
+    NSString *threadName = [NSThread isMainThread] ? @"main" : (NSThread.currentThread.name.length > 0 ? NSThread.currentThread.name : @"background");
+    NSString *appState = @"unknown";
+    UIApplicationState state = UIApplication.sharedApplication.applicationState;
+    if (state == UIApplicationStateActive) {
+        appState = @"active";
+    } else if (state == UIApplicationStateInactive) {
+        appState = @"inactive";
+    } else if (state == UIApplicationStateBackground) {
+        appState = @"background";
+    }
+
+    NSString *crashLog = [NSString stringWithFormat:@"\n========== 崩溃日志 ==========\n时间: %@\n应用版本: %@ (%@)\n系统版本: %@\n设备型号: %@\n应用状态: %@\n线程: %@\n异常名称: %@\n异常原因: %@\n堆栈信息:\n%@\n==========================\n",
+                         timestamp,
+                         appVersion,
+                         appBuild,
+                         systemVersion,
+                         deviceModel,
+                         appState,
+                         threadName,
                          exception.name,
                          exception.reason,
                          [exception.callStackSymbols componentsJoinedByString:@"\n"]];
     
-    [[LogManager sharedManager] writeLogToFile:crashLog];
-    [[LogManager sharedManager].fileHandle synchronizeFile];
+    [manager writeLogToFile:crashLog];
+    [manager.fileHandle synchronizeFile];
 }
 
 #pragma mark - 日志记录方法

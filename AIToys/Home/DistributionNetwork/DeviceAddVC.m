@@ -160,7 +160,7 @@
            if (!cell) {
                cell = [[UITableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"Cell"];
                UILabel *label = [[UILabel alloc]initWithFrame:CGRectMake(15, 0, kScreenWidth-30, 24)];
-               label.textAlignment = NSTextAlignmentLeft;
+               label.textAlignment = NSTextAlignmentNatural;
                label.font = [ATFontManager systemFontOfSize:14];
                label.textColor = UIColorFromRGBA(000000, 0.7);
                label.tag = 100;

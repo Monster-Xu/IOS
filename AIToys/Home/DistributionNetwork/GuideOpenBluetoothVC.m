@@ -39,11 +39,15 @@
     }];
        
     UIButton *closeBtn = [[UIButton alloc] init];
-    [closeBtn setImage:[UIImage imageNamed:@"right_close"] forState:0];
+    UIImage *closeImage = [UIImage imageNamed:@"right_close"];
+    if (@available(iOS 9.0, *)) {
+        closeImage = [closeImage imageFlippedForRightToLeftLayoutDirection];
+    }
+    [closeBtn setImage:closeImage forState:0];
     [closeBtn addTarget:self action:@selector(close) forControlEvents:UIControlEventTouchUpInside];
     [self.alertView addSubview:closeBtn];
     [closeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.right.mas_equalTo(self.alertView);
+        make.top.trailing.mas_equalTo(self.alertView);
         make.height.mas_equalTo(40);
         make.width.mas_equalTo(50);
     }];

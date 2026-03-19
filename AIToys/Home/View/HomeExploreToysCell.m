@@ -13,7 +13,21 @@
     [super awakeFromNib];
     self.playBtn.hidden = YES;
     [self.playBtn setTitle:LocalString(@"试听一下") forState:0];
-    [self.playBtn layoutWithStyle:HKBtnImagePosition_Left space:8];
+    UIUserInterfaceLayoutDirection direction = [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:self.semanticContentAttribute];
+    HKBtnImagePosition imagePosition = direction == UIUserInterfaceLayoutDirectionRightToLeft ? HKBtnImagePosition_Right : HKBtnImagePosition_Left;
+    [self.playBtn layoutWithStyle:imagePosition space:8];
+    UIImage *playImage = [self.playBtn imageForState:UIControlStateNormal];
+    if (playImage && @available(iOS 9.0, *)) {
+        [self.playBtn setImage:[playImage imageFlippedForRightToLeftLayoutDirection] forState:UIControlStateNormal];
+    }
+    self.nameLabel.textAlignment = NSTextAlignmentNatural;
+    self.introduceLabel.textAlignment = NSTextAlignmentNatural;
+    self.storyLab.textAlignment = NSTextAlignmentNatural;
+    self.durationLab.textAlignment = NSTextAlignmentNatural;
+    self.storyNumLabel.textAlignment = NSTextAlignmentNatural;
+    self.hoursLabel.textAlignment = NSTextAlignmentNatural;
+    self.horsNameLabel.textAlignment = NSTextAlignmentNatural;
+    self.playBtn.titleLabel.textAlignment = NSTextAlignmentNatural;
     self.storyLab.text = LocalString(@"故事");
     self.durationLab.text = LocalString(@"时长");
     
