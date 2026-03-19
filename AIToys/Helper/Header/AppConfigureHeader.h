@@ -9,9 +9,12 @@
 #define AppConfigureHeader_h
 
 
-//涂鸦SDK
-#define Smart_APPID @"qw4keg8ydwtha9xen7ur"
-#define Smart_AppSecret @"q8dqg7gc8e44jfgyptvdxmxgs7h8p95m"
+//涂鸦SDK 正式环境
+#define Smart_APPID @"us4nm48mewaesxx3qaq9"
+#define Smart_AppSecret @"v94csad5tkq4fmxjg8fqgpjh5t98fw5e"
+//涂鸦SDK 测试环境
+#define Smart_APPIDDEV @"qw4keg8ydwtha9xen7ur"
+#define Smart_AppSecretDEV @"q8dqg7gc8e44jfgyptvdxmxgs7h8p95m"
 
 // 设备ProductID
 #define DEVICE_PRODUCT_ID @"1xlikniqwnensmov"
