@@ -78,8 +78,8 @@
     CGFloat containerHeight = titleHeight + tableHeight + cancelButtonHeight;
     
     [self.containerView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self).offset(16);
-        make.right.equalTo(self).offset(-16);
+        make.leading.equalTo(self).offset(16);
+        make.trailing.equalTo(self).offset(-16);
         make.bottom.equalTo(self).offset(-34);
         make.height.mas_equalTo(containerHeight);
     }];
@@ -95,8 +95,8 @@
     
     [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.containerView).offset(0);
-        make.left.equalTo(self.containerView).offset(0);
-        make.right.equalTo(self.containerView).offset(0);
+        make.leading.equalTo(self.containerView).offset(0);
+        make.trailing.equalTo(self.containerView).offset(0);
         make.height.mas_equalTo(54);
     }];
     
@@ -115,13 +115,13 @@
     
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.titleLabel.mas_bottom).offset(0);
-        make.left.right.equalTo(self.containerView);
+        make.leading.trailing.equalTo(self.containerView);
         make.height.mas_equalTo(tableHeight);
     }];
     
     // 取消按钮
     self.cancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
+    [self.cancelButton setTitle:LocalString(@"取消") forState:UIControlStateNormal];
     [self.cancelButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     self.cancelButton.titleLabel.font = [UIFont systemFontOfSize:17];
     self.cancelButton.backgroundColor = [UIColor whiteColor];
@@ -130,7 +130,7 @@
     
     [self.cancelButton mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.tableView.mas_bottom).offset(10);
-        make.left.right.equalTo(self.containerView);
+        make.leading.trailing.equalTo(self.containerView);
         make.height.mas_equalTo(cancelButtonHeight);
     }];
     

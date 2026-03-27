@@ -6,11 +6,14 @@
 //
 
 #import "HomeExploreToysCell.h"
+#import "ATLanguageHelper.h"
 
 @implementation HomeExploreToysCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    NSTextAlignment contentAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.playBtn.hidden = YES;
     [self.playBtn setTitle:LocalString(@"试听一下") forState:0];
     UIUserInterfaceLayoutDirection direction = [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:self.semanticContentAttribute];
@@ -20,14 +23,14 @@
     if (playImage && @available(iOS 9.0, *)) {
         [self.playBtn setImage:[playImage imageFlippedForRightToLeftLayoutDirection] forState:UIControlStateNormal];
     }
-    self.nameLabel.textAlignment = NSTextAlignmentNatural;
-    self.introduceLabel.textAlignment = NSTextAlignmentNatural;
-    self.storyLab.textAlignment = NSTextAlignmentNatural;
-    self.durationLab.textAlignment = NSTextAlignmentNatural;
-    self.storyNumLabel.textAlignment = NSTextAlignmentNatural;
-    self.hoursLabel.textAlignment = NSTextAlignmentNatural;
-    self.horsNameLabel.textAlignment = NSTextAlignmentNatural;
-    self.playBtn.titleLabel.textAlignment = NSTextAlignmentNatural;
+    self.nameLabel.textAlignment = contentAlignment;
+    self.introduceLabel.textAlignment = contentAlignment;
+    self.storyLab.textAlignment = contentAlignment;
+    self.durationLab.textAlignment = contentAlignment;
+    self.storyNumLabel.textAlignment = contentAlignment;
+    self.hoursLabel.textAlignment = contentAlignment;
+    self.horsNameLabel.textAlignment = contentAlignment;
+    self.playBtn.titleLabel.textAlignment = contentAlignment;
     self.storyLab.text = LocalString(@"故事");
     self.durationLab.text = LocalString(@"时长");
     
@@ -58,7 +61,7 @@
     if (model.virtualStoryDuration == 0) {
         // 0秒时显示0s
         self.hoursLabel.text = @"0";
-        self.horsNameLabel.text = @"mins";
+        self.horsNameLabel.text = LocalString(@"分钟");
     } else {
         // 计算分钟数（向上取整）
         CGFloat minutesFloat = model.virtualStoryDuration / 60.0;
@@ -70,7 +73,7 @@
         }
         
         self.hoursLabel.text = [NSString stringWithFormat:@"%ld", (long)totalMinutes];
-        self.horsNameLabel.text = @"mins";
+        self.horsNameLabel.text = LocalString(@"分钟");
     }
 
     // 隐藏其他所有时间标签（我们只需要一个标签显示分钟）
@@ -100,7 +103,7 @@
         
     }else if (model.virtualStoryNum==0&&model.virtualStoryDuration>0){
         self.storyNumImage.image = [UIImage imageNamed:@"explore_toys_sounds"];
-        self.storyNumLabel.text =[NSString stringWithFormat:@"%@ mins", self.hoursLabel.text];
+        self.storyNumLabel.text = [NSString stringWithFormat:@"%@ %@", self.hoursLabel.text, LocalString(@"分钟")];
         self.stroyTimeImage.hidden  = YES;
         self.hoursLabel.hidden  =YES;
         self.horsNameLabel.hidden = YES;

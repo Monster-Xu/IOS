@@ -8,7 +8,15 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="StarterGuideViewTwo">
+            <connections>
+                <outlet property="addImageView" destination="ssF-3Y-Vpu" id="m3Y-M2-RV5"/>
+                <outlet property="addLeadingConstraint" destination="ybS-PD-CI8" id="7aY-WW-vb1"/>
+                <outlet property="bottomImageView" destination="fes-wy-RqB" id="o1o-Uf-kek"/>
+                <outlet property="doneBtn" destination="MSL-Ex-7LD" id="leM-kV-Wg4"/>
+                <outlet property="skipBtn" destination="KxR-xt-hLY" id="byb-DM-6Ya"/>
+            </connections>
+        </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view contentMode="scaleToFill" id="iN0-l3-epB" customClass="StarterGuideViewTwo">
             <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
@@ -28,8 +36,8 @@
                         <constraint firstAttribute="height" constant="48" id="cM4-oF-jMJ"/>
                     </constraints>
                     <color key="tintColor" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                    <state key="normal" title="Button"/>
-                    <buttonConfiguration key="configuration" style="plain" title="Skip"/>
+                    <state key="normal" title=""/>
+                    <buttonConfiguration key="configuration" style="plain" title=""/>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="color" keyPath="borderColor">
                             <color key="value" white="0.66666666669999997" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -52,8 +60,8 @@
                         <constraint firstAttribute="width" constant="138" id="o4k-Ra-9eP"/>
                         <constraint firstAttribute="height" constant="48" id="p4y-2R-Uot"/>
                     </constraints>
-                    <state key="normal" title="Button"/>
-                    <buttonConfiguration key="configuration" style="plain" title="Done"/>
+                    <state key="normal" title=""/>
+                    <buttonConfiguration key="configuration" style="plain" title=""/>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
                             <real key="value" value="12"/>

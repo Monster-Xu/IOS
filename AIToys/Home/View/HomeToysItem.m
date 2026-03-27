@@ -57,14 +57,7 @@
         totalMinutes = 0;
     }
 
-    NSString *timeStr = @"";
-    if (totalMinutes == 1) {
-        timeStr = @"1 min";
-    } else {
-        timeStr = [NSString stringWithFormat:@"%ld mins", (long)totalMinutes];
-    }
-
-    self.timeNumLabel.text = timeStr;
+    self.timeNumLabel.text = [NSString stringWithFormat:@"%ld %@", (long)totalMinutes, LocalString(@"分钟")];
 }
 
 -(void)starAnimation:(BOOL)animaiton

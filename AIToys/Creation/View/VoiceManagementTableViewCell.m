@@ -114,7 +114,7 @@
     
     // 设置声音名称
     if (self.voiceNameLabel) {
-        self.voiceNameLabel.text = voice.voiceName ?: @"Unnamed";
+        self.voiceNameLabel.text = voice.voiceName ?: LocalString(@"未命名");
         self.voiceNameLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
         self.voiceNameLabel.textColor = [UIColor colorWithRed:0x33/255.0 green:0x33/255.0 blue:0x33/255.0 alpha:1.0];
     }

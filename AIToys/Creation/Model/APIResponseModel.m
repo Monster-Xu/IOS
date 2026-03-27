@@ -22,33 +22,33 @@
     
     switch (self.code) {
         case 10001:
-            return @"故事数量已达上限";
+            return LocalString(@"故事数量已达上限");
         case 10002:
-            return @"声音数量已达上限";
+            return LocalString(@"声音数量已达上限");
         case 10003:
-            return @"故事名称重复";
+            return LocalString(@"故事名称重复");
         case 10004:
-            return @"故事不存在";
+            return LocalString(@"故事不存在");
         case 10005:
-            return @"声音不存在";
+            return LocalString(@"声音不存在");
         case 10006:
-            return @"声音已绑定故事，无法删除";
+            return LocalString(@"声音已绑定故事，无法删除");
         case 10007:
-            return @"录音时长不足30秒";
+            return LocalString(@"录音时长不足30秒");
         case 10008:
-            return @"故事生成失败";
+            return LocalString(@"故事生成失败");
         case 10009:
-            return @"声音克隆失败";
+            return LocalString(@"声音克隆失败");
         case 10010:
-            return @"音频合成失败";
+            return LocalString(@"音频合成失败");
         case 10011:
-            return @"故事已关联公仔";
+            return LocalString(@"故事已关联公仔");
         case 10012:
-            return @"故事状态不允许该操作";
+            return LocalString(@"故事状态不允许该操作");
         case 10013:
-            return @"声音克隆中，请稍后";
+            return LocalString(@"声音克隆中，请稍后");
         default:
-            return self.message ?: @"请求失败";
+            return self.message ?: LocalString(@"请求失败");
     }
 }
 

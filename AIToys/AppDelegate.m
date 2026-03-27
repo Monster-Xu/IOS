@@ -23,6 +23,8 @@
 #import "LogManager.h"
 #import "StarteBLEListening.h"
 #import <AVFoundation/AVFoundation.h>
+#import <ThingFoundationKit/ThingLanguageLoader.h>
+#import "ATLanguageHelper.h"
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
 
@@ -37,6 +39,8 @@
 //    [self refreshToken];
     // 验证SF Pro Rounded字体加载
     [FontValidationHelper validateFontsInAppDelegate];
+    // RTL 全局配置
+    [ATLanguageHelper applyGlobalRTLConfiguration];
     // ⭐️ 只需要这一行代码，即可开始全局自动记录 ⭐️
     [LogManager startAutoLogging];
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
@@ -69,6 +73,7 @@
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor whiteColor];
+    self.window.semanticContentAttribute = [ATLanguageHelper isRTLLanguage] ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     [self setUpRootVC];
     [self.window makeKeyAndVisible];
     // 配置音频会话（应用启动时设置一次）

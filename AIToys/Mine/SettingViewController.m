@@ -13,6 +13,15 @@
 @interface SettingViewController ()<UITableViewDelegate,UITableViewDataSource,RYFTableViewDelegate>
 @property (nonatomic, strong)RYFTableView *tableView;
 @property (nonatomic, strong) NSMutableArray *itemArray;
+@property (strong, nonatomic) UIView *languageOverlayView;
+@property (strong, nonatomic) UIView *languageCardView;
+@property (strong, nonatomic) UITableView *languageTableView;
+@property (strong, nonatomic) NSArray<NSDictionary<NSString *, NSString *> *> *languageOptions;
+@property (copy, nonatomic) NSString *pendingLanguageCode;
+@property (copy, nonatomic) NSString *pendingLanguageName;
+@property (strong, nonatomic) NSLayoutConstraint *languageTableHeightConstraint;
+@property (assign, nonatomic) BOOL isApplyingLanguageChange;
+@property (copy, nonatomic) NSString *previousLanguageCodeBeforeChange;
 @end
 
 @implementation SettingViewController
@@ -41,8 +50,21 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self setupLanguageOptions];
     [self loadData];
     [self setupUI];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    if (self.languageOverlayView && !self.languageOverlayView.hidden) {
+        [self updateLanguageDialogLayout];
+    }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self refreshLanguageSettingItem];
 }
 
 -(void)setupUI{
@@ -61,6 +83,7 @@
     NSArray *arr1 = @[
         @{@"title" : LocalString(@"个人信息"),@"value" :@"", @"toVC" : @"PersonalInformationVC"},
         @{@"title" : LocalString(@"账号与安全"),@"value" :@"", @"toVC" : @"AccountSecurityVC"},
+        @{@"title" : LocalString(@"切换语言"),@"value" :@"", @"toVC" : @"LanguageSelection"},
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr1]];
     
@@ -90,6 +113,21 @@
         @{@"title" : LocalString(@"清理缓存"),@"value" :[NSString stringWithFormat:@"%.2fM",[PublicObj readCacheSize]], @"toVC" : @""}
         ];
     [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr5]];
+}
+
+- (void)refreshLanguageSettingItem {
+    [self.tableView reloadData];
+}
+
+- (void)setupLanguageOptions {
+    self.languageOptions = @[
+        @{@"code": @"zh-Hans", @"name": LocalString(@"简体中文"), @"flag": @"🇨🇳"},
+        @{@"code": @"en", @"name": LocalString(@"英语"), @"flag": @"🇺🇸"},
+        @{@"code": @"fr", @"name": LocalString(@"法语"), @"flag": @"🇫🇷"},
+        @{@"code": @"de", @"name": LocalString(@"德语"), @"flag": @"🇩🇪"},
+        @{@"code": @"es", @"name": LocalString(@"西班牙语"), @"flag": @"🇪🇸"},
+        @{@"code": @"ar", @"name": LocalString(@"阿拉伯语"), @"flag": @"🇦🇪"}
+    ];
 }
 
 - (UIView *)setupfooterView {
@@ -132,7 +170,7 @@
                 
             } failure:^(NSError *error) {
                 [SVProgressHUD dismiss];
-                [SVProgressHUD showErrorWithStatus:@"Failed to Logout."];
+                [SVProgressHUD showErrorWithStatus:LocalString(@"退出失败，请重试")];
             }];
         }
     }];
@@ -146,14 +184,83 @@
 #pragma mark -- UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    if (tableView == self.languageTableView) {
+        return 1;
+    }
     return self.itemArray.count;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    if (tableView == self.languageTableView) {
+        return self.languageOptions.count;
+    }
     return [self.itemArray[section] count];
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (tableView == self.languageTableView) {
+        UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LanguageCell" forIndexPath:indexPath];
+        NSDictionary *option = self.languageOptions[indexPath.row];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        cell.layoutMargins = UIEdgeInsetsZero;
+        cell.separatorInset = UIEdgeInsetsZero;
+
+        UILabel *flagLabel = [cell.contentView viewWithTag:101];
+        UILabel *nameLabel = [cell.contentView viewWithTag:102];
+        UIImageView *checkView = [cell.contentView viewWithTag:103];
+        if (!flagLabel) {
+            flagLabel = [[UILabel alloc] init];
+            flagLabel.translatesAutoresizingMaskIntoConstraints = NO;
+            flagLabel.tag = 101;
+            flagLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightRegular];
+            [cell.contentView addSubview:flagLabel];
+        }
+        if (!nameLabel) {
+            nameLabel = [[UILabel alloc] init];
+            nameLabel.translatesAutoresizingMaskIntoConstraints = NO;
+            nameLabel.tag = 102;
+            nameLabel.font = [UIFont systemFontOfSize:15 weight:UIFontWeightRegular];
+            nameLabel.textColor = UIColorFromRGB(0x333333);
+            [cell.contentView addSubview:nameLabel];
+        }
+        if (!checkView) {
+            checkView = [[UIImageView alloc] init];
+            checkView.translatesAutoresizingMaskIntoConstraints = NO;
+            checkView.tag = 103;
+            checkView.image = [UIImage systemImageNamed:@"checkmark"];
+            checkView.contentMode = UIViewContentModeScaleAspectFit;
+            checkView.tintColor = UIColorFromRGB(0x2D8CFF);
+            [cell.contentView addSubview:checkView];
+        }
+        if (![cell.contentView viewWithTag:999]) {
+            [NSLayoutConstraint activateConstraints:@[
+                [flagLabel.leadingAnchor constraintEqualToAnchor:cell.contentView.leadingAnchor constant:20.0],
+                [flagLabel.centerYAnchor constraintEqualToAnchor:cell.contentView.centerYAnchor],
+                [flagLabel.widthAnchor constraintEqualToConstant:22.0],
+                
+                [nameLabel.leadingAnchor constraintEqualToAnchor:flagLabel.trailingAnchor constant:10.0],
+                [nameLabel.centerYAnchor constraintEqualToAnchor:cell.contentView.centerYAnchor],
+                
+                [checkView.trailingAnchor constraintEqualToAnchor:cell.contentView.trailingAnchor constant:-16.0],
+                [checkView.centerYAnchor constraintEqualToAnchor:cell.contentView.centerYAnchor],
+                [checkView.widthAnchor constraintEqualToConstant:16.0],
+                [checkView.heightAnchor constraintEqualToConstant:16.0],
+                [checkView.leadingAnchor constraintGreaterThanOrEqualToAnchor:nameLabel.trailingAnchor constant:12.0]
+            ]];
+            UIView *marker = [[UIView alloc] init];
+            marker.tag = 999;
+            marker.hidden = YES;
+            [cell.contentView addSubview:marker];
+        }
+
+        flagLabel.text = option[@"flag"] ?: @"";
+        nameLabel.text = option[@"name"] ?: @"";
+        BOOL isSelected = [self.pendingLanguageCode isEqualToString:option[@"code"]];
+        nameLabel.textColor = isSelected ? UIColorFromRGB(0x2D8CFF) : UIColorFromRGB(0x333333);
+        checkView.hidden = !isSelected;
+        return cell;
+    }
+
     SettingCell *cell = [tableView dequeueReusableCellWithIdentifier:@"SettingCell"];
     NSArray *arr = self.itemArray[indexPath.section];
     MineItemModel *model = arr[indexPath.row];
@@ -165,6 +272,13 @@
 
 #pragma mark -- UITableViewDelegate
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (tableView == self.languageTableView) {
+        NSDictionary *option = self.languageOptions[indexPath.row];
+        self.pendingLanguageCode = option[@"code"];
+        self.pendingLanguageName = option[@"name"];
+        [tableView reloadData];
+        return;
+    }
     kPreventRepeatClickTime(0.5);
     NSArray *arr = self.itemArray[indexPath.section];
     MineItemModel *model = arr[indexPath.row];
@@ -198,7 +312,7 @@
     }
     else if ([title isEqualToString:LocalString(@"导出日志")]){
         WEAK_SELF
-        [SVProgressHUD showWithStatus:LocalString(@"导出中...")];
+        [SVProgressHUD showWithStatus:LocalString(@"上传中")];
         
         [[LogManager sharedManager] exportLogsWithCompletion:^(NSURL * _Nullable fileURL, NSError * _Nullable error) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -233,14 +347,14 @@
                 
                 
                 
-                NSString *message = [NSString stringWithFormat:LocalString(@"If the App encounters anomalies, crashes, or other issues, please upload the logs to help us better locate and resolve the problem. \n App Version: %@ \n SDK Version: 6.7.0 \nBuildlD:%@ \nEnviorment:test\n Client lD: %@ \n UserAccount: %@\n Date:%ld.%ld.%ld"),[self getVersion],buildNumber,[ThingSmartUser sharedInstance].uid,kMyUser.email,year,month,day];
+                NSString *message = [NSString stringWithFormat:LocalString(@"如果App出现异常、闪退等问题，请上传日志帮助我们更好地定位和解决问题。\nApp版本：%@\nSDK版本：6.7.0\nBuildID：%@\n环境：test\nClient ID：%@\n用户账号：%@\n日期：%ld.%ld.%ld"), [self getVersion], buildNumber, [ThingSmartUser sharedInstance].uid, kMyUser.email, year, month, day];
                 
                 NSString *encodedPath = [[fileURL path] stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLPathAllowedCharacterSet]];
                 NSString *result = [NSString stringWithFormat:@"%@", encodedPath];
                 
                 
                 
-                [LGBaseAlertView showAlertWithTitle:LocalString(@"导出成功") content:message cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"上传") confirmBlock:^(BOOL isValue, id obj) {
+                [LGBaseAlertView showAlertWithTitle:LocalString(@"日志已成功导出") content:message cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"上传") confirmBlock:^(BOOL isValue, id obj) {
                     if (isValue) {
                         
                         
@@ -281,6 +395,9 @@
             });
         }];
     }
+    else if ([title isEqualToString:LocalString(@"切换语言")]) {
+        [self showLanguageDialog];
+    }
     else{
         UIViewController* vc = [NSString stringChangeToClass:str];
         vc.title = title;
@@ -304,6 +421,13 @@
     }
 }
 
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (tableView == self.languageTableView) {
+        return tableView.rowHeight > 0 ? tableView.rowHeight : 44.0;
+    }
+    return 64.0;
+}
+
 - (NSString*)getVersion
 {
     NSBundle *bundle = [NSBundle bundleForClass:[self class]];
@@ -312,6 +436,275 @@
     
     return versionNum;
     
+}
+
+- (void)showLanguageDialog {
+    if (!self.languageOverlayView) {
+        [self buildLanguageDialog];
+    }
+    [self preloadPendingLanguage];
+    self.languageOverlayView.hidden = NO;
+    self.languageOverlayView.alpha = 0.0;
+    self.languageCardView.transform = CGAffineTransformMakeScale(0.96, 0.96);
+    [self.view layoutIfNeeded];
+    [self.languageOverlayView layoutIfNeeded];
+    [self.languageCardView layoutIfNeeded];
+    [self updateLanguageDialogLayout];
+    [self.languageTableView reloadData];
+    [self.languageTableView layoutIfNeeded];
+    [UIView animateWithDuration:0.2 animations:^{
+        self.languageOverlayView.alpha = 1.0;
+        self.languageCardView.transform = CGAffineTransformIdentity;
+    }];
+}
+
+- (void)buildLanguageDialog {
+    UIView *overlay = [[UIView alloc] initWithFrame:CGRectZero];
+    overlay.translatesAutoresizingMaskIntoConstraints = NO;
+    overlay.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.4];
+    [self.view addSubview:overlay];
+    [NSLayoutConstraint activateConstraints:@[
+        [overlay.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [overlay.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [overlay.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [overlay.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor]
+    ]];
+    self.languageOverlayView = overlay;
+    self.languageOverlayView.hidden = YES;
+
+    UIView *card = [[UIView alloc] init];
+    card.translatesAutoresizingMaskIntoConstraints = NO;
+    card.backgroundColor = UIColor.whiteColor;
+    card.layer.cornerRadius = 16.0;
+    card.layer.masksToBounds = YES;
+    [overlay addSubview:card];
+    self.languageCardView = card;
+
+    [NSLayoutConstraint activateConstraints:@[
+        [card.leadingAnchor constraintEqualToAnchor:overlay.leadingAnchor constant:16.0],
+        [card.trailingAnchor constraintEqualToAnchor:overlay.trailingAnchor constant:-16.0],
+        [card.topAnchor constraintEqualToAnchor:overlay.topAnchor constant:174.0],
+        [card.bottomAnchor constraintEqualToAnchor:overlay.bottomAnchor constant:-174.0]
+    ]];
+
+    UILabel *titleLabel = [[UILabel alloc] init];
+    titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    titleLabel.text = LocalString(@"切换语言");
+    titleLabel.font = [UIFont systemFontOfSize:13 weight:UIFontWeightSemibold];
+    titleLabel.textColor = UIColorFromRGB(0x222222);
+    [card addSubview:titleLabel];
+
+    UITableView *tableView = [[UITableView alloc] initWithFrame:CGRectZero style:UITableViewStylePlain];
+    tableView.translatesAutoresizingMaskIntoConstraints = NO;
+    tableView.dataSource = self;
+    tableView.delegate = self;
+    tableView.separatorInset = UIEdgeInsetsZero;
+    tableView.separatorColor = UIColorFromRGB(0xEFEFEF);
+    tableView.layoutMargins = UIEdgeInsetsZero;
+    tableView.tableFooterView = [UIView new];
+    tableView.scrollEnabled = NO;
+    [tableView registerClass:UITableViewCell.class forCellReuseIdentifier:@"LanguageCell"];
+    [card addSubview:tableView];
+    self.languageTableView = tableView;
+
+    UIView *buttonSeparator = [[UIView alloc] init];
+    buttonSeparator.translatesAutoresizingMaskIntoConstraints = NO;
+    buttonSeparator.backgroundColor = UIColorFromRGB(0xE6E6E6);
+    [card addSubview:buttonSeparator];
+
+    UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    cancelButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [cancelButton setTitle:LocalString(@"取消") forState:UIControlStateNormal];
+    cancelButton.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightRegular];
+    [cancelButton setTitleColor:UIColorFromRGB(0x8A8A8A) forState:UIControlStateNormal];
+    [cancelButton addTarget:self action:@selector(dismissLanguageDialog) forControlEvents:UIControlEventTouchUpInside];
+    [card addSubview:cancelButton];
+
+    UIButton *confirmButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    confirmButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [confirmButton setTitle:LocalString(@"确定") forState:UIControlStateNormal];
+    confirmButton.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
+    [confirmButton setTitleColor:UIColorFromRGB(0x222222) forState:UIControlStateNormal];
+    [confirmButton addTarget:self action:@selector(confirmLanguageSelection) forControlEvents:UIControlEventTouchUpInside];
+    [card addSubview:confirmButton];
+
+    UIView *middleSeparator = [[UIView alloc] init];
+    middleSeparator.translatesAutoresizingMaskIntoConstraints = NO;
+    middleSeparator.backgroundColor = UIColorFromRGB(0xE6E6E6);
+    [card addSubview:middleSeparator];
+
+    CGFloat rowHeight = 44.0;
+    CGFloat tableHeight = rowHeight * self.languageOptions.count;
+    self.languageTableHeightConstraint = [tableView.heightAnchor constraintEqualToConstant:tableHeight];
+    [NSLayoutConstraint activateConstraints:@[
+        [titleLabel.topAnchor constraintEqualToAnchor:card.topAnchor],
+        [titleLabel.heightAnchor constraintEqualToConstant:48.0],
+        [titleLabel.centerXAnchor constraintEqualToAnchor:card.centerXAnchor],
+
+        [tableView.topAnchor constraintEqualToAnchor:titleLabel.bottomAnchor],
+        [tableView.leadingAnchor constraintEqualToAnchor:card.leadingAnchor],
+        [tableView.trailingAnchor constraintEqualToAnchor:card.trailingAnchor],
+        self.languageTableHeightConstraint,
+
+        [buttonSeparator.topAnchor constraintEqualToAnchor:tableView.bottomAnchor],
+        [buttonSeparator.leadingAnchor constraintEqualToAnchor:card.leadingAnchor],
+        [buttonSeparator.trailingAnchor constraintEqualToAnchor:card.trailingAnchor],
+        [buttonSeparator.heightAnchor constraintEqualToConstant:0.5],
+
+        [cancelButton.topAnchor constraintEqualToAnchor:buttonSeparator.bottomAnchor],
+        [cancelButton.leadingAnchor constraintEqualToAnchor:card.leadingAnchor],
+        [cancelButton.heightAnchor constraintEqualToConstant:48.0],
+
+        [confirmButton.topAnchor constraintEqualToAnchor:buttonSeparator.bottomAnchor],
+        [confirmButton.trailingAnchor constraintEqualToAnchor:card.trailingAnchor],
+        [confirmButton.leadingAnchor constraintEqualToAnchor:cancelButton.trailingAnchor],
+        [confirmButton.widthAnchor constraintEqualToAnchor:cancelButton.widthAnchor],
+        [confirmButton.heightAnchor constraintEqualToAnchor:cancelButton.heightAnchor],
+        [confirmButton.bottomAnchor constraintEqualToAnchor:card.bottomAnchor],
+
+        [middleSeparator.centerXAnchor constraintEqualToAnchor:card.centerXAnchor],
+        [middleSeparator.topAnchor constraintEqualToAnchor:buttonSeparator.bottomAnchor],
+        [middleSeparator.bottomAnchor constraintEqualToAnchor:card.bottomAnchor],
+        [middleSeparator.widthAnchor constraintEqualToConstant:0.5]
+    ]];
+
+    UITapGestureRecognizer *dismissTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleOverlayTap:)];
+    dismissTap.cancelsTouchesInView = NO;
+    [overlay addGestureRecognizer:dismissTap];
+}
+
+- (void)updateLanguageDialogLayout {
+    if (!self.languageCardView || self.languageOptions.count == 0) {
+        return;
+    }
+    CGFloat cardHeight = CGRectGetHeight(self.languageCardView.bounds);
+    if (cardHeight <= 0) {
+        [self.languageCardView layoutIfNeeded];
+        cardHeight = CGRectGetHeight(self.languageCardView.bounds);
+    }
+    if (cardHeight <= 0) {
+        return;
+    }
+    CGFloat availableTableHeight = cardHeight - 48.0 - 0.5 - 48.0;
+    CGFloat rowHeight = floor(availableTableHeight / self.languageOptions.count);
+    rowHeight = MAX(rowHeight, 44.0);
+    self.languageTableView.rowHeight = rowHeight;
+    self.languageTableHeightConstraint.constant = availableTableHeight;
+    [self.languageCardView layoutIfNeeded];
+}
+
+- (void)applyLanguageCode:(NSString *)languageCode displayName:(NSString *)displayName {
+    NSArray<NSString *> *languages = @[languageCode];
+    [[NSUserDefaults standardUserDefaults] setObject:languages forKey:@"AppleLanguages"];
+    [[NSUserDefaults standardUserDefaults] setObject:languageCode forKey:@"AppleLocale"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
+- (NSString *)localizedStringForKey:(NSString *)key languageCode:(NSString *)languageCode {
+    NSString *normalized = languageCode ?: @"en";
+    if ([normalized hasPrefix:@"zh"]) {
+        normalized = @"zh-Hans";
+    } else if ([normalized hasPrefix:@"en"]) {
+        normalized = @"en";
+    } else if ([normalized hasPrefix:@"fr"]) {
+        normalized = @"fr";
+    } else if ([normalized hasPrefix:@"de"]) {
+        normalized = @"de";
+    } else if ([normalized hasPrefix:@"es"]) {
+        normalized = @"es";
+    } else if ([normalized hasPrefix:@"ar"]) {
+        normalized = @"ar";
+    }
+    NSString *path = [[NSBundle mainBundle] pathForResource:normalized ofType:@"lproj"];
+    if (path.length == 0) {
+        return LocalString(key);
+    }
+    NSBundle *bundle = [NSBundle bundleWithPath:path];
+    NSString *value = [bundle localizedStringForKey:key value:nil table:nil];
+    return value.length > 0 ? value : LocalString(key);
+}
+
+- (void)showRestartAlertWithLanguageCode:(NSString *)languageCode {
+    NSString *resolvedCode = languageCode ?: @"en";
+    NSString *message = [self localizedStringForKey:@"切换多语言后，App将会重启，是否继续？" languageCode:resolvedCode];
+    NSString *cancelTitle = [self localizedStringForKey:@"取消" languageCode:resolvedCode];
+    NSString *confirmTitle = [self localizedStringForKey:@"确定" languageCode:resolvedCode];
+    [LGBaseAlertView showAlertWithTitle:@""
+                                content:message
+                           cancelBtnStr:cancelTitle
+                          confirmBtnStr:confirmTitle
+                           confirmBlock:^(BOOL isValue, id obj) {
+        if (isValue) {
+            exit(0);
+        } else {
+            [self restoreLanguageSelectionBeforeChange];
+        }
+    }];
+}
+
+- (void)handleOverlayTap:(UITapGestureRecognizer *)gesture {
+    CGPoint location = [gesture locationInView:self.languageCardView];
+    if (CGRectContainsPoint(self.languageCardView.bounds, location)) {
+        return;
+    }
+    [self dismissLanguageDialog];
+}
+
+- (void)dismissLanguageDialog {
+    [UIView animateWithDuration:0.2 animations:^{
+        self.languageOverlayView.alpha = 0.0;
+        self.languageCardView.transform = CGAffineTransformMakeScale(0.96, 0.96);
+    } completion:^(BOOL finished) {
+        self.languageOverlayView.hidden = YES;
+        self.languageCardView.transform = CGAffineTransformIdentity;
+        if (!self.isApplyingLanguageChange) {
+            [self preloadPendingLanguage];
+        }
+        self.isApplyingLanguageChange = NO;
+    }];
+}
+
+- (void)confirmLanguageSelection {
+    if (self.pendingLanguageCode.length == 0) {
+        [self dismissLanguageDialog];
+        return;
+    }
+    self.isApplyingLanguageChange = YES;
+    [self dismissLanguageDialog];
+    self.previousLanguageCodeBeforeChange = [NSLocale preferredLanguages].firstObject ?: @"en";
+    [self applyLanguageCode:self.pendingLanguageCode displayName:self.pendingLanguageName ?: @""];
+    [self refreshLanguageSettingItem];
+    [self showRestartAlertWithLanguageCode:self.previousLanguageCodeBeforeChange];
+}
+
+- (void)restoreLanguageSelectionBeforeChange {
+    if (self.previousLanguageCodeBeforeChange.length == 0) {
+        [self refreshLanguageSettingItem];
+        return;
+    }
+    NSString *previous = self.previousLanguageCodeBeforeChange;
+    [[NSUserDefaults standardUserDefaults] setObject:@[previous] forKey:@"AppleLanguages"];
+    [[NSUserDefaults standardUserDefaults] setObject:previous forKey:@"AppleLocale"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self setupLanguageOptions];
+    [self preloadPendingLanguage];
+    [self refreshLanguageSettingItem];
+    [self.languageTableView reloadData];
+}
+
+- (void)preloadPendingLanguage {
+    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject ?: @"en";
+    NSString *languageCode = [preferredLanguage componentsSeparatedByString:@"-"].firstObject ?: @"en";
+    for (NSDictionary *option in self.languageOptions) {
+        NSString *code = option[@"code"];
+        if ([code hasPrefix:languageCode]) {
+            self.pendingLanguageCode = code;
+            self.pendingLanguageName = option[@"name"];
+            return;
+        }
+    }
+    self.pendingLanguageCode = @"en";
+    self.pendingLanguageName = LocalString(@"英语");
 }
 /*
 #pragma mark - Navigation

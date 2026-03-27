@@ -17,12 +17,12 @@
 -(void)setType:(CellType)type{
     if(type == CellTypeDevice){
         self.imgView.image = QD_IMG(@"device_empty");
-        self.nameLabel.text = NSLocalizedString(@"还没有故事机，快添加一个吧！", @"");
-        [self.addBtn setTitle:NSLocalizedString(@"添加故事机", @"") forState:0];
+        self.nameLabel.text = LocalString(@"还没有故事机，快添加一个吧！");
+        [self.addBtn setTitle:LocalString(@"添加故事机") forState:0];
     }else{
         self.imgView.image = QD_IMG(@"toys_empty");
-        self.nameLabel.text = NSLocalizedString(@"还没有公仔，快添加一个吧！", @"");
-        [self.addBtn setTitle:NSLocalizedString(@"添加公仔", @"") forState:0];
+        self.nameLabel.text = LocalString(@"还没有公仔，快添加一个吧！");
+        [self.addBtn setTitle:LocalString(@"添加公仔") forState:0];
     }
 }
 

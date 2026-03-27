@@ -9,6 +9,7 @@
 #import "HomeDeviceItem.h"
 #import "ATFontManager.h"
 #import "AnalyticsManager.h"
+#import "ATLanguageHelper.h"
 #import <ThingSmartMiniAppBizBundle/ThingSmartMiniAppBizBundle.h>
 
 @interface HomeDeviceListVC ()
@@ -45,11 +46,6 @@
 @end
 
 @implementation HomeDeviceListVC
-
-- (NSString *)currentMiniAppLangType {
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
-    return [preferredLanguage hasPrefix:@"ar"] ? @"ar" : @"en";
-}
 
 - (NSMutableArray *)dataArr {
     if (!_dataArr) {
@@ -230,7 +226,9 @@
         // 埋点上报：我的设备点击
         [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:deviceModel.devId pid:deviceModel.uuid];
 
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":[self currentMiniAppLangType],@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype": @"prod"}];
+        NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
+        NSString *envType = [bundleId isEqualToString:@"com.talenpal.talenpalapp"] ? @"prod" : @"dev";
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":[ATLanguageHelper miniAppLangType],@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype": envType}];
     }
 }
 

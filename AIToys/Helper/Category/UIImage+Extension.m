@@ -7,6 +7,7 @@
 //
 
 #import "UIImage+Extension.h"
+#import "ATLanguageHelper.h"
 
 @implementation UIImage (Extension)
 /**
@@ -82,5 +83,56 @@
     UIGraphicsEndImageContext();
     
     return image;
+}
+
++ (UIImage *)at_imageNamed:(NSString *)name {
+    UIImage *image = [UIImage imageNamed:name];
+    if (!image) {
+        return nil;
+    }
+    if (![self at_shouldFlipForRTLWithName:name]) {
+        return image;
+    }
+    if (@available(iOS 9.0, *)) {
+        return [image imageFlippedForRightToLeftLayoutDirection];
+    }
+    return image;
+}
+
++ (BOOL)at_shouldFlipForRTLWithName:(NSString *)name {
+    if (name.length == 0) {
+        return NO;
+    }
+    if (![ATLanguageHelper isRTLLanguage]) {
+        return NO;
+    }
+    NSString *lowerName = name.lowercaseString;
+    NSArray<NSString *> *directionalKeys = @[
+        @"left",
+        @"right",
+        @"next",
+        @"previous",
+        @"prev",
+        @"forward",
+        @"arrow",
+        @"chevron",
+        @"more"
+    ];
+    for (NSString *key in directionalKeys) {
+        if ([lowerName containsString:key]) {
+            return YES;
+        }
+    }
+
+    if ([lowerName containsString:@"back"]) {
+        NSArray<NSString *> *backHints = @[@"icon", @"nav", @"btn", @"button", @"close"];
+        for (NSString *hint in backHints) {
+            if ([lowerName containsString:hint]) {
+                return YES;
+            }
+        }
+    }
+
+    return NO;
 }
 @end

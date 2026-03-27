@@ -81,6 +81,7 @@
 
 // 导入字体管理器
 #import "ATFontManager.h"
+#import "UIImage+Extension.h"
 
 // 使用SF Pro Rounded字体的宏定义
 #define ATT_FONT_14 [ATFontManager systemFontOfSize:VScaleW(14.0f)]
@@ -193,6 +194,6 @@ shouldPrevent = NO; \
 //weakSelf
 #define WS(weakSelf)  __weak __typeof(&*self)weakSelf = self
 
-#define QD_IMG(_name_) [UIImage imageNamed:_name_]
+#define QD_IMG(_name_) [UIImage at_imageNamed:_name_]
 
 #endif /* AppConfigureHeader_h */

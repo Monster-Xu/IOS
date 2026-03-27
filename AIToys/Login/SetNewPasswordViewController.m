@@ -7,6 +7,7 @@
 
 #import "SetNewPasswordViewController.h"
 #import "AcountLoginViewController.h"
+#import "ATLanguageHelper.h"
 
 @interface SetNewPasswordViewController ()<UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -33,12 +34,14 @@
 
 -(void)setUpUI{
     self.pwdTextField.delegate = self;
-    self.titleLabel.text = NSLocalizedString(@"新密码", @"");
-    self.pwdTitleLabel.text = NSLocalizedString(@"密码", @"");
-    self.pwdTextField.placeholder = NSLocalizedString(@"输入密码", @"");
-    self.alertLabel.text = NSLocalizedString(@"密码支持6-20位，必须包含字母和数字", @"");
-    self.subAlertLabel.text = NSLocalizedString(@"密码支持6-20位，必须包含字母和数字", @"");
-    [self.surBtn setTitle:NSLocalizedString(@"确定", @"") forState:0];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.titleLabel.text = LocalString(@"新密码");
+    self.pwdTitleLabel.text = LocalString(@"密码");
+    self.pwdTextField.placeholder = LocalString(@"输入密码");
+    self.alertLabel.text = LocalString(@"密码支持6-20位，必须包含字母和数字");
+    self.subAlertLabel.text = LocalString(@"密码支持6-20位，必须包含字母和数字");
+    [self.surBtn setTitle:LocalString(@"确定") forState:0];
+    self.pwdTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     [PublicObj makeButtonUnEnable:self.surBtn];
     self.view.backgroundColor = [UIColor whiteColor];
 }
@@ -61,7 +64,7 @@
     
     WS(weakSelf);
     [[ThingSmartUser sharedInstance] resetPasswordByEmail:Country_Code email:self.numStr newPassword:password code:self.codeStr success:^{
-        [SVProgressHUD showSuccessWithStatus:@"Password Reset Successfully"];
+        [SVProgressHUD showSuccessWithStatus:LocalString(@"密码重置成功")];
         
         
         

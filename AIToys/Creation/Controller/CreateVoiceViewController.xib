@@ -20,6 +20,7 @@
                 <outlet property="deletPickImageBtn" destination="kiN-MV-PDY" id="dnp-YT-uf7"/>
                 <outlet property="faildView" destination="4Ue-B3-oKm" id="G7a-HE-eci"/>
                 <outlet property="faildViewConstraintHeight" destination="cMv-iY-UVI" id="nTO-Iz-1Wo"/>
+                <outlet property="faildMessageLabel" destination="CRa-lh-UAP" id="jQW-aU-iWo"/>
                 <outlet property="speekBtn" destination="UzG-zK-eom" id="Ug0-2Y-19P"/>
                 <outlet property="speekLabel" destination="Etf-d4-Cjj" id="fjd-ML-UB1"/>
                 <outlet property="topConstraint" destination="Q3W-7p-LLy" id="GPF-U5-gjl"/>
@@ -27,6 +28,8 @@
                 <outlet property="voiceGifImageView" destination="8Ch-bC-hAE" id="01s-D2-Fbw"/>
                 <outlet property="voiceImage" destination="PAO-by-fEB" id="R9B-fx-akm"/>
                 <outlet property="voiceNameTextView" destination="skU-4s-5RK" id="FHG-qt-azi"/>
+                <outlet property="voiceNameLabel" destination="Ypy-pB-bih" id="9lB-rq-Ynr"/>
+                <outlet property="voiceAvatarLabel" destination="XdD-8N-fEU" id="hB5-9v-SaK"/>
                 <outlet property="voiceSubLabel" destination="BYH-t1-vku" id="LGf-kj-gxD"/>
                 <outlet property="voiceTextLabel" destination="JWu-Un-hmE" id="36h-6e-tyF"/>
                 <outlet property="voiceTextTopConstraint" destination="fao-le-vdD" id="DyW-WH-hVO"/>
@@ -41,13 +44,13 @@
                 <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ur1-yN-Rqq">
                     <rect key="frame" x="16" y="128" width="361" height="80"/>
                     <subviews>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Voice name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ypy-pB-bih">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ypy-pB-bih">
                             <rect key="frame" x="16" y="12" width="88.666666666666671" height="21"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Please simply enter the voice nickname." minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="skU-4s-5RK">
+                        <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="skU-4s-5RK">
                             <rect key="frame" x="16" y="46" width="329" height="22"/>
                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                             <textInputTraits key="textInputTraits"/>
@@ -71,7 +74,7 @@
                 <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="sga-mr-OEU">
                     <rect key="frame" x="16" y="222" width="361" height="144"/>
                     <subviews>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Voice Avatar" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XdD-8N-fEU">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="XdD-8N-fEU">
                             <rect key="frame" x="16" y="14" width="94.333333333333329" height="21"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <nil key="textColor"/>
@@ -126,13 +129,13 @@
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="create_voiceCreate" translatesAutoresizingMaskIntoConstraints="NO" id="PAO-by-fEB">
                             <rect key="frame" x="16" y="16" width="20" height="20"/>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Voice Replication" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pST-P0-9yE">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pST-P0-9yE">
                             <rect key="frame" x="40.000000000000007" y="15.666666666666686" width="121.66666666666669" height="21"/>
                             <fontDescription key="fontDescription" name="PingFangSC-Regular" family="PingFang SC" pointSize="15"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please click &quot;Start Reading&quot; and read the following text clearly and expressively. The recording must be over 30 seconds." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BYH-t1-vku">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontForContentSizeCategory="YES" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BYH-t1-vku">
                             <rect key="frame" x="16" y="46.666666666666686" width="329" height="50.666666666666657"/>
                             <fontDescription key="fontDescription" name="PingFangSC-Regular" family="PingFang SC" pointSize="12"/>
                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.45000000000000001" colorSpace="custom" customColorSpace="calibratedRGB"/>
@@ -163,7 +166,7 @@
                             <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                             <state key="normal" image="create_voiceclone"/>
                         </button>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Hold to Start Recording" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Etf-d4-Cjj">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Etf-d4-Cjj">
                             <rect key="frame" x="16" y="390" width="329" height="20"/>
                             <fontDescription key="fontDescription" name="PingFangSC-Regular" family="PingFang SC" pointSize="14"/>
                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.49502090669999999" colorSpace="custom" customColorSpace="calibratedRGB"/>
@@ -213,7 +216,7 @@
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="add_fail" translatesAutoresizingMaskIntoConstraints="NO" id="Hdn-J5-Qoq">
                             <rect key="frame" x="16" y="4" width="24" height="24"/>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Sound cloning failed, please record again." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CRa-lh-UAP">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CRa-lh-UAP">
                             <rect key="frame" x="50.000000000000014" y="6.9999999999999982" width="254.33333333333337" height="18.333333333333329"/>
                             <fontDescription key="fontDescription" name="PingFangSC-Regular" family="PingFang SC" pointSize="13"/>
                             <color key="textColor" red="1" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

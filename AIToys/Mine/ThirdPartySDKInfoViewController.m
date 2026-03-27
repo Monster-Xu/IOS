@@ -16,7 +16,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.title = LocalString(@"第三方信息共享和SDK服务清单");
-    self.tltleLAbel.text  = LocalString(@"涂鸦-智慧生活App-sdk   ios-6.7.0版本");
+    self.tltleLAbel.text  = LocalString(@"涂鸦-智慧生活App-sdkios-6.7.0版本");
     // Do any additional setup after loading the view from its nib.
 }
 

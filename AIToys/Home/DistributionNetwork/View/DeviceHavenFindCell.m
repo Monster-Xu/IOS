@@ -46,7 +46,7 @@
 
 -(void)setDeviceList:(NSArray *)deviceList{
     _deviceList = deviceList;
-    self.titleLabel.text = [NSString stringWithFormat:LocalString(@"%lu device was discovered."),(unsigned long)_deviceList.count];
+    self.titleLabel.text = [NSString stringWithFormat:LocalString(@"发现%lu个设备"), (unsigned long)_deviceList.count];
     [self.collectionView reloadData];
 }
 

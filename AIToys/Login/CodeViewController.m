@@ -41,8 +41,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    self.titleLabel.text = NSLocalizedString(@"输入验证码", @"");
-    self.alertLabel.text = NSLocalizedString(@"验证码有误", @"");
+    self.titleLabel.text = LocalString(@"输入验证码");
+    self.alertLabel.text = LocalString(@"验证码有误");
     self.textView = [[QSTextCodeView alloc] initWithFrame:CGRectMake(0, 0, self.codeView.width, 45)];
     self.textView.fieldCount = 6;
     WS(weakSelf);
@@ -55,7 +55,7 @@
         weakSelf.codeStr = str;
         if(isOK){
             if (weakSelf.codeStr.length < 6) {
-                [SVProgressHUD showErrorWithStatus:@"请输入6位验证码"];
+                [SVProgressHUD showErrorWithStatus:LocalString(@"请输入6位验证码")];
                 return;
             }
             NSInteger codeType = 1;
@@ -127,8 +127,8 @@
     [self.codeView addSubview:self.textView];
     [self.textView becomeFirstResponder];
     [self setCountDown];
-    [self.unReceiveBtn setTitle:NSLocalizedString(@"收不到验证码?", @"") forState:0];
-    NSString *str = [NSString stringWithFormat:@"%@：%@",NSLocalizedString(@"验证码已发送到您的邮箱", @""),self.numStr];
+    [self.unReceiveBtn setTitle:LocalString(@"收不到验证码?") forState:0];
+    NSString *str = [NSString stringWithFormat:@"%@：%@",LocalString(@"验证码已发送到您的邮箱"),self.numStr];
     NSMutableAttributedString *attStr=[[NSMutableAttributedString alloc]initWithString:str];
     self.subTitleLabel.attributedText = attStr;
 }
@@ -140,14 +140,14 @@
     NSTimer *timer = [NSTimer timerWithTimeInterval:1.0 block:^(NSTimer * _Nonnull timer) {
         
         if (timeValue > 0) {
-            NSString *str = [NSString stringWithFormat:@"%@：%@，%@（%ds）",NSLocalizedString(@"验证码已发送到您的邮箱", @""),self.numStr,LocalString(@"重新发送验证码"),timeValue--];
+            NSString *str = [NSString stringWithFormat:@"%@：%@，%@（%ds）",LocalString(@"验证码已发送到您的邮箱"),self.numStr,LocalString(@"重新发送验证码"),timeValue--];
             NSMutableAttributedString *attStr=[[NSMutableAttributedString alloc]initWithString:str];
             weakSelf.subTitleLabel.attributedText = attStr;
             weakSelf.subTitleLabel.enabledClickEffect = NO;
         }else if (timeValue == 0){
             [timer invalidate];
             timeValue = 60;
-            NSString *str = [NSString stringWithFormat:@"%@：%@，%@     ",NSLocalizedString(@"验证码已发送到您的邮箱", @""),self.numStr,LocalString(@"重新发送验证码")];
+            NSString *str = [NSString stringWithFormat:@"%@：%@，%@     ",LocalString(@"验证码已发送到您的邮箱"),self.numStr,LocalString(@"重新发送验证码")];
             //获取要调整颜色的文字位置,调整颜色
             NSMutableAttributedString *attStr=[[NSMutableAttributedString alloc]initWithString:str];
             NSRange range=[[attStr string]rangeOfString:LocalString(@"重新发送验证码")];
@@ -155,7 +155,7 @@
             weakSelf.subTitleLabel.attributedText = attStr;
             // 确保label可以响应手势
             weakSelf.subTitleLabel.enabledClickEffect = YES;
-            [weakSelf.subTitleLabel clickRichTextWithStrings:@[@"com，Resend Code"] clickAction:^(NSString *string, NSRange range, NSInteger index) {
+            [weakSelf.subTitleLabel clickRichTextWithStrings:@[LocalString(@"重新发送验证码")] clickAction:^(NSString *string, NSRange range, NSInteger index) {
                 
                 [weakSelf sendCode];
                 
@@ -182,7 +182,7 @@
         codeType = 7;
     }
     [[ThingSmartUser sharedInstance] sendVerifyCodeWithUserName:self.numStr region:[[ThingSmartUser sharedInstance] getDefaultRegionWithCountryCode:Country_Code] countryCode:Country_Code type: codeType success:^{
-        [SVProgressHUD showSuccessWithStatus:@"Verification Code Sent Successfully"];
+        [SVProgressHUD showSuccessWithStatus:LocalString(@"验证码发送成功")];
         [weakSelf setCountDown];
     } failure:^(NSError *error) {
         // 确保label可以响应手势

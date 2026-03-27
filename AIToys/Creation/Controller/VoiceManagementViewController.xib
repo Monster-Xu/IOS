@@ -18,6 +18,7 @@
             <connections>
                 <outlet property="createVoiceBtn" destination="MN4-0Y-KiX" id="JdO-Zl-S3A"/>
                 <outlet property="emptyView" destination="RwZ-q1-D1Q" id="E6k-UP-RGm"/>
+                <outlet property="emptyLabel" destination="PKA-9N-OHN" id="9n1-4G-bse"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
                 <outlet property="voiceListTabelView" destination="IsK-k4-Dh9" id="53B-wu-GgI"/>
             </connections>
@@ -40,7 +41,7 @@
                     </constraints>
                     <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="16"/>
                     <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                    <state key="normal" title="创建音色"/>
+                    <state key="normal" title=""/>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
                             <real key="value" value="24"/>
@@ -53,7 +54,7 @@
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="create_empty" translatesAutoresizingMaskIntoConstraints="NO" id="IRL-6S-YsV">
                             <rect key="frame" x="113.66666666666669" y="263.66666666666669" width="166" height="124"/>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No sound available yet, please add one first." textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PKA-9N-OHN">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PKA-9N-OHN">
                             <rect key="frame" x="60.333333333333343" y="407.66666666666663" width="272.66666666666663" height="18"/>
                             <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="15"/>
                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.24799185739999999" colorSpace="custom" customColorSpace="sRGB"/>

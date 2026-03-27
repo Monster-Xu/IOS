@@ -6,12 +6,17 @@
 //
 
 #import "AccessPermissionsSettingCell.h"
+#import "ATLanguageHelper.h"
 
 @implementation AccessPermissionsSettingCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    UIImage *arrowImage = [UIImage imageNamed:@"cell_right_arrow"];
+    if (arrowImage && [ATLanguageHelper isRTLLanguage] && @available(iOS 9.0, *)) {
+        arrowImage = [arrowImage imageFlippedForRightToLeftLayoutDirection];
+    }
+    self.rightImgView.image = arrowImage;
 }
 
 -(void)setModel:(MineItemModel *)model{

@@ -23,6 +23,7 @@
 #import "SelectAvatarVC.h"
 #import "SelectIllustrationVC.h"
 #import "CoreArchive.h"
+#import "ATLanguageHelper.h"
 
 @interface CreateStoryViewController () <UITextFieldDelegate, UITextViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIGestureRecognizerDelegate>
 
@@ -115,8 +116,10 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     // 设置导航栏
-    self.title = NSLocalizedString(@"Create Story", @"");
+    self.title = LocalString(@"创建故事");
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0]];
     
@@ -195,7 +198,7 @@
     
     // 创建加载文字（白色）
     self.loadingLabel = [[UILabel alloc] init];
-    self.loadingLabel.text = NSLocalizedString(@"Loading...", @"");
+    self.loadingLabel.text = LocalString(@"加载中...");
     self.loadingLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
     self.loadingLabel.textColor = [UIColor whiteColor]; // 设置为白色
     self.loadingLabel.textAlignment = NSTextAlignmentCenter;
@@ -204,8 +207,8 @@
     [self.loadingLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.activityIndicator.mas_bottom).offset(12);
         make.centerX.equalTo(loadingContainer);
-        make.left.greaterThanOrEqualTo(loadingContainer).offset(12);
-        make.right.lessThanOrEqualTo(loadingContainer).offset(-12);
+        make.leading.greaterThanOrEqualTo(loadingContainer).offset(12);
+        make.trailing.lessThanOrEqualTo(loadingContainer).offset(-12);
     }];
     
     // 开始动画
@@ -236,7 +239,7 @@
     self.navigationItem.hidesBackButton = YES;
     
     // 创建自定义返回按钮
-    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"icon_back"]
+    UIBarButtonItem *backButton = [[UIBarButtonItem alloc] initWithImage:QD_IMG(@"icon_back")
                                                                    style:UIBarButtonItemStylePlain
                                                                   target:self
                                                                   action:@selector(customBackButtonTapped)];
@@ -293,10 +296,10 @@
 
 /// 显示放弃更改的确认弹窗
 - (void)showDiscardChangesAlert {
-    [LGBaseAlertView showAlertWithTitle:NSLocalizedString(@"Discard changes?", @"")
-                                content:NSLocalizedString(@"You have unsaved content, are you sure you want to leave?", @"")
-                           cancelBtnStr:NSLocalizedString(@"Cancel", @"")
-                          confirmBtnStr:NSLocalizedString(@"Leave", @"")
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"放弃修改？")
+                                content:LocalString(@"您有未保存的内容，确定要离开吗？")
+                           cancelBtnStr:LocalString(@"取消")
+                          confirmBtnStr:LocalString(@"离开")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             [self goBack];
@@ -502,7 +505,7 @@
     NSLog(@"🎯 所有数据加载完成，开始显示UI");
     
     // 更新加载文字
-    [self updateLoadingText:@"Building interface..."];
+    [self updateLoadingText:LocalString(@"正在构建界面...")];
     
     // 数据加载完成后再设置UI
     [self setupUI];
@@ -510,7 +513,7 @@
     
     // 如果有传入的故事模型，设置表单
     if (self.storyModel) {
-        [self updateLoadingText:@"Loading story data..."];
+        [self updateLoadingText:LocalString(@"正在加载故事数据...")];
         [self setupFormWithStoryModel:self.storyModel];
     } else {
         // 如果没有故事模型，确保隐藏失败横幅
@@ -524,15 +527,15 @@
 
 /// 设置默认故事类型
 - (void)setDefaultStoryTypes {
-    // 根据当前语言环境设置默认故事类型
-    NSString *currentLanguage = [[NSLocale preferredLanguages] firstObject];
-    BOOL isChineseEnvironment = [currentLanguage hasPrefix:@"zh"];
-    
-    if (isChineseEnvironment) {
-        self.storyTypes = @[@"童话", @"寓言", @"冒险", @"超级英雄", @"科幻", @"教育", @"睡前故事"];
-    } else {
-        self.storyTypes = @[@"Fairy Tale", @"Fable", @"Adventure", @"Superhero", @"Science Fiction", @"Educational", @"Bedtime Story"];
-    }
+    self.storyTypes = @[
+        LocalString(@"童话"),
+        LocalString(@"寓言"),
+        LocalString(@"冒险"),
+        LocalString(@"超级英雄"),
+        LocalString(@"科幻"),
+        LocalString(@"教育"),
+        LocalString(@"睡前故事")
+    ];
     
     // 默认的故事类型代码（按照API返回的code顺序：1-7）
     self.storyTypeCodes = @[@1, @2, @3, @4, @5, @6, @7];
@@ -542,15 +545,11 @@
 
 /// 设置默认故事长度
 - (void)setDefaultStoryLengths {
-    // 根据当前语言环境设置默认故事长度
-    NSString *currentLanguage = [[NSLocale preferredLanguages] firstObject];
-    BOOL isChineseEnvironment = [currentLanguage hasPrefix:@"zh"];
-    
-    if (isChineseEnvironment) {
-        self.storyLengths = @[@"1分钟", @"2分钟", @"3分钟"];
-    } else {
-        self.storyLengths = @[@"1min", @"2min", @"3min"];
-    }
+    self.storyLengths = @[
+        LocalString(@"1分钟"),
+        LocalString(@"2分钟"),
+        LocalString(@"3分钟")
+    ];
     
     // 默认的故事长度秒数（按照API返回的seconds）
     self.storyLengthSeconds = @[@60, @120, @180];
@@ -572,7 +571,7 @@
     [self.scrollView mas_makeConstraints:^(MASConstraintMaker *make) {
         // 默认情况下紧贴安全区域顶部，如果显示失败横幅会动态调整
         make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop);
-        make.left.right.equalTo(self.view);
+        make.leading.trailing.equalTo(self.view);
         make.bottom.equalTo(self.view).offset(-90);
     }];
     
@@ -619,8 +618,8 @@
     
     [self.failureBannerView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop).offset(10);
-        make.left.equalTo(self.view).offset(16);
-        make.right.equalTo(self.view).offset(-16);
+        make.leading.equalTo(self.view).offset(16);
+        make.trailing.equalTo(self.view).offset(-16);
         make.height.mas_equalTo(32);
     }];
     
@@ -631,22 +630,22 @@
     [self.failureBannerView addSubview:self.failureIconImageView];
     
     [self.failureIconImageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.failureBannerView).offset(16);
+        make.leading.equalTo(self.failureBannerView).offset(16);
         make.centerY.equalTo(self.failureBannerView);
         make.width.height.mas_equalTo(20); // 适当的图标大小
     }];
     
     // 失败提示文字
     self.failureMessageLabel = [[UILabel alloc] init];
-    self.failureMessageLabel.text = @"Generation failed, please try again";
+    self.failureMessageLabel.text = LocalString(@"生成失败，请重试");
     self.failureMessageLabel.font = [UIFont systemFontOfSize:14];
     self.failureMessageLabel.textColor = [UIColor systemRedColor];
     [self.failureBannerView addSubview:self.failureMessageLabel];
     
     [self.failureMessageLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.failureIconImageView.mas_right).offset(10);
+        make.leading.equalTo(self.failureIconImageView.mas_trailing).offset(10);
         make.centerY.equalTo(self.failureBannerView);
-        make.right.lessThanOrEqualTo(self.failureBannerView).offset(-16);
+        make.trailing.lessThanOrEqualTo(self.failureBannerView).offset(-16);
     }];
 }
 
@@ -660,22 +659,22 @@
     
     [self.themeCardView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.contentView).offset(16);
-        make.left.equalTo(self.contentView).offset(16);
-        make.right.equalTo(self.contentView).offset(-16);
+        make.leading.equalTo(self.contentView).offset(16);
+        make.trailing.equalTo(self.contentView).offset(-16);
         make.height.mas_greaterThanOrEqualTo(80);
     }];
     
     // 标题（放在卡片内部顶部）
     self.themeLabel = [[UILabel alloc] init];
-    self.themeLabel.text = NSLocalizedString(@"Story Name", @"");
+    self.themeLabel.text = LocalString(@"故事名称");
     self.themeLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.themeLabel.textColor = [UIColor blackColor];
     [self.themeCardView addSubview:self.themeLabel];
     
     [self.themeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.themeCardView).offset(16);
-        make.left.equalTo(self.themeCardView).offset(16);
-        make.right.equalTo(self.themeCardView).offset(-16);
+        make.leading.equalTo(self.themeCardView).offset(16);
+        make.trailing.equalTo(self.themeCardView).offset(-16);
     }];
     
     // 输入框（使用 UITextView 以支持多行）
@@ -690,21 +689,21 @@
     
     [self.themeTextView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.themeLabel.mas_bottom).offset(4);
-        make.left.equalTo(self.themeCardView).offset(4);
-        make.right.equalTo(self.themeCardView).offset(-4);
+        make.leading.equalTo(self.themeCardView).offset(4);
+        make.trailing.equalTo(self.themeCardView).offset(-4);
         make.bottom.equalTo(self.themeCardView).offset(-4);
     }];
     
     // Placeholder
     self.themePlaceholderLabel = [[UILabel alloc] init];
-    self.themePlaceholderLabel.text = NSLocalizedString(@"120 characters maximum.", @"");
+    self.themePlaceholderLabel.text = LocalString(@"最多120个字符");
     self.themePlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.themePlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.themePlaceholderLabel.userInteractionEnabled = NO;
     [self.themeCardView addSubview:self.themePlaceholderLabel];
     
     [self.themePlaceholderLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.themeTextView).offset(16);
+        make.leading.equalTo(self.themeTextView).offset(16);
         make.top.equalTo(self.themeTextView).offset(8);
     }];
 }
@@ -719,8 +718,8 @@
 //    
 //    [self.illustrationCardView mas_makeConstraints:^(MASConstraintMaker *make) {
 //        make.top.equalTo(self.themeCardView.mas_bottom).offset(24);
-//        make.left.equalTo(self.contentView).offset(16);
-//        make.right.equalTo(self.contentView).offset(-16);
+//        make.leading.equalTo(self.contentView).offset(16);
+//        make.trailing.equalTo(self.contentView).offset(-16);
 //        make.height.mas_equalTo(138);
 //    }];
 //    
@@ -734,8 +733,8 @@
 ////    
 ////    [self.illustrationLabel mas_makeConstraints:^(MASConstraintMaker *make) {
 ////        make.top.equalTo(self.illustrationCardView).offset(16);
-////        make.left.equalTo(self.illustrationCardView).offset(16);
-////        make.right.lessThanOrEqualTo(self.illustrationCardView).offset(-16);
+////        make.leading.equalTo(self.illustrationCardView).offset(16);
+////        make.trailing.lessThanOrEqualTo(self.illustrationCardView).offset(-16);
 ////    }];
 ////    
 ////    // 为了确保标题有足够的高度，我们手动设置一个固定的约束
@@ -754,7 +753,7 @@
 ////    [self.imageContainerView addGestureRecognizer:tapGesture];
 ////    
 ////    [self.imageContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
-////        make.left.equalTo(self.illustrationCardView).offset(16);
+////        make.leading.equalTo(self.illustrationCardView).offset(16);
 ////        make.top.equalTo(self.illustrationLabel.mas_bottom).offset(12);
 ////        make.width.height.mas_equalTo(76);
 ////        make.bottom.lessThanOrEqualTo(self.illustrationCardView).offset(-16);
@@ -810,7 +809,7 @@
 ////    [self.removeImageButton mas_makeConstraints:^(MASConstraintMaker *make) {
 ////        // ✅ 相对于图片容器定位，但约束到背景卡片，避免被截断
 ////        make.top.equalTo(self.imageContainerView).offset(-12);
-////        make.left.equalTo(self.imageContainerView.mas_right).offset(-12);
+////        make.leading.equalTo(self.imageContainerView.mas_trailing).offset(-12);
 ////        make.width.height.mas_equalTo(24);
 ////    }];
 //}
@@ -825,22 +824,22 @@
     
     [self.contentCardView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.themeCardView.mas_bottom).offset(24);
-        make.left.equalTo(self.contentView).offset(16);
-        make.right.equalTo(self.contentView).offset(-16);
+        make.leading.equalTo(self.contentView).offset(16);
+        make.trailing.equalTo(self.contentView).offset(-16);
         make.height.mas_equalTo(280);
     }];
     
     // 标题（放在卡片内部顶部）
     self.contentLabel = [[UILabel alloc] init];
-    self.contentLabel.text = NSLocalizedString(@"Story Description", @"");
+    self.contentLabel.text = LocalString(@"故事描述");
     self.contentLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.contentLabel.textColor = [UIColor blackColor];
     [self.contentCardView addSubview:self.contentLabel];
     
     [self.contentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.contentCardView).offset(16);
-        make.left.equalTo(self.contentCardView).offset(16);
-        make.right.equalTo(self.contentCardView).offset(-16);
+        make.leading.equalTo(self.contentCardView).offset(16);
+        make.trailing.equalTo(self.contentCardView).offset(-16);
     }];
     
     // 内容输入框
@@ -854,21 +853,21 @@
     
     [self.contentTextView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.contentLabel.mas_bottom).offset(4);
-        make.left.equalTo(self.contentCardView).offset(4);
-        make.right.equalTo(self.contentCardView).offset(-4);
+        make.leading.equalTo(self.contentCardView).offset(4);
+        make.trailing.equalTo(self.contentCardView).offset(-4);
         make.bottom.equalTo(self.contentCardView).offset(-4);
     }];
     
     // Placeholder
     self.contentPlaceholderLabel = [[UILabel alloc] init];
-    self.contentPlaceholderLabel.text = NSLocalizedString(@"Please briefly enter the main plot of this story", @"");
+    self.contentPlaceholderLabel.text = LocalString(@"请简要输入故事主线");
     self.contentPlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.contentPlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.contentPlaceholderLabel.userInteractionEnabled = NO;
     [self.contentCardView addSubview:self.contentPlaceholderLabel];
     
     [self.contentPlaceholderLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.contentTextView).offset(16);
+        make.leading.equalTo(self.contentTextView).offset(16);
         make.top.equalTo(self.contentTextView).offset(8);
     }];
     
@@ -881,7 +880,7 @@
     
     [self.contentCharCountLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         // ✅ 字数统计移到右边
-        make.right.equalTo(self.contentCardView).offset(-16);
+        make.trailing.equalTo(self.contentCardView).offset(-16);
         make.bottom.equalTo(self.contentCardView).offset(-12);
     }];
     
@@ -897,7 +896,7 @@
     
     [self.voiceInputButton mas_makeConstraints:^(MASConstraintMaker *make) {
         // ✅ 麦克风按钮移到左边，字数统计标签的左侧
-        make.right.equalTo(self.contentCharCountLabel.mas_left).offset(-8);
+        make.trailing.equalTo(self.contentCharCountLabel.mas_leading).offset(-8);
         make.centerY.equalTo(self.contentCharCountLabel);
         make.width.height.mas_equalTo(24);
     }];
@@ -913,20 +912,20 @@
     
     [self.typeCardView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.contentCardView.mas_bottom).offset(24);
-        make.left.equalTo(self.contentView).offset(16);
-        make.right.equalTo(self.contentView).offset(-16);
+        make.leading.equalTo(self.contentView).offset(16);
+        make.trailing.equalTo(self.contentView).offset(-16);
         make.height.mas_equalTo(52);
     }];
     
     // 标题（放在卡片内部左侧）
     self.typeLabel = [[UILabel alloc] init];
-    self.typeLabel.text = NSLocalizedString(@"Story Type", @"");
+    self.typeLabel.text = LocalString(@"故事类型");
     self.typeLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.typeLabel.textColor = [UIColor blackColor];
     [self.typeCardView addSubview:self.typeLabel];
     
     [self.typeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.typeCardView).offset(16);
+        make.leading.equalTo(self.typeCardView).offset(16);
         make.centerY.equalTo(self.typeCardView);
     }];
     
@@ -940,13 +939,17 @@
     }];
     
     // 右箭头
-    self.typeChevronImageView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"chevron.right"]];
+    UIImage *typeChevronImage = [UIImage systemImageNamed:@"chevron.right"];
+    if (typeChevronImage && [ATLanguageHelper isRTLLanguage] && @available(iOS 9.0, *)) {
+        typeChevronImage = [typeChevronImage imageFlippedForRightToLeftLayoutDirection];
+    }
+    self.typeChevronImageView = [[UIImageView alloc] initWithImage:typeChevronImage];
     self.typeChevronImageView.tintColor = [UIColor systemGrayColor];
     self.typeChevronImageView.userInteractionEnabled = NO;
     [self.typeCardView addSubview:self.typeChevronImageView];
     
     [self.typeChevronImageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.typeCardView).offset(-16);
+        make.trailing.equalTo(self.typeCardView).offset(-16);
         make.centerY.equalTo(self.typeCardView);
         make.width.mas_equalTo(8);
         make.height.mas_equalTo(14);
@@ -954,17 +957,17 @@
     
     // 值标签（放在右侧，箭头左边）
     self.typeValueLabel = [[UILabel alloc] init];
-    self.typeValueLabel.text = NSLocalizedString(@"Please Select", @"");
+    self.typeValueLabel.text = LocalString(@"请选择");
     self.typeValueLabel.font = [UIFont systemFontOfSize:15];
     self.typeValueLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
-    self.typeValueLabel.textAlignment = NSTextAlignmentRight;
+    self.typeValueLabel.textAlignment = NSTextAlignmentNatural;
     self.typeValueLabel.userInteractionEnabled = NO;
     [self.typeCardView addSubview:self.typeValueLabel];
     
     [self.typeValueLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.typeChevronImageView.mas_left).offset(-8);
+        make.trailing.equalTo(self.typeChevronImageView.mas_leading).offset(-8);
         make.centerY.equalTo(self.typeCardView);
-        make.left.greaterThanOrEqualTo(self.typeLabel.mas_right).offset(16);
+        make.leading.greaterThanOrEqualTo(self.typeLabel.mas_trailing).offset(16);
     }];
 }
 
@@ -978,20 +981,20 @@
     
     [self.protagonistCardView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.typeCardView.mas_bottom).offset(24);
-        make.left.equalTo(self.contentView).offset(16);
-        make.right.equalTo(self.contentView).offset(-16);
+        make.leading.equalTo(self.contentView).offset(16);
+        make.trailing.equalTo(self.contentView).offset(-16);
         make.height.mas_equalTo(52);
     }];
     
     // 标题（放在卡片内部左侧）
     self.protagonistLabel = [[UILabel alloc] init];
-    self.protagonistLabel.text = NSLocalizedString(@"Story's Protagonist", @"");
+    self.protagonistLabel.text = LocalString(@"故事主角");
     self.protagonistLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.protagonistLabel.textColor = [UIColor blackColor];
     [self.protagonistCardView addSubview:self.protagonistLabel];
     
     [self.protagonistLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.protagonistCardView).offset(16);
+        make.leading.equalTo(self.protagonistCardView).offset(16);
         make.centerY.equalTo(self.protagonistCardView);
     }];
     
@@ -999,15 +1002,15 @@
     self.protagonistTextField = [[UITextField alloc] init];
     self.protagonistTextField.font = [UIFont systemFontOfSize:15];
     self.protagonistTextField.textColor = [UIColor blackColor];
-    self.protagonistTextField.textAlignment = NSTextAlignmentRight;
-    self.protagonistTextField.placeholder = NSLocalizedString(@"Please Input", @"");
+    self.protagonistTextField.textAlignment = NSTextAlignmentNatural;
+    self.protagonistTextField.placeholder = LocalString(@"请输入");
     self.protagonistTextField.delegate = self;
     [self.protagonistCardView addSubview:self.protagonistTextField];
     
     [self.protagonistTextField mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.protagonistCardView).offset(-16);
+        make.trailing.equalTo(self.protagonistCardView).offset(-16);
         make.centerY.equalTo(self.protagonistCardView);
-        make.left.greaterThanOrEqualTo(self.protagonistLabel.mas_right).offset(16);
+        make.leading.greaterThanOrEqualTo(self.protagonistLabel.mas_trailing).offset(16);
         make.width.mas_greaterThanOrEqualTo(100); // 确保输入框有最小宽度
     }];
 }
@@ -1022,21 +1025,21 @@
     
     [self.lengthCardView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.protagonistCardView.mas_bottom).offset(24);
-        make.left.equalTo(self.contentView).offset(16);
-        make.right.equalTo(self.contentView).offset(-16);
+        make.leading.equalTo(self.contentView).offset(16);
+        make.trailing.equalTo(self.contentView).offset(-16);
         make.height.mas_equalTo(52);
         make.bottom.equalTo(self.contentView).offset(-24);
     }];
     
     // 标题（放在卡片内部左侧）
     self.lengthLabel = [[UILabel alloc] init];
-    self.lengthLabel.text = NSLocalizedString(@"Story Length", @"");
+    self.lengthLabel.text = LocalString(@"故事时长");
     self.lengthLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
     self.lengthLabel.textColor = [UIColor blackColor];
     [self.lengthCardView addSubview:self.lengthLabel];
     
     [self.lengthLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.lengthCardView).offset(16);
+        make.leading.equalTo(self.lengthCardView).offset(16);
         make.centerY.equalTo(self.lengthCardView);
     }];
     
@@ -1050,13 +1053,17 @@
     }];
     
     // 右箭头
-    self.lengthChevronImageView = [[UIImageView alloc] initWithImage:[UIImage systemImageNamed:@"chevron.right"]];
+    UIImage *lengthChevronImage = [UIImage systemImageNamed:@"chevron.right"];
+    if (lengthChevronImage && [ATLanguageHelper isRTLLanguage] && @available(iOS 9.0, *)) {
+        lengthChevronImage = [lengthChevronImage imageFlippedForRightToLeftLayoutDirection];
+    }
+    self.lengthChevronImageView = [[UIImageView alloc] initWithImage:lengthChevronImage];
     self.lengthChevronImageView.tintColor = [UIColor systemGrayColor];
     self.lengthChevronImageView.userInteractionEnabled = NO;
     [self.lengthCardView addSubview:self.lengthChevronImageView];
     
     [self.lengthChevronImageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.lengthCardView).offset(-16);
+        make.trailing.equalTo(self.lengthCardView).offset(-16);
         make.centerY.equalTo(self.lengthCardView);
         make.width.mas_equalTo(8);
         make.height.mas_equalTo(14);
@@ -1064,23 +1071,23 @@
     
     // 值标签（放在右侧，箭头左边）
     self.lengthValueLabel = [[UILabel alloc] init];
-    self.lengthValueLabel.text = NSLocalizedString(@"Please Select", @"");
+    self.lengthValueLabel.text = LocalString(@"请选择");
     self.lengthValueLabel.font = [UIFont systemFontOfSize:15];
     self.lengthValueLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
-    self.lengthValueLabel.textAlignment = NSTextAlignmentRight;
+    self.lengthValueLabel.textAlignment = NSTextAlignmentNatural;
     self.lengthValueLabel.userInteractionEnabled = NO;
     [self.lengthCardView addSubview:self.lengthValueLabel];
     
     [self.lengthValueLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.lengthChevronImageView.mas_left).offset(-8);
+        make.trailing.equalTo(self.lengthChevronImageView.mas_leading).offset(-8);
         make.centerY.equalTo(self.lengthCardView);
-        make.left.greaterThanOrEqualTo(self.lengthLabel.mas_right).offset(16);
+        make.leading.greaterThanOrEqualTo(self.lengthLabel.mas_trailing).offset(16);
     }];
 }
 
 - (void)setupNextButton {
     self.nextButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [self.nextButton setTitle:NSLocalizedString(@"Next Step", @"") forState:UIControlStateNormal];
+    [self.nextButton setTitle:LocalString(@"下一步") forState:UIControlStateNormal];
     [self.nextButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     self.nextButton.titleLabel.font = [UIFont systemFontOfSize:18 weight:UIFontWeightSemibold];
     self.nextButton.backgroundColor = [UIColor systemBlueColor];
@@ -1089,8 +1096,8 @@
     [self.view addSubview:self.nextButton];
     
     [self.nextButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.view).offset(27);
-        make.right.equalTo(self.view).offset(-27);
+        make.leading.equalTo(self.view).offset(27);
+        make.trailing.equalTo(self.view).offset(-27);
         make.bottom.equalTo(self.view.mas_safeAreaLayoutGuideBottom).offset(-16);
         make.height.mas_equalTo(56);
     }];
@@ -1201,8 +1208,8 @@
     // 由于这个弹窗有3个按钮且逻辑比较特殊，我们需要使用更灵活的方式
     // 这里暂时保持原有的UIAlertController，或者可以考虑用LGBaseAlertView的自定义类型
     NSDictionary *info = @{
-        @"title": @"Allow Tanlepal to Record Audio?",
-        @"content": @"Please select permission settings"
+        @"title": LocalString(@"允许应用录音？"),
+        @"content": LocalString(@"请前往权限设置开启录音权限")
     };
     
     [LGBaseAlertView showAlertInfo:info
@@ -1247,7 +1254,7 @@
         newText = [newText substringToIndex:2400];
         
         // 提示用户字数限制
-        [LGBaseAlertView showAlertWithContent:@"Content has reached the 2400 character limit"
+        [LGBaseAlertView showAlertWithContent:LocalString(@"内容已达到2400字符上限")
                                  confirmBlock:^(BOOL isValue, id obj) {
             // 只有确定按钮，不需要处理
         }];
@@ -1277,7 +1284,7 @@
     
     // 检查数据是否已加载
     if (!self.storyTypes || self.storyTypes.count == 0) {
-        [self showErrorAlert:@"Story type data is loading, please try again later"];
+        [self showErrorAlert:LocalString(@"故事类型数据加载中，请稍后再试")];
         return;
     }
     
@@ -1303,7 +1310,7 @@
     
     // 检查数据是否已加载
     if (!self.storyLengths || self.storyLengths.count == 0) {
-        [self showErrorAlert:@"Story length data is loading, please try again later"];
+        [self showErrorAlert:LocalString(@"故事时长数据加载中，请稍后再试")];
         return;
     }
     
@@ -1361,10 +1368,10 @@
 - (NSString *)validateInputs {
     // 验证故事名称
     if (self.themeTextView.text.length == 0) {
-        return NSLocalizedString(@"Please enter story name", @"");
+        return LocalString(@"请输入故事名称");
     }
     if (self.themeTextView.text.length > 120) {
-        return NSLocalizedString(@"Story name should not exceed 120 characters", @"");
+        return LocalString(@"故事名称不能超过120个字符");
     }
     
 //    // 验证插图
@@ -1374,28 +1381,28 @@
     
     // 验证故事内容
     if (self.contentTextView.text.length == 0) {
-        return NSLocalizedString(@"Please enter Story Description", @"");
+        return LocalString(@"请输入故事描述");
     }
     if (self.contentTextView.text.length > 2400) {
-        return NSLocalizedString(@"Story Description should not exceed 2400 characters", @"");
+        return LocalString(@"故事描述不能超过2400个字符");
     }
     
     // 验证故事类型
     if (self.selectedTypeIndex < 0) {
-        return NSLocalizedString(@"Please select story type", @"");
+        return LocalString(@"请选择故事类型");
     }
     
     // 验证主角名称
     if (self.protagonistTextField.text.length == 0) {
-        return NSLocalizedString(@"Please enter story protagonist", @"");
+        return LocalString(@"请输入故事主角");
     }
     if (self.protagonistTextField.text.length > 30) {
-        return NSLocalizedString(@"Story protagonist should not exceed 30 characters", @"");
+        return LocalString(@"故事主角不能超过30个字符");
     }
     
     // 验证故事时长
     if (self.selectedLengthIndex < 0) {
-        return NSLocalizedString(@"Please select story duration", @"");
+        return LocalString(@"请选择故事时长");
     }
     
     return nil;
@@ -1667,10 +1674,10 @@
 
 /// 显示重新创建故事的确认对话框
 - (void)showRecreateStoryConfirmation {
-    [LGBaseAlertView showAlertWithTitle:@"Need to Regenerate Story"
-                                content:@"You have modified the story type, protagonist name, or duration, which requires regenerating the story. Do you want to continue?"
-                           cancelBtnStr:@"Cancel"
-                          confirmBtnStr:@"Regenerate"
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"需要重新生成故事")
+                                content:LocalString(@"您已修改故事类型、主角名称或时长，需要重新生成故事。是否继续？")
+                           cancelBtnStr:LocalString(@"取消")
+                          confirmBtnStr:LocalString(@"重新生成")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             [self recreateStoryRequest];
@@ -1696,7 +1703,7 @@
         } else {
             [strongSelf hideLoadingAlert];
             NSLog(@"❌ 删除旧故事失败: %@", response.errorMessage);
-            [strongSelf showErrorAlert:@"Failed to delete old story, unable to regenerate"];
+            [strongSelf showErrorAlert:LocalString(@"删除旧故事失败，无法重新生成")];
         }
         
     } failure:^(NSError *error) {
@@ -1709,32 +1716,32 @@
     }];
 }
 - (void)handleCreateStorySuccess:(APIResponseModel *)response {
-    [LGBaseAlertView showAlertWithTitle:NSLocalizedString(@"Created Successfully", @"")
-                                content:NSLocalizedString(@"Story creation has started, you can view it in the story list", @"")
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"创建成功")
+                                content:LocalString(@"故事开始生成，可在故事列表查看")
                            cancelBtnStr:nil
-                          confirmBtnStr:NSLocalizedString(@"View Stories", @"")
+                          confirmBtnStr:LocalString(@"查看故事")
                            confirmBlock:^(BOOL isValue, id obj) {
         [self.navigationController popViewControllerAnimated:YES];
     }];
 }
 
 - (void)handleUpdateStorySuccess:(APIResponseModel *)response {
-    [LGBaseAlertView showAlertWithTitle:NSLocalizedString(@"Saved Successfully", @"")
-                                content:NSLocalizedString(@"Story has been regenerated, you can view it in the story list", @"")
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"保存成功")
+                                content:LocalString(@"故事已重新生成，可在故事列表查看")
                            cancelBtnStr:nil
-                          confirmBtnStr:NSLocalizedString(@"View Stories", @"")
+                          confirmBtnStr:LocalString(@"查看故事")
                            confirmBlock:^(BOOL isValue, id obj) {
         [self.navigationController popViewControllerAnimated:YES];
     }];
 }
 
 - (void)showLoadingAlert {
-    [SVProgressHUD showWithStatus:NSLocalizedString(@"Creating story...", @"")];
+    [SVProgressHUD showWithStatus:LocalString(@"正在创建故事...")];
     [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
 }
 
 - (void)showUpdateLoadingAlert {
-    [SVProgressHUD showWithStatus:NSLocalizedString(@"Saving story...", @"")];
+    [SVProgressHUD showWithStatus:LocalString(@"正在保存故事...")];
     [SVProgressHUD setDefaultMaskType:SVProgressHUDMaskTypeBlack];
 }
 
@@ -1743,13 +1750,13 @@
 }
 
 - (void)showErrorAlert:(NSString *)errorMessage {
-    NSString *title = NSLocalizedString(@"Creation Failed", @"");
-    NSString *message = errorMessage ?: NSLocalizedString(@"Please try again later", @"");
+    NSString *title = LocalString(@"创建失败");
+    NSString *message = errorMessage ?: LocalString(@"请稍后重试");
     
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
                            cancelBtnStr:nil
-                          confirmBtnStr:NSLocalizedString(@"OK", @"")
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         // 只有确定按钮，不需要处理
     }];
@@ -1908,10 +1915,10 @@
 //    }
     
     // 7. 更新导航栏标题，表明这是编辑模式
-    self.title = @"Edit Story";
+    self.title = LocalString(@"编辑故事");
     
     // 8. 更新按钮标题为编辑模式
-    [self.nextButton setTitle:@"Save Changes" forState:UIControlStateNormal];
+    [self.nextButton setTitle:LocalString(@"保存修改") forState:UIControlStateNormal];
     
     NSLog(@"🎯 表单字段设置完成");
     
@@ -1927,7 +1934,7 @@
     // 调整 ScrollView 的 top 约束，为横幅留出空间
     [self.scrollView mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.failureBannerView.mas_bottom).offset(8); // 横幅下方8pt间距
-        make.left.right.equalTo(self.view);
+        make.leading.trailing.equalTo(self.view);
         make.bottom.equalTo(self.view).offset(-90);
     }];
     
@@ -1941,7 +1948,7 @@
     // 恢复 ScrollView 的默认约束
     [self.scrollView mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop);
-        make.left.right.equalTo(self.view);
+        make.leading.trailing.equalTo(self.view);
         make.bottom.equalTo(self.view).offset(-90);
     }];
     

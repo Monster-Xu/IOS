@@ -80,7 +80,7 @@ NSArray *allSubviews(UIView *aView) {
     
     if (@available(iOS 15.0, *)) {
         UIButtonConfiguration *config = [UIButtonConfiguration plainButtonConfiguration];
-        config.image = [[UIImage imageNamed:@"icon_back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        config.image = [QD_IMG(@"icon_back") imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
         config.contentInsets = NSDirectionalEdgeInsetsMake(0, 0, 0, 0);
         
         self.leftBarButton = [UIButton buttonWithConfiguration:config primaryAction:nil];
@@ -95,7 +95,7 @@ NSArray *allSubviews(UIView *aView) {
     } else {
         // iOS 15 以下的兼容方案
         UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [backButton setImage:[[UIImage imageNamed:@"icon_back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
+        [backButton setImage:[QD_IMG(@"icon_back") imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal] forState:UIControlStateNormal];
         [backButton addTarget:self action:@selector(leftButtonClicked) forControlEvents:UIControlEventTouchUpInside];
         
         // 让按钮自适应内容大小

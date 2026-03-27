@@ -16,6 +16,7 @@
 #import "PersonalInformationVC.h"
 #import "AvatarModel.h"
 #import "MyWebViewController.h"
+#import "ATLanguageHelper.h"
 
 @interface MineViewController ()
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
@@ -46,12 +47,20 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.fd_prefersNavigationBarHidden = YES;
-    NSArray *arr = @[
+    NSMutableArray *arr = [@[
         @{@"icon" : @"mine_homeManage", @"title" : LocalString(@"家庭管理"), @"toVC" : @"FamailyManageVC"},
         @{@"icon" : @"mine_msg", @"title" : LocalString(@"消息中心"), @"toVC" : @"MessageCenterVC"},
         @{@"icon" : @"mine_setting", @"title" : LocalString(@"设置"), @"toVC" : @"SettingViewController"},
         @{@"icon":@"mine_help",@"title":LocalString(@"帮助中心"),@"toVC":@"MyWebViewController"},
-        ];
+    ] mutableCopy];
+    if ([ATLanguageHelper isRTLLanguage]) {
+        NSIndexSet *familyIndexes = [arr indexesOfObjectsPassingTest:^BOOL(NSDictionary *obj, NSUInteger idx, BOOL *stop) {
+            return [obj[@"toVC"] isEqualToString:@"FamailyManageVC"];
+        }];
+        if (familyIndexes.count > 0) {
+            [arr removeObjectsAtIndexes:familyIndexes];
+        }
+    }
 //    @{@"icon" : @"mine_help", @"title" : LocalString(@"帮助中心"), @"toVC" : @"FamailyManageVC"},
     [self.itemArray addObjectsFromArray:arr];
     [self setupUI];

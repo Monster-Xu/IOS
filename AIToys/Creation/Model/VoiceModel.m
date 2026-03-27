@@ -14,7 +14,7 @@
         _voiceId = 0;
         _cloneStatus = VoiceCloneStatusPending;
         _bindStoryCount = 0;
-        _sampleText = @"Hello, let's play together";
+        _sampleText = LocalString(@"你好，让我们一起玩吧");
     }
     return self;
 }
@@ -38,15 +38,15 @@
     
     switch (self.cloneStatus) {
         case VoiceCloneStatusPending:
-            return @"待克隆";
+            return LocalString(@"待克隆");
         case VoiceCloneStatusCloning:
-            return @"克隆中";
+            return LocalString(@"克隆中");
         case VoiceCloneStatusSuccess:
-            return @"克隆成功";
+            return LocalString(@"克隆成功");
         case VoiceCloneStatusFailed:
-            return @"克隆失败";
+            return LocalString(@"克隆失败");
         default:
-            return @"待克隆";
+            return LocalString(@"待克隆");
     }
 }
 

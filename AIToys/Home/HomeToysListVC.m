@@ -8,6 +8,7 @@
 #import "HomeToysListVC.h"
 #import "HomeToysItem.h"
 #import "ATFontManager.h"
+#import "ATLanguageHelper.h"
 #import <ThingSmartMiniAppBizBundle/ThingSmartMiniAppBizBundle.h>
 
 @interface HomeToysListVC ()
@@ -38,11 +39,6 @@
 @end
 
 @implementation HomeToysListVC
-
-- (NSString *)currentMiniAppLangType {
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
-    return [preferredLanguage hasPrefix:@"ar"] ? @"ar" : @"en";
-}
 
 - (NSMutableArray *)dataArr {
     if (!_dataArr) {
@@ -165,7 +161,9 @@
 
         // 跳转小程序
         NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":self.dataArr[indexPath.row].Id,@"BearerId":(kMyUser.accessToken?:@""),@"homeId":(currentHomeId?:@""),@"langType":[self currentMiniAppLangType],@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype": @"prod"}];
+        NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
+        NSString *envType = [bundleId isEqualToString:@"com.talenpal.talenpalapp"] ? @"prod" : @"dev";
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/doll-detail/index" params:@{@"dollId":self.dataArr[indexPath.row].Id,@"BearerId":(kMyUser.accessToken?:@""),@"homeId":(currentHomeId?:@""),@"langType":[ATLanguageHelper miniAppLangType],@"ownerId":@([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue])?:@"",@"envtype": envType}];
     }
 }
 

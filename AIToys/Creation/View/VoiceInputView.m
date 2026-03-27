@@ -99,7 +99,7 @@
     self.contentTextView.backgroundColor = [UIColor clearColor];
     self.contentTextView.font = [UIFont systemFontOfSize:16];
     self.contentTextView.textColor = [UIColor blackColor];
-    self.contentTextView.text = @"Please enter the main plot of this story...";
+    self.contentTextView.text = LocalString(@"请输入故事主要情节...");
     self.contentTextView.editable = NO;
     self.contentTextView.scrollEnabled = YES;
     [self.containerView addSubview:self.contentTextView];
@@ -144,14 +144,14 @@
     }];
     
     [self.containerView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.right.bottom.equalTo(self);
+        make.leading.trailing.bottom.equalTo(self);
         make.height.mas_equalTo(400);
     }];
     
     [self.contentTextView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.mas_equalTo(self.containerView).offset(20);
-        make.left.mas_equalTo(self.containerView).offset(20);
-        make.right.mas_equalTo(self.containerView).offset(-20);
+        make.leading.mas_equalTo(self.containerView).offset(20);
+        make.trailing.mas_equalTo(self.containerView).offset(-20);
         make.height.mas_equalTo(200);
     }];
     
@@ -162,7 +162,7 @@
     }];
     
     [self.cancelButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.mas_equalTo(self.voiceButton.mas_left).offset(-50);
+        make.trailing.mas_equalTo(self.voiceButton.mas_leading).offset(-50);
         make.centerY.equalTo(self.voiceButton);
         make.width.mas_equalTo(60);
         make.height.mas_equalTo(80);
@@ -231,7 +231,7 @@
     self.recognizedText = text ?: @"";
     
     if (self.recognizedText.length == 0) {
-        self.contentTextView.text = @"Please enter the main plot of this story...";
+        self.contentTextView.text = LocalString(@"请输入故事主要情节...");
         self.contentTextView.textColor = [UIColor grayColor];
     } else {
         self.contentTextView.text = self.recognizedText;
@@ -268,7 +268,7 @@
             
         case VoiceInputStateRecording:
             [self.voiceButton setImage:[UIImage systemImageNamed:@"mic.fill"] forState:UIControlStateNormal];
-            self.statusLabel.text = @"Recording in progress... Release to stop";
+            self.statusLabel.text = LocalString(@"录音中...松开结束");
             
             // 隐藏取消按钮
             self.cancelButton.hidden = YES;
@@ -282,7 +282,7 @@
             
         case VoiceInputStateCompleted:
             [self.voiceButton setImage:[UIImage systemImageNamed:@"checkmark"] forState:UIControlStateNormal];
-            self.statusLabel.text = @"Click Finish";
+            self.statusLabel.text = LocalString(@"点击完成");
             
             // 显示取消按钮
             self.cancelButton.hidden = NO;
@@ -389,7 +389,7 @@
     }
     
     if (!self.speechRecognizer.isAvailable) {
-        [self showAlert:@"Speech recognition unavailable"];
+        [self showAlert:LocalString(@"语音识别不可用")];
         return;
     }
     
@@ -401,13 +401,13 @@
                        withOptions:AVAudioSessionCategoryOptionDuckOthers
                              error:&audioError]) {
         NSLog(@"❌ 音频会话类别设置失败: %@", audioError);
-        [self showAlert:@"音频配置失败"];
+        [self showAlert:LocalString(@"音频配置失败")];
         return;
     }
     
     if (![audioSession setActive:YES withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:&audioError]) {
         NSLog(@"❌ 音频会话激活失败: %@", audioError);
-        [self showAlert:@"Audio activation failed"];
+        [self showAlert:LocalString(@"音频激活失败")];
         return;
     }
     
@@ -455,7 +455,7 @@
     NSError *engineError = nil;
     if (![self.audioEngine startAndReturnError:&engineError]) {
         NSLog(@"❌ 音频引擎启动失败: %@", engineError);
-        [self showAlert:@"Audio engine failed to start"];
+        [self showAlert:LocalString(@"音频引擎启动失败")];
         return;
     }
     
@@ -489,7 +489,7 @@
         [self switchToState:VoiceInputStateReady];
         
         // ✅ 如果没有识别到内容，提示用户
-        self.statusLabel.text = @"No content was found, please try again.";
+        self.statusLabel.text = LocalString(@"未识别到内容，请重试。");
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             if (self.currentState == VoiceInputStateReady) {
                 self.statusLabel.text = LocalString(@"按住说话");
@@ -516,11 +516,11 @@
 #pragma mark - 提示框
 
 - (void)showPermissionDeniedAlert {
-    [self showAlert:@"Microphone permission required. \n Please allow this app to access your microphone in Settings - Privacy."];
+    [self showAlert:LocalString(@"需要麦克风权限。\n请在“设置-隐私”中允许本应用访问麦克风。")];
 }
 
 - (void)showAlert:(NSString *)message {
-    UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Tips"
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:LocalString(@"提示")
                                                                    message:message
                                                             preferredStyle:UIAlertControllerStyleAlert];
     

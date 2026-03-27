@@ -10,6 +10,7 @@
 #import "AcountLoginViewController.h"
 #import "LoginViewController.h"
 #import "SelectBirthdayView.h"
+#import "ATLanguageHelper.h"
 
 @interface RegistViewController ()<UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -39,8 +40,9 @@
 
 -(void)setUpUI{
     self.textField.delegate = self;
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     if(self.type == EmailType_regist){
-        self.titleLabel.text = NSLocalizedString(@"注册", @"");
+        self.titleLabel.text = LocalString(@"注册");
         self.dateView.hidden = NO;
         self.btnTop.constant = 130;
         self.alertTop.constant = 87;
@@ -49,17 +51,19 @@
         self.btnTop.constant = 70;
         self.alertTop.constant = 8;
         if (self.type == EmailType_regist){
-            self.titleLabel.text =  NSLocalizedString(@"忘记密码", @"");
+            self.titleLabel.text =  LocalString(@"忘记密码");
         }else{
-            self.titleLabel.text =  NSLocalizedString(@"更换邮箱", @"");
+            self.titleLabel.text =  LocalString(@"更换邮箱");
         }
     }
-    self.acountTitleLabel.text = NSLocalizedString(@"账号", @"");
-    self.textField.placeholder = NSLocalizedString(@"账号", @"");
-    self.dateTitleLabel.text = NSLocalizedString(@"出生日期", @"");
-    self.dateTextfield.placeholder = NSLocalizedString(@"出生日期", @"");
-    self.alertLabel.text = NSLocalizedString(@"请输入正确的邮箱地址", @"");
-    [self.sendCodeBtn setTitle:NSLocalizedString(@"获取验证码", @"") forState:0];
+    self.acountTitleLabel.text = LocalString(@"账号");
+    self.textField.placeholder = LocalString(@"账号");
+    self.dateTitleLabel.text = LocalString(@"出生日期");
+    self.dateTextfield.placeholder = LocalString(@"出生日期");
+    self.alertLabel.text = LocalString(@"请输入正确的邮箱地址");
+    [self.sendCodeBtn setTitle:LocalString(@"获取验证码") forState:0];
+    self.textField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.dateTextfield.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     [PublicObj makeButtonUnEnable:self.sendCodeBtn];
     if(self.numStr.length>0){
         self.textField.text = self.numStr;
@@ -81,7 +85,7 @@
     }
     WS(weakSelf);
     [[ThingSmartUser sharedInstance] sendVerifyCodeWithUserName:self.textField.text region:[[ThingSmartUser sharedInstance] getDefaultRegionWithCountryCode:Country_Code] countryCode:Country_Code type:codeType success:^{
-        [SVProgressHUD showSuccessWithStatus:@"Verification Code Sent Successfully"];
+        [SVProgressHUD showSuccessWithStatus:LocalString(@"验证码发送成功")];
         sender.userInteractionEnabled = YES;
         CodeViewController *VC = [CodeViewController new];
         VC.numStr = weakSelf.textField.text;
@@ -117,7 +121,7 @@
                     }
                 }];
             }else{
-                [SVProgressHUD showErrorWithStatus:@"该邮箱已被占用，请重新输入"];
+                [SVProgressHUD showErrorWithStatus:LocalString(@"该邮箱已被占用，请重新输入")];
             }
             
         }else{
@@ -153,14 +157,14 @@
 - (void)checkEmail{
     if(![self.textField.text validateForRegex:[NSString emailRegex]]) {
         //格式错误
-        self.alertLabel.text = NSLocalizedString(@"请输入正确的邮箱地址", @"");
+        self.alertLabel.text = LocalString(@"请输入正确的邮箱地址");
         self.alertLabel.hidden = NO;
         [PublicObj makeButtonUnEnable:self.sendCodeBtn];
     }else {
         if(self.type == EmailType_regist){
             if(!self.isEnableYear){
                 self.alertLabel.hidden = NO;
-                self.alertLabel.text = NSLocalizedString(@"抱歉，您还未到允许注册的年龄", @"");
+                self.alertLabel.text = LocalString(@"抱歉，您还未到允许注册的年龄");
                 [PublicObj makeButtonUnEnable:self.sendCodeBtn];
             }else{
                 self.alertLabel.hidden = YES;

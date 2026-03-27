@@ -13,10 +13,12 @@
 #import "SelectIllustrationVC.h"
 #import "StoryBoundDoll.h"
 #import "LGBaseAlertView.h"
+#import "ATLanguageHelper.h"
 
 @interface CreateStoryWithVoiceViewController ()<UITableViewDelegate, UITableViewDataSource, AudioPlayerViewDelegate>
 @property (weak, nonatomic) IBOutlet UIImageView *createImageView;
 @property (weak, nonatomic) IBOutlet UILabel *storyStautsLabel;
+@property (weak, nonatomic) IBOutlet UILabel *storyNameLabel;
 @property (weak, nonatomic) IBOutlet UITextView *storyTextField;
 @property (weak, nonatomic) IBOutlet UILabel *chooseVoiceLabel;
 @property (weak, nonatomic) IBOutlet UIButton *addNewVoiceBtn;
@@ -26,6 +28,7 @@
 @property (weak, nonatomic) IBOutlet UIButton *voiceHeaderImageBtn;
 @property (weak, nonatomic) IBOutlet UIButton *deletHeaderBtn;
 @property (weak, nonatomic) IBOutlet UIView *emptyView;
+@property (weak, nonatomic) IBOutlet UILabel *emptyVoiceLabel;
 @property (weak, nonatomic) IBOutlet UIView *storyThemeView;
 @property (weak, nonatomic) IBOutlet UIView *voiceHeaderView;
 @property (weak, nonatomic) IBOutlet UIView *storyView;
@@ -86,17 +89,35 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    NSTextAlignment inputAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    NSTextAlignment labelAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     
     // ✅ 调试 isEditMode 的设置状态
     NSLog(@"🔧 viewDidLoad: isEditMode = %@", self.isEditMode ? @"YES" : @"NO");
     NSLog(@"🔧 viewDidLoad: storyId = %ld", (long)self.storyId);
     
     // 根据编辑模式设置标题
-//    self.title = self.isEditMode ? NSLocalizedString(@"Edit Story", @"") : NSLocalizedString(@"Create Story", @"");
-    self.title = NSLocalizedString(@"Edit Story", @"");
+    self.title = self.isEditMode ? LocalString(@"编辑故事") : LocalString(@"创建故事");
     
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0]];
+    
+    self.storyStautsLabel.text = LocalString(@"故事生成中");
+    self.storyNameLabel.text = LocalString(@"故事名称");
+    self.chooseVoiceLabel.text = LocalString(@"选择音色");
+    [self.addNewVoiceBtn setTitle:LocalString(@"新增音色") forState:UIControlStateNormal];
+    [self.saveStoryBtn setTitle:LocalString(@"保存故事") forState:UIControlStateNormal];
+    [self.deletBtn setTitle:LocalString(@"删除故事") forState:UIControlStateNormal];
+    self.emptyVoiceLabel.text = LocalString(@"暂无音色，请先创建");
+    self.storyStautsLabel.textAlignment = labelAlignment;
+    self.storyNameLabel.textAlignment = labelAlignment;
+    self.chooseVoiceLabel.textAlignment = labelAlignment;
+    self.emptyVoiceLabel.textAlignment = labelAlignment;
+    self.stroryThemeTextView.placeholder = LocalString(@"请输入故事名称");
+    self.stroryThemeTextView.textAlignment = inputAlignment;
+    self.storyTextField.textAlignment = inputAlignment;
     
     // ✅ 设置滚动视图
     [self setupScrollView];
@@ -193,7 +214,7 @@
     NSLog(@"⏳ Showing loading state");
     
     // 可以在这里添加一个加载指示器
-//    [SVProgressHUD showWithStatus:NSLocalizedString(@"Loading...", @"")];
+//    [SVProgressHUD showWithStatus:LocalString(@"加载中...")];
     [self showCustomLoadingView];
 }
 
@@ -605,7 +626,7 @@
     
     if (!audioURL || audioURL.length == 0) {
         NSLog(@"❌ 音频URL为空");
-        [self showErrorAlert:@"Failed to get audio URL"];
+        [self showErrorAlert:LocalString(@"获取音频地址失败")];
         [self resetPlayButtonAtIndex:index];
         return;
     }
@@ -1180,19 +1201,19 @@
 - (void)showBoundDollDeletionConfirm {
     // 获取第一个公仔的 customName
     StoryBoundDoll *firstDoll = self.currentStory.boundDolls.firstObject;
-    NSString *customName = firstDoll.customName ?: @"Unknown Doll";
+    NSString *customName = firstDoll.customName ?: LocalString(@"未知公仔");
     
     NSLog(@"⚠️ 故事 '%@' 已绑定公仔 '%@'，显示删除确认弹窗", self.currentStory.storyName, customName);
     
     // 构建提示信息
-    NSString *title = @"Delete Bound Story";
-    NSString *message = [NSString stringWithFormat:@"This story is already associated with creative doll '%@'. Please place the doll back on the device to get the latest resources.\n\nAre you sure you want to delete this story?", customName];
+    NSString *title = LocalString(@"删除已绑定故事");
+    NSString *message = [NSString stringWithFormat:LocalString(@"该故事已关联公仔“%@”。请将公仔放回设备以获取最新资源。\n\n确定要删除该故事吗？"), customName];
     
     __weak typeof(self) weakSelf = self;
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
-                             cancelBtnStr:@"Cancel"
-                            confirmBtnStr:@"Delete"
+                             cancelBtnStr:LocalString(@"取消")
+                            confirmBtnStr:LocalString(@"删除")
                             confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
@@ -1228,7 +1249,7 @@
 //    self.storyTextField.spellCheckingType = UITextSpellCheckingTypeDefault;
     
     // 文本布局配置
-    self.storyTextField.textAlignment = NSTextAlignmentLeft;
+    self.storyTextField.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     
     // 圆角和边框（可选）
 //    self.storyTextField.layer.cornerRadius = 8.0;
@@ -1337,11 +1358,11 @@
 
 - (void)showErrorAlert:(NSString *)errorMessage {
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Notice"
-                                                                       message:errorMessage ?: @"Network request failed, please try again later"
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:LocalString(@"提示")
+                                                                       message:errorMessage ?: LocalString(@"网络请求失败，请稍后重试")
                                                                 preferredStyle:UIAlertControllerStyleAlert];
         
-        [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+        [alert addAction:[UIAlertAction actionWithTitle:LocalString(@"确定")
                                                   style:UIAlertActionStyleDefault
                                                 handler:nil]];
         
@@ -1378,7 +1399,7 @@
     
     // 检查是否有未保存的更改
     if (!self.hasUnsavedChanges && ![self detectAnyChanges]) {
-        [self showErrorAlert:@"No changes detected"];
+        [self showErrorAlert:LocalString(@"未检测到修改")];
         //APP埋点：声音合成
             [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(No changes detected)"]} completion:^(BOOL success, NSString * _Nullable message) {
                     
@@ -1399,7 +1420,7 @@
     // ✅ 验证音色ID是否有效
     if (currentVoiceId <= 0) {
         NSLog(@"❌ 音色ID无效: %ld", (long)currentVoiceId);
-        [self showErrorAlert:@"Please select a valid voice"];
+        [self showErrorAlert:LocalString(@"请选择有效的音色")];
         return;
     }
     
@@ -1428,7 +1449,7 @@
     NSLog(@"   voiceId: %@ ✅", params[@"voiceId"]); // 特别标注音色ID
     
     // 显示加载提示
-    [SVProgressHUD showWithStatus:@"Saving..."];
+    [SVProgressHUD showWithStatus:LocalString(@"保存中...")];
     
     // 调用编辑故事接口
     __weak typeof(self) weakSelf = self;
@@ -1450,10 +1471,10 @@
         // ✅ 更新原始数据并清除未保存状态
         [strongSelf updateOriginalDataAfterSave];
         
-        [LGBaseAlertView showAlertWithTitle:@"Saved Successfully"
-                                    content:@"Story has been successfully updated"
+        [LGBaseAlertView showAlertWithTitle:LocalString(@"保存成功")
+                                    content:LocalString(@"故事已成功更新")
                                cancelBtnStr:nil
-                              confirmBtnStr:@"OK"
+                              confirmBtnStr:LocalString(@"确定")
                                confirmBlock:^(BOOL isValue, id obj) {
             if (isValue) {
                 
@@ -1482,7 +1503,7 @@
 - (void)handleCreateStory {
     // 检查是否选择了音色
     if (self.selectedVoiceIndex < 0 || self.selectedVoiceIndex >= self.voiceListArray.count) {
-        [self showErrorAlert:NSLocalizedString(@"Please select a voice first", @"")];
+        [self showErrorAlert:LocalString(@"请先选择音色")];
         //APP埋点：声音合成
             [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(Please select a voice first)"]} completion:^(BOOL success, NSString * _Nullable message) {
                     
@@ -1492,7 +1513,7 @@
     
     // 检查故事名称是否为空
     if (!self.stroryThemeTextView.text || self.stroryThemeTextView.text.length == 0) {
-        [self showErrorAlert:NSLocalizedString(@"Please enter story name", @"")];
+        [self showErrorAlert:LocalString(@"请输入故事名称")];
         //APP埋点：声音合成
             [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(Please enter story name)"]} completion:^(BOOL success, NSString * _Nullable message) {
                     
@@ -1512,7 +1533,7 @@
     }
     
     if (voiceId == 0) {
-        [self showErrorAlert:@"Failed to get voice ID"];
+        [self showErrorAlert:LocalString(@"获取音色ID失败")];
         return;
     }
     
@@ -1531,7 +1552,7 @@
     NSLog(@"📤 开始合成音频，参数: %@", params);
     
     // 显示加载提示
-    [SVProgressHUD showWithStatus:LocalString(@"Synthesizing audio")];
+    [SVProgressHUD showWithStatus:LocalString(@"正在合成音频...")];
     
     // 调用音频合成接口
     __weak typeof(self) weakSelf = self;
@@ -1549,10 +1570,10 @@
                     
             }];
         
-        [LGBaseAlertView showAlertWithTitle:NSLocalizedString(@"Story is generating, expected 3-5 minutes", @"")
-                                    content:NSLocalizedString(@"You can view the story in the 'Story List' later", @"")
+        [LGBaseAlertView showAlertWithTitle:LocalString(@"故事生成中，预计3-5分钟")
+                                    content:LocalString(@"稍后可在故事列表查看")
                                cancelBtnStr:nil
-                              confirmBtnStr:NSLocalizedString(@"Confirm", @"")
+                              confirmBtnStr:LocalString(@"确定")
                                confirmBlock:^(BOOL isValue, id obj) {
             if (isValue) {
                 
@@ -1581,7 +1602,7 @@
     // ✅ 检查故事ID是否有效
     if (self.storyId <= 0) {
         NSLog(@"⚠️ 故事ID无效，无法删除");
-        [self showErrorAlert:@"Delete failed: Story data error"];
+        [self showErrorAlert:LocalString(@"删除失败：故事数据错误")];
         return;
     }
     
@@ -1601,24 +1622,24 @@
 /// 显示删除确认对话框
 - (void)showDeleteConfirmation {
     // ✅ 获取故事名称用于确认对话框
-    NSString *storyName = self.currentStory.storyName ?: self.stroryThemeTextView.text ?: @"this story";
+    NSString *storyName = self.currentStory.storyName ?: self.stroryThemeTextView.text ?: LocalString(@"该故事");
     
-    NSString *alertTitle = NSLocalizedString(@"Delete Story", @"");
-    NSString *alertMessage = [NSString stringWithFormat:NSLocalizedString(@"Are you sure to delete the story '%@'? This action cannot be undone.", @""), storyName];
+    NSString *alertTitle = LocalString(@"删除故事");
+    NSString *alertMessage = [NSString stringWithFormat:LocalString(@"确定要删除故事“%@”吗？此操作无法撤销。"), storyName];
     
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:alertTitle
                                                                              message:alertMessage
                                                                       preferredStyle:UIAlertControllerStyleAlert];
     
     // ✅ 取消按钮
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Cancel", @"")
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:LocalString(@"取消")
                                                             style:UIAlertActionStyleCancel
                                                           handler:^(UIAlertAction * _Nonnull action) {
         NSLog(@"📝 User cancelled story deletion: %@", storyName);
     }];
     
     // ✅ 删除按钮（使用危险样式）
-    UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"Delete", @"")
+    UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:LocalString(@"删除")
                                                             style:UIAlertActionStyleDestructive
                                                           handler:^(UIAlertAction * _Nonnull action) {
         NSLog(@"🗑️ User confirmed story deletion: %@, starting deletion", storyName);
@@ -1639,14 +1660,14 @@
     // ✅ 检查故事ID是否有效
     if (self.storyId <= 0) {
         NSLog(@"❌ 故事ID无效: %ld", (long)self.storyId);
-        [self showErrorAlert:@"Delete failed: Invalid story ID"];
+        [self showErrorAlert:LocalString(@"删除失败：故事ID无效")];
         return;
     }
     
     NSLog(@"🗑️ 开始删除故事，ID: %ld", (long)self.storyId);
     
     // ✅ 显示加载提示
-    [SVProgressHUD showWithStatus:NSLocalizedString(@"Deleting...", @"")];
+    [SVProgressHUD showWithStatus:LocalString(@"正在删除...")];
     
     // ✅ 停止音频播放（如果正在播放）
     [self stopAudioPlayback];
@@ -1687,11 +1708,11 @@
 
 /// 显示删除成功提示
 - (void)showDeleteSuccessAlert {
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:NSLocalizedString(@"Deleted Successfully", @"")
-                                                                             message:NSLocalizedString(@"Story has been successfully deleted", @"")
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:LocalString(@"删除成功")
+                                                                             message:LocalString(@"故事已成功删除")
                                                                       preferredStyle:UIAlertControllerStyleAlert];
     
-    UIAlertAction *okAction = [UIAlertAction actionWithTitle:NSLocalizedString(@"OK", @"")
+    UIAlertAction *okAction = [UIAlertAction actionWithTitle:LocalString(@"确定")
                                                        style:UIAlertActionStyleDefault
                                                      handler:^(UIAlertAction * _Nonnull action) {
         // ✅ 发送通知，让故事列表页面刷新数据
@@ -1845,21 +1866,21 @@
                     NSString *statusText = @"";
                     switch (targetVoice.cloneStatus) {
                         case 0:
-                            statusText = @"Pending";
+                            statusText = LocalString(@"待处理");
                             break;
                         case 1:
-                            statusText = @"Processing";
+                            statusText = LocalString(@"处理中");
                             break;
                         case 3:
-                            statusText = @"Failed";
+                            statusText = LocalString(@"失败");
                             break;
                         default:
-                            statusText = [NSString stringWithFormat:@"Unknown status (%ld)", (long)targetVoice.cloneStatus];
+                            statusText = [NSString stringWithFormat:LocalString(@"未知状态（%ld）"), (long)targetVoice.cloneStatus];
                             break;
                     }
                     
-                    NSString *alertMessage = [NSString stringWithFormat:@"The voice '%@' used by the story is currently in status: %@\nCannot be displayed in the list",
-                                            targetVoice.voiceName ?: @"Unknown voice", statusText];
+                    NSString *alertMessage = [NSString stringWithFormat:LocalString(@"故事使用的音色“%@”当前状态为：%@\n无法在列表中显示"),
+                                            targetVoice.voiceName ?: LocalString(@"未知音色"), statusText];
                     [strongSelf showErrorAlert:alertMessage];
                 });
             } else {
@@ -1872,7 +1893,7 @@
         } else {
             NSLog(@"❌ 完整列表中也找不到音色ID: %ld", (long)targetVoiceId);
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSString *alertMessage = [NSString stringWithFormat:@"The voice (ID:%ld) used by the story no longer exists\nPlease select a new voice", (long)targetVoiceId];
+                NSString *alertMessage = [NSString stringWithFormat:LocalString(@"故事使用的音色（ID:%ld）已不存在\n请重新选择音色"), (long)targetVoiceId];
                 [strongSelf showErrorAlert:alertMessage];
             });
         }
@@ -1948,13 +1969,13 @@
     // 检查故事名称
     NSString *storyName = self.stroryThemeTextView.text;
     if (!storyName || storyName.length == 0) {
-        return @"Please enter story name";
+        return LocalString(@"请输入故事名称");
     }
     
     // 检查故事内容
     NSString *storyContent = self.storyTextField.text;
     if (!storyContent || storyContent.length == 0) {
-        return @"Please enter story content";
+        return LocalString(@"请输入故事内容");
     }
     
     // ✅ 改进音色选择检查逻辑 - 确保有有效的音色ID
@@ -1964,13 +1985,13 @@
         if (self.isEditMode && self.originalVoiceId > 0) {
             NSLog(@"✅ 编辑模式：使用原始音色ID %ld", (long)self.originalVoiceId);
         } else {
-            return @"Please select a voice";
+            return LocalString(@"请选择音色");
         }
     }
     
     // 检查插画选择
     if (!self.selectedIllustrationUrl || self.selectedIllustrationUrl.length == 0) {
-        return @"Please select story illustration";
+        return LocalString(@"请选择故事插画");
     }
     
     return nil; // 验证通过
@@ -2215,7 +2236,7 @@
     
     // 创建加载文字（白色）
     self.loadingLabel = [[UILabel alloc] init];
-    self.loadingLabel.text = NSLocalizedString(@"Loading...", @"");
+    self.loadingLabel.text = LocalString(@"加载中...");
     self.loadingLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
     self.loadingLabel.textColor = [UIColor whiteColor]; // 设置为白色
     self.loadingLabel.textAlignment = NSTextAlignmentCenter;
@@ -2224,8 +2245,8 @@
     [self.loadingLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.activityIndicator.mas_bottom).offset(12);
         make.centerX.equalTo(loadingContainer);
-        make.left.greaterThanOrEqualTo(loadingContainer).offset(12);
-        make.right.lessThanOrEqualTo(loadingContainer).offset(-12);
+        make.leading.greaterThanOrEqualTo(loadingContainer).offset(12);
+        make.trailing.lessThanOrEqualTo(loadingContainer).offset(-12);
     }];
     
     // 开始动画
@@ -2294,21 +2315,21 @@
 - (NSString *)storyStatusDescription:(StoryStatus)storyStatus {
     switch (storyStatus) {
         case StoryStatusPending:
-            return @"Pending";
+            return LocalString(@"待处理");
         case StoryStatusGenerating:
-            return @"Story Generating";
+            return LocalString(@"故事生成中");
         case StoryStatusGenerated:
-            return @"Story Generated";
+            return LocalString(@"故事已生成");
         case StoryStatusGenerateFailed:
-            return @"Story Generate Failed";
+            return LocalString(@"故事生成失败");
         case StoryStatusAudioGenerating:
-            return @"Audio Generating";
+            return LocalString(@"音频生成中");
         case StoryStatusCompleted:
-            return @"Completed";
+            return LocalString(@"已完成");
         case StoryStatusAudioFailed:
-            return @"Audio Generate Failed";
+            return LocalString(@"音频生成失败");
         default:
-            return [NSString stringWithFormat:@"Unknown Status (%ld)", (long)storyStatus];
+            return [NSString stringWithFormat:LocalString(@"未知状态（%ld）"), (long)storyStatus];
     }
 }
 

@@ -15,6 +15,8 @@
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (weak, nonatomic) IBOutlet UIButton *enterBtn;
 @property (strong, nonatomic) IBOutlet UIView *headerView;
+@property (weak, nonatomic) IBOutlet UILabel *headerTitleLabel;
+@property (weak, nonatomic) IBOutlet UILabel *headerDetailLabel;
 @property (nonatomic, strong) NSMutableArray <MineItemModel *>*selcArr;
 @property (nonatomic, strong) AppSettingModel  *model;
 @property(nonatomic,assign)BOOL isEnabled;
@@ -38,6 +40,8 @@
     // 加载权限数据
     [self loadPermissionData];
     [self.enterBtn setTitle:LocalString(@"进入APP") forState:0];
+    self.headerTitleLabel.text = LocalString(@"为给您提供更好的服务，我们需要以下权限：");
+    self.headerDetailLabel.text = LocalString(@"当您使用本App时，我们会收集必要的信息（包括统计数据、网络使用数据、应用崩溃事件）用于监控App的性能。");
 //    [CoreArchive setBool:YES key:KISAgreeImprovement];
 //    [CoreArchive setBool:YES key:KISAgreeRecommendations];
 }
@@ -134,7 +138,7 @@
         [param setValue:[PublicObj isEmptyObject:kMyUser.userId]? @"": kMyUser.userId forKey:@"memberUserId"];
         [param setValue:@"2" forKey:@"propKey"];
         [param setValue:self.selcArr[indexPath.row].isOn ? @"1": @"0" forKey:@"propValue"];
-        [param setValue:@"个性化推送服务" forKey:@"description"];
+        [param setValue:LocalString(@"个性化推送服务") forKey:@"description"];
         [self modifySettingWithParam:param];
     }
     [self.tableView reloadData];

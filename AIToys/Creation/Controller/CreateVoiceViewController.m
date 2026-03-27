@@ -13,6 +13,7 @@
 #import "AFStoryAPIManager.h"
 #import "LGBaseAlertView.h"
 #import "SVProgressHUD.h"
+#import "ATLanguageHelper.h"
 
 // ✅ VoiceModel便利方法扩展
 @interface VoiceModel (VoiceManagementExtensions)
@@ -39,15 +40,15 @@
 - (NSString *)statusDisplayText {
     switch (self.cloneStatus) {
         case VoiceCloneStatusPending:
-            return NSLocalizedString(@"Pending Clone", @"");
+            return LocalString(@"待克隆");
         case VoiceCloneStatusCloning:
-            return NSLocalizedString(@"Cloning", @"");
+            return LocalString(@"克隆中");
         case VoiceCloneStatusSuccess:
-            return NSLocalizedString(@"Completed", @"");
+            return LocalString(@"已完成");
         case VoiceCloneStatusFailed:
-            return NSLocalizedString(@"Clone Failed", @"");
+            return LocalString(@"克隆失败");
         default:
-            return NSLocalizedString(@"Unknown Status", @"");
+            return LocalString(@"未知状态");
     }
 }
 
@@ -76,6 +77,8 @@
 @property (weak, nonatomic) IBOutlet UIImageView *voiceGifImageView;
 @property (weak, nonatomic) IBOutlet UIButton *deletPickImageBtn;
 @property (weak, nonatomic) IBOutlet UITextField *voiceNameTextView;
+@property (weak, nonatomic) IBOutlet UILabel *voiceNameLabel;
+@property (weak, nonatomic) IBOutlet UILabel *voiceAvatarLabel;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *voiceTextTopConstraint;
 
 // 语音识别相关
@@ -136,6 +139,7 @@
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *faildViewConstraintHeight;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *topConstraint;
 @property (weak, nonatomic) IBOutlet UIView *faildView;
+@property (weak, nonatomic) IBOutlet UILabel *faildMessageLabel;
 @property (weak, nonatomic) IBOutlet UILabel *voiceSubLabel;
 @property (weak, nonatomic) IBOutlet UIImageView *voiceImage;
 @property (weak, nonatomic) IBOutlet UILabel *voiceTitleLabel;
@@ -143,6 +147,10 @@
 @end
 
 @implementation CreateVoiceViewController
+
+- (NSString *)defaultVoiceSampleText {
+    return LocalString(@"露娜在雨中捡到一只小狗，躲在长椅下发抖。她把它带回家，但妈妈说不能养宠物。露娜很难过，贴了“招领”海报。第二天，一位老太太来敲门——原来是小狗的主人！她很感激，送给露娜一份手写曲奇配方。从此露娜每周都会去看望她，小狗每次见到她都摇尾巴。");
+}
 
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
@@ -156,16 +164,19 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    NSTextAlignment inputAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     
     // 根据模式设置标题
     if (self.isEditMode && self.editingVoice) {
-        self.title = NSLocalizedString(@"Edit Voice", @"");
+        self.title = LocalString(@"编辑音色");
         self.voiceTextTopConstraint.constant = -50;
         self.voiceSubLabel.hidden = YES;
         self.voiceTitleLabel.hidden  = YES;
         self.voiceImage.hidden  = YES;
     } else {
-        self.title = NSLocalizedString(@"Create Voice", @"");
+        self.title = LocalString(@"创建音色");
         self.voiceTextTopConstraint.constant = 10;
         self.voiceSubLabel.hidden = NO;
         self.voiceTitleLabel.hidden  = NO;
@@ -174,13 +185,13 @@
     
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     // 创建基础字符串
-    NSString *fullText = @"Please hold to \"Start Reading\" and read the following text clearly, expressively, and loudly. The recording must be over 30 seconds.";
+    NSString *fullText = LocalString(@"请按住“开始朗读”并清晰、富有感情且大声地朗读以下内容，录音需超过30秒。");
 
     // 创建可变的富文本
     NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:fullText];
 
     // 找到需要标红加粗的文本范围
-    NSString *highlightedText = @"clearly, expressively, and loudly";
+    NSString *highlightedText = LocalString(@"清晰、富有感情且大声");
     NSRange highlightRange = [fullText rangeOfString:highlightedText];
 
     if (highlightRange.location != NSNotFound) {
@@ -194,6 +205,15 @@
 
     // 应用到UILabel
     self.voiceSubLabel.attributedText = attributedText;
+    
+    self.voiceNameLabel.text = LocalString(@"音色名称");
+    self.voiceAvatarLabel.text = LocalString(@"音色头像");
+    self.voiceTitleLabel.text = LocalString(@"声音复刻");
+    self.speekLabel.text = LocalString(@"按住开始录音");
+    self.faildMessageLabel.text = LocalString(@"声音克隆失败，请重新开始录音");
+    self.voiceNameTextView.placeholder = LocalString(@"请输入音色名称");
+    self.voiceNameTextView.textAlignment = inputAlignment;
+    
     // 初始时隐藏删除按钮
     self.deletPickImageBtn.hidden = YES;
     [self.deletPickImageBtn addTarget:self action:@selector(deletPickImage) forControlEvents:UIControlEventTouchUpInside];
@@ -217,7 +237,7 @@
     
     // 在布局完成后重新计算初始高度，确保宽度计算正确
     if (self.voiceTextLabel.frame.size.width > 0 && self.voiceTextLabel.text.length == 0) {
-        NSString *placeholderText = @"Lila found a lost puppy in the rain, shivering under a bench. She took it home, but her mom said they couldn't keep pets. Heartbroken, Lila put up “Found” posters. The next day, an old lady knocked—she was the puppy's owner! Grateful, she gave Lila a handwritten recipe for her famous cookies. Now Lila visits weekly, and the puppy wags its tail every time she arrives.";
+        NSString *placeholderText = [self defaultVoiceSampleText];
         CGFloat correctHeight = [self calculateTextHeight:placeholderText];
         
         if (abs(self.voiceTextLabelHeightConstraint.constant - correctHeight) > 1.0) {
@@ -260,7 +280,7 @@
     
     // 创建保存按钮
     UIButton *saveBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-    [saveBtn setTitle:NSLocalizedString(@"Save", @"") forState:UIControlStateNormal];
+    [saveBtn setTitle:LocalString(@"保存") forState:UIControlStateNormal];
     [saveBtn setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
     saveBtn.titleLabel.font = [UIFont systemFontOfSize:16];
     [saveBtn addTarget:self action:@selector(saveButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -336,7 +356,7 @@
     
     // 创建完成文字标签
     UILabel *completedLabel = [[UILabel alloc] init];
-    completedLabel.text = NSLocalizedString(@"Voice Replication Completed", @"");
+    completedLabel.text = LocalString(@"音色复刻完成");
     completedLabel.textColor = [UIColor systemBlueColor];
     completedLabel.font = [UIFont systemFontOfSize:16];
     completedLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -379,7 +399,7 @@
 - (void)loadVoiceDataFromAPI {
     if (!self.editingVoice || self.editingVoice.voiceId <= 0) {
         NSLog(@"⚠️ 编辑模式但声音ID无效");
-        [self showAlert:@"Voice ID is invalid"];
+        [self showAlert:LocalString(@"音色ID无效")];
         return;
     }
     
@@ -391,7 +411,7 @@
     NSLog(@"📡 开始从API加载声音数据，voiceId: %ld", (long)self.editingVoice.voiceId);
     
     self.isLoadingVoiceData = YES;
-    [SVProgressHUD showWithStatus:@"Loading voice data..."];
+    [SVProgressHUD showWithStatus:LocalString(@"正在加载音色数据...")];
     
     __weak typeof(self) weakSelf = self;
     [[AFStoryAPIManager sharedManager] getVoiceDetailWithId:self.editingVoice.voiceId
@@ -439,19 +459,19 @@
     NSString *errorMessage;
     
     if (error.code == -1009) {
-        errorMessage = @"Network connection failed, please check network and try again";
+        errorMessage = LocalString(@"网络连接失败，请检查网络后重试");
     } else if (error.code == 404) {
-        errorMessage = @"Voice not found, may have been deleted";
+        errorMessage = LocalString(@"音色不存在，可能已被删除");
     } else if (error.code == 401) {
-        errorMessage = @"Authentication failed, please log in again";
+        errorMessage = LocalString(@"认证失败，请重新登录");
     } else {
-        errorMessage = [NSString stringWithFormat:@"Failed to load voice data: %@", error.localizedDescription];
+        errorMessage = [NSString stringWithFormat:LocalString(@"加载音色数据失败：%@"), error.localizedDescription];
     }
     
-    [LGBaseAlertView showAlertWithTitle:@"Loading Failed"
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"加载失败")
                                 content:errorMessage
-                           cancelBtnStr:@"Back"
-                          confirmBtnStr:@"Retry"
+                           cancelBtnStr:LocalString(@"返回")
+                          confirmBtnStr:LocalString(@"重试")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户选择重试
@@ -590,14 +610,14 @@
         // 注意：这里不直接设置audioFileURL，因为那是本地录音文件
         // 对于已克隆成功的音色，我们假设有远程音频URL
         self.uploadedAudioFileUrl = voice.sampleAudioUrl;
-        self.speekLabel.text = NSLocalizedString(@"Recording exists, can re-record", @"");
+        self.speekLabel.text = LocalString(@"已有录音，可重新录制");
     }
 }
 
 /// 处理失败或待处理音色的音频数据
 - (void)handleFailedOrPendingVoiceAudio:(VoiceModel *)voice {
     // 失败或待处理状态，用户需要重新录音
-    self.speekLabel.text = NSLocalizedString(@"Hold to start recording", @"");
+    self.speekLabel.text = LocalString(@"按住开始录音");
     
     // 如果有示例文本，也使用 placeholder 样式显示
     if (voice.sampleText && voice.sampleText.length > 0) {
@@ -643,7 +663,7 @@
     // 设置label的基本属性
     self.voiceTextLabel.numberOfLines = 0;
     self.voiceTextLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    self.voiceTextLabel.textAlignment = NSTextAlignmentLeft;
+    self.voiceTextLabel.textAlignment = NSTextAlignmentNatural;
     self.voiceTextLabel.backgroundColor = [UIColor whiteColor];
     
     // 添加内边距效果(通过给label的layer设置)
@@ -660,7 +680,7 @@
     }
     
     // 计算placeholder文字的实际高度作为初始高度
-    NSString *placeholderText = @"Lila found a lost puppy in the rain, shivering under a bench. She took it home, but her mom said they couldn't keep pets. Heartbroken, Lila put up “Found” posters. The next day, an old lady knocked—she was the puppy's owner! Grateful, she gave Lila a handwritten recipe for her famous cookies. Now Lila visits weekly, and the puppy wags its tail every time she arrives.";
+    NSString *placeholderText = [self defaultVoiceSampleText];
     CGFloat initialHeight = [self calculateTextHeight:placeholderText];
     
     // 创建高度约束，使用计算出的初始高度
@@ -675,7 +695,7 @@
     
     // 创建placeholder label
     self.placeholderLabel = [[UILabel alloc] init];
-    self.placeholderLabel.text = @"Lila found a lost puppy in the rain, shivering under a bench. She took it home, but her mom said they couldn’t keep pets. Heartbroken, Lila put up “Found” posters. The next day, an old lady knocked—she was the puppy’s owner! Grateful, she gave Lila a handwritten recipe for her famous cookies. Now Lila visits weekly, and the puppy wags its tail every time she arrives.";
+    self.placeholderLabel.text = [self defaultVoiceSampleText];
     self.placeholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1.0];
     self.placeholderLabel.font = self.voiceTextLabel.font;
     self.placeholderLabel.numberOfLines = 0;
@@ -726,7 +746,7 @@
     
     // 创建自定义返回按钮
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [backButton setImage:[UIImage imageNamed:@"icon_back"] forState:UIControlStateNormal];
+    [backButton setImage:QD_IMG(@"icon_back") forState:UIControlStateNormal];
     [backButton setTintColor:[UIColor blackColor]];
     [backButton addTarget:self action:@selector(backButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
     
@@ -896,7 +916,7 @@
         // 音频已上传，直接开始克隆
         [self startVoiceCloning];
     } else {
-        [self showAlert:NSLocalizedString(@"Please record audio first", @"")];
+        [self showAlert:LocalString(@"请先录音")];
     }
 }
 
@@ -907,7 +927,7 @@
     
     if (!voice) {
         NSLog(@"❌ 没有可用的声音数据进行保存");
-        [self showAlert:@"No voice data available for saving"];
+        [self showAlert:LocalString(@"没有可保存的音色数据")];
         return;
     }
     
@@ -923,7 +943,7 @@
     
     // Step 2: 检查是否正在上传或克隆中，防止重复操作
     if (self.isUploading || self.isCloningVoice) {
-        [self showAlert:NSLocalizedString(@"Processing, please wait", @"")];
+        [self showAlert:LocalString(@"处理中，请稍候")];
         return;
     }
     
@@ -942,12 +962,12 @@
             
         case VoiceCloneStatusCloning:
             // 克隆中状态不应该允许编辑
-            [self showAlert:@"Voice is being cloned, please try again later"];
+            [self showAlert:LocalString(@"音色正在克隆中，请稍后再试")];
             break;
             
         default:
             NSLog(@"⚠️ 未知音色状态: %ld", (long)voice.cloneStatus);
-            [self showAlert:@"Voice status error, cannot save"];
+            [self showAlert:LocalString(@"音色状态异常，无法保存")];
             break;
     }
 }
@@ -957,13 +977,13 @@
     // 1. 检查声音名称
     NSString *nameText = self.voiceNameTextView.text;
     if (!nameText || nameText.length == 0) {
-        return NSLocalizedString(@"Please enter voice name", @"");
+        return LocalString(@"请输入音色名称");
     }
     self.voiceName = nameText;
     
     // 2. 检查插画选择
     if (!self.selectedAvatarUrl || self.selectedAvatarUrl.length == 0) {
-        return @"Please select illustration avatar";
+        return LocalString(@"请选择音色头像");
     }
     
     // ✅ 对于编辑模式，音频验证根据状态而定，使用最新的API数据
@@ -979,12 +999,12 @@
     } else {
         // 其他状态需要音频
         if (!hasNewRecording && !hasExistingAudio) {
-            return NSLocalizedString(@"Please record audio", @"");
+            return LocalString(@"请录音");
         }
         
         // 4. 如果有新录音，检查时长
         if (hasNewRecording && self.recordedTime < 30) {
-            return @"Recording too short, at least 30 seconds required";
+            return LocalString(@"录音过短，至少需要30秒");
         }
     }
     
@@ -1001,7 +1021,7 @@
     BOOL hasAnyChanges = [changes[@"hasAnyChanges"] boolValue];
     
     if (!hasAnyChanges) {
-        [self showAlert:@"No changes detected"];
+        [self showAlert:LocalString(@"未检测到修改")];
         return;
     }
     
@@ -1071,7 +1091,7 @@
 /// ✅ 使用变更信息更新音色
 - (void)updateVoiceWithChanges:(NSDictionary *)changes voice:(VoiceModel *)voice {
     // 显示加载提示
-    [SVProgressHUD showWithStatus:@"Saving..."];
+    [SVProgressHUD showWithStatus:LocalString(@"保存中...")];
     
     // 创建更新请求模型
     UpdateVoiceRequestModel *updateRequest = [[UpdateVoiceRequestModel alloc] initWithVoiceId:voice.voiceId];
@@ -1107,7 +1127,7 @@
             self.hasUnsavedChanges = NO;
             
             // 显示成功提示并返回
-            [self showSuccessAlertWithCompletion:@"Voice information updated successfully!"];
+            [self showSuccessAlertWithCompletion:LocalString(@"音色信息更新成功！")];
             
             //APP埋点：点击声音复刻页面保存按钮
                 [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":@"success"} completion:^(BOOL success, NSString * _Nullable message) {
@@ -1125,13 +1145,13 @@
             // 根据错误类型显示更具体的错误信息
             NSString *errorMessage;
             if (error.code == -1009) { // 网络错误
-                errorMessage = @"Network connection failed, please check network and try again";
+                errorMessage = LocalString(@"网络连接失败，请检查网络后重试");
             } else if (error.code == 401) { // 认证错误
-                errorMessage = @"Authentication failed, please log in again";
+                errorMessage = LocalString(@"认证失败，请重新登录");
             } else if (error.code >= 500) { // 服务器错误
-                errorMessage = @"Server is busy, please try again later";
+                errorMessage = LocalString(@"服务器繁忙，请稍后重试");
             } else {
-                errorMessage = [NSString stringWithFormat:@"Update failed: %@", error.localizedDescription];
+                errorMessage = [NSString stringWithFormat:LocalString(@"更新失败：%@"), error.localizedDescription];
             }
             //APP埋点：点击声音复刻页面保存按钮
                 [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":[NSString stringWithFormat:@"fail(failCode:%ld): 失败，返回失败原因:%@",error.code,errorMessage]} completion:^(BOOL success, NSString * _Nullable message) {
@@ -1159,14 +1179,14 @@
 /// ✅ 上传音频文件后调用编辑接口
 - (void)uploadAudioAndUpdateVoice:(NSDictionary *)changes voice:(VoiceModel *)voice {
     if (self.isUploading) {
-        [self showAlert:@"Uploading, please wait"];
+        [self showAlert:LocalString(@"上传中，请稍候")];
         return;
     }
     
     self.isUploading = YES;
     
     // 显示上传进度
-    [SVProgressHUD showWithStatus:@"Uploading audio..."];
+    [SVProgressHUD showWithStatus:LocalString(@"正在上传音频...")];
     
     // 调用音频上传接口
     [[AFStoryAPIManager sharedManager] uploadAudioFile:self.audioFileURL.path 
@@ -1175,7 +1195,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             CGFloat progress = uploadProgress.fractionCompleted;
             NSLog(@"上传进度: %.0f%%", progress * 100);
-            [SVProgressHUD showProgress:progress status:[NSString stringWithFormat:@"Uploading... %.0f%%", progress * 100]];
+            [SVProgressHUD showProgress:progress status:[NSString stringWithFormat:LocalString(@"上传中... %.0f%%"), progress * 100]];
         });
     } success:^(NSDictionary * _Nonnull data) {
         // ✅ 上传成功，保存返回的URL
@@ -1213,9 +1233,9 @@
     
     // 如果还没有显示加载提示，则显示
     if (!self.isUploading) {
-        [SVProgressHUD showWithStatus:@"Saving..."];
+        [SVProgressHUD showWithStatus:LocalString(@"保存中...")];
     } else {
-        [SVProgressHUD showWithStatus:@"Updating voice..."];
+        [SVProgressHUD showWithStatus:LocalString(@"正在更新音色...")];
     }
     
     // 创建编辑请求模型
@@ -1267,8 +1287,8 @@
             
             // 显示成功提示并返回
             NSString *successMessage = hasNewRecording ? 
-                @"Voice updated! New recording will be cloned again." : 
-                @"Voice information updated successfully!";
+                LocalString(@"音色已更新，新录音将重新克隆。") : 
+                LocalString(@"音色信息更新成功！");
             [self showSuccessAlertWithCompletion:successMessage];
         });
         
@@ -1327,7 +1347,7 @@
     NSLog(@"   参数: %@", parameters);
     
     // 显示加载提示
-    [SVProgressHUD showWithStatus:@"Updating story..."];
+    [SVProgressHUD showWithStatus:LocalString(@"正在更新故事...")];
     
     // 创建故事更新请求模型
     UpdateStoryRequestModel *updateRequest = [[UpdateStoryRequestModel alloc] 
@@ -1359,7 +1379,7 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [SVProgressHUD dismiss];
-            [self showSuccessAlertWithMessage:@"Story information updated successfully!"];
+            [self showSuccessAlertWithMessage:LocalString(@"故事信息更新成功！")];
         });
         
     } failure:^(NSError * _Nonnull error) {
@@ -1373,13 +1393,13 @@
             
             NSString *errorMessage;
             if (error.code == -1009) {
-                errorMessage = @"Network connection failed, please check network and try again";
+                errorMessage = LocalString(@"网络连接失败，请检查网络后重试");
             } else if (error.code == 401) {
-                errorMessage = @"Authentication failed, please log in again";
+                errorMessage = LocalString(@"认证失败，请重新登录");
             } else if (error.code >= 500) {
-                errorMessage = @"Server is busy, please try again later";
+                errorMessage = LocalString(@"服务器繁忙，请稍后重试");
             } else {
-                errorMessage = [NSString stringWithFormat:@"Story update failed: %@", error.localizedDescription];
+                errorMessage = [NSString stringWithFormat:LocalString(@"故事更新失败：%@"), error.localizedDescription];
             }
             
 //            [self showAlert:errorMessage];
@@ -1433,7 +1453,7 @@
         [self startVoiceCloning];
     } else {
         NSLog(@"⚠️ 异常状态：有新录音标记但没有录音文件");
-        [self showAlert:@"Audio file error, please record again"];
+        [self showAlert:LocalString(@"音频文件错误，请重新录音")];
     }
 }
 
@@ -1450,7 +1470,7 @@
     
     if (!hasAnyChanges) {
         NSLog(@"⚠️ 没有检测到任何更改");
-        [self showAlert:@"No changes detected"];
+        [self showAlert:LocalString(@"未检测到修改")];
         return;
     }
     
@@ -1469,7 +1489,7 @@
     NSLog(@"   新头像: %@", self.selectedAvatarUrl);
     
     // 显示加载提示
-    [SVProgressHUD showWithStatus:@"Saving..."];
+    [SVProgressHUD showWithStatus:LocalString(@"保存中...")];
     
     // 创建更新请求模型
     UpdateVoiceRequestModel *updateRequest = [[UpdateVoiceRequestModel alloc] initWithVoiceId:voice.voiceId];
@@ -1494,7 +1514,7 @@
             self.hasUnsavedChanges = NO;
             
             // 显示成功提示并返回
-            [self showSuccessAlertWithCompletion:@"Voice information updated successfully!"];
+            [self showSuccessAlertWithCompletion:LocalString(@"音色信息更新成功！")];
         });
         
     } failure:^(NSError * _Nonnull error) {
@@ -1510,13 +1530,13 @@
             // 根据错误类型显示更具体的错误信息
             NSString *errorMessage;
             if (error.code == -1009) { // 网络错误
-                errorMessage = @"Network connection failed, please check network and try again";
+                errorMessage = LocalString(@"网络连接失败，请检查网络后重试");
             } else if (error.code == 401) { // 认证错误
-                errorMessage = @"Authentication failed, please log in again";
+                errorMessage = LocalString(@"认证失败，请重新登录");
             } else if (error.code >= 500) { // 服务器错误
-                errorMessage = @"Server is busy, please try again later";
+                errorMessage = LocalString(@"服务器繁忙，请稍后重试");
             } else {
-                errorMessage = [NSString stringWithFormat:@"Update failed: %@", error.localizedDescription];
+                errorMessage = [NSString stringWithFormat:LocalString(@"更新失败：%@"), error.localizedDescription];
             }
             
 //            [self showAlert:errorMessage];
@@ -1529,23 +1549,23 @@
     // 1. 首先检查声音名称（最上方的输入框）
     NSString *nameText = self.voiceNameTextView.text;
     if (!nameText || nameText.length == 0) {
-        return @"Please enter voice name";
+        return LocalString(@"请输入音色名称");
     }
     self.voiceName = nameText; // 验证通过后保存
     
     // 2. 检查插画选择（第二个字段）
     if (!self.selectedAvatarUrl || self.selectedAvatarUrl.length == 0) {
-        return @"Please select illustration avatar";
+        return LocalString(@"请选择音色头像");
     }
     
     // 3. 检查是否有录音文件（第三个字段）
     if (!self.audioFileURL && !self.uploadedAudioFileUrl) {
-        return @"Please record audio first";
+        return LocalString(@"请先录音");
     }
     
     // 4. 检查录音时长（最后一个限制）
     if (self.recordedTime < 30) {
-        return @"Recording too short, at least 30 seconds required";
+        return LocalString(@"录音过短，至少需要30秒");
     }
     
     // ✅ 所有验证通过，输出详情
@@ -1563,21 +1583,21 @@
     NSLog(@"\n📤 开始上传音频文件...");
     
     if (self.isUploading) {
-        [self showAlert:@"Uploading, please wait"];
+        [self showAlert:LocalString(@"上传中，请稍候")];
         return;
     }
     
     self.isUploading = YES;
     
     // 显示上传进度
-    [SVProgressHUD showWithStatus:@"Uploading audio..."];
+    [SVProgressHUD showWithStatus:LocalString(@"正在上传音频...")];
     
     // 调用音频上传接口
     [[AFStoryAPIManager sharedManager]uploadAudioFile:self.audioFileURL.path voiceName:self.voiceName progress:^(NSProgress * _Nonnull uploadProgress) {
         dispatch_async(dispatch_get_main_queue(), ^{
             CGFloat progress = uploadProgress.fractionCompleted;
             NSLog(@"上传进度: %.0f%%", progress * 100);
-            [SVProgressHUD showProgress:progress status:[NSString stringWithFormat:@"Uploading... %.0f%%", progress * 100]];
+            [SVProgressHUD showProgress:progress status:[NSString stringWithFormat:LocalString(@"上传中... %.0f%%"), progress * 100]];
         });
         } success:^(NSDictionary * _Nonnull data) {
             // ✅ 上传成功，保存返回的URL
@@ -1630,7 +1650,7 @@
     NSLog(@"\n🎬 开始创建声音（克隆）...");
     
     if (self.isCloningVoice) {
-        [self showAlert:@"Cloning in progress, please wait."];
+        [self showAlert:LocalString(@"克隆进行中，请稍候")];
         //APP埋点：点击声音复刻页面保存按钮
             [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":@"fail(Cloning in progress, please wait.)"} completion:^(BOOL success, NSString * _Nullable message) {
                     
@@ -1640,7 +1660,7 @@
     
     // 检查必要参数
     if (!self.uploadedAudioFileUrl || self.uploadedAudioFileUrl.length == 0) {
-        [self showAlert:@"Audio file URL does not exist"];
+        [self showAlert:LocalString(@"音频文件地址不存在")];
         //APP埋点：点击声音复刻页面保存按钮
             [[AnalyticsManager sharedManager]reportEventWithName:@"voice_clone_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"点击声音复刻页面保存按钮时" properties:@{@"voiceclonesaveResult":@"Audio file URL does not exist)"} completion:^(BOOL success, NSString * _Nullable message) {
                     
@@ -1649,7 +1669,7 @@
     }
     
     self.isCloningVoice = YES;
-    [SVProgressHUD showWithStatus:@"Cloning voice..."];
+    [SVProgressHUD showWithStatus:LocalString(@"正在克隆音色...")];
     
     // 创建声音请求模型
     CreateVoiceRequestModel *voiceRequest = [[CreateVoiceRequestModel alloc]
@@ -1690,7 +1710,7 @@
             self.hasUnsavedChanges = NO;
             
             // 显示成功信息，用户点击确定后再跳转
-            [self showSuccessAlertWithCompletion:LocalString(@"Voice cloning started!\n\nThe system is processing your voice in the background.\nPlease wait a moment and refresh to check progress.")];
+            [self showSuccessAlertWithCompletion:LocalString(@"音色克隆已开始！\n\n系统正在后台处理您的声音。\n请稍后刷新查看进度。")];
         });
         
         //APP埋点：点击声音复刻页面保存按钮
@@ -1761,10 +1781,10 @@
 
 /// 显示退出确认对话框
 - (void)showExitConfirmationDialog {
-    [LGBaseAlertView showAlertWithTitle:@"Voice replication not saved yet, are you sure you want to leave?"
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"音色复刻尚未保存，确定要离开吗？")
                                 content:nil
-                           cancelBtnStr:@"Cancel"
-                          confirmBtnStr:@"Leave"
+                           cancelBtnStr:LocalString(@"取消")
+                          confirmBtnStr:LocalString(@"离开")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户确认退出，清除未保存状态并返回
@@ -1876,7 +1896,7 @@
     SFSpeechRecognizerAuthorizationStatus speechStatus = [SFSpeechRecognizer authorizationStatus];
     if (speechStatus != SFSpeechRecognizerAuthorizationStatusAuthorized) {
         NSLog(@"⚠️ 语音识别权限未授权，状态: %ld", (long)speechStatus);
-        [self showAlert:@"Please allow speech recognition permission in Settings"];
+        [self showAlert:LocalString(@"请在设置中允许语音识别权限")];
         return;
     }
     
@@ -1884,7 +1904,7 @@
     AVAudioSessionRecordPermission recordPermission = [[AVAudioSession sharedInstance] recordPermission];
     if (recordPermission == AVAudioSessionRecordPermissionDenied) {
         NSLog(@"⚠️ 录音权限被拒绝");
-        [self showAlert:@"Please allow microphone permission in Settings"];
+        [self showAlert:LocalString(@"请在设置中允许麦克风权限")];
         return;
     } else if (recordPermission == AVAudioSessionRecordPermissionUndetermined) {
         NSLog(@"⚠️ 录音权限未确定，需要请求权限");
@@ -1896,7 +1916,7 @@
                     [self beginRecordingSession];
                 } else {
                     NSLog(@"❌ 录音权限被拒绝");
-                    [self showAlert:@"Please allow microphone permission in Settings"];
+                    [self showAlert:LocalString(@"请在设置中允许麦克风权限")];
                 }
             });
         }];
@@ -1930,7 +1950,7 @@
     [self resetRecordingButton];
     
     // 重置label为录音状态
-    self.speekLabel.text = @"Preparing to record...";
+    self.speekLabel.text = LocalString(@"正在准备录音...");
     
     // 取消之前的任务
     if (self.recognitionTask) {
@@ -1957,7 +1977,7 @@
     if (error) {
         NSLog(@"❌ 音频会话配置失败: %@", error);
         self.isRecording = NO; // 重置状态
-        [self showAlert:@"Recording initialization failed, please try again"];
+        [self showAlert:LocalString(@"录音初始化失败，请重试")];
         return;
     }
     
@@ -1966,7 +1986,7 @@
     if (error) {
         NSLog(@"❌ 音频会话激活失败: %@", error);
         self.isRecording = NO; // 重置状态
-        [self showAlert:@"Recording initialization failed, please try again"];
+        [self showAlert:LocalString(@"录音初始化失败，请重试")];
         return;
     }
     
@@ -1998,21 +2018,21 @@
     if (error) {
         NSLog(@"❌ 录音器初始化失败: %@", error);
         self.isRecording = NO; // 重置状态
-        [self showAlert:@"Recorder initialization failed, please try again"];
+        [self showAlert:LocalString(@"录音器初始化失败，请重试")];
         return;
     }
     
     if (![self.audioRecorder prepareToRecord]) {
         NSLog(@"❌ 录音器准备失败");
         self.isRecording = NO; // 重置状态
-        [self showAlert:@"Recorder preparation failed, please try again"];
+        [self showAlert:LocalString(@"录音器准备失败，请重试")];
         return;
     }
     
     if (![self.audioRecorder record]) {
         NSLog(@"❌ 录音启动失败");
         self.isRecording = NO; // 重置状态
-        [self showAlert:@"Recording start failed, please try again"];
+        [self showAlert:LocalString(@"开始录音失败，请重试")];
         return;
     }
     
@@ -2080,7 +2100,7 @@
     NSLog(@"🎬 录音正式开始");
     
     // 更新UI状态
-    self.speekLabel.text = NSLocalizedString(@"Recording, release to finish (0s)", @"");
+    self.speekLabel.text = LocalString(@"录音中，松开结束（0秒）");
     
     // 显示进度条
     [self showRecordingProgress];
@@ -2100,7 +2120,7 @@
     
     if (!text || text.length == 0) {
         // 文本为空时，使用placeholder文字的高度
-        NSString *placeholderText = @"Lila found a lost puppy in the rain, shivering under a bench. She took it home, but her mom said they couldn't keep pets. Heartbroken, Lila put up “Found” posters. The next day, an old lady knocked—she was the puppy's owner! Grateful, she gave Lila a handwritten recipe for her famous cookies. Now Lila visits weekly, and the puppy wags its tail every time she arrives.";
+        NSString *placeholderText = [self defaultVoiceSampleText];
         newHeight = [self calculateTextHeight:placeholderText];
     } else {
         // 计算实际文本所需高度
@@ -2154,10 +2174,10 @@
     // ✅ 更新录音时间显示 - 松手就能停止录音
     if (self.recordedTime < 30) {
         // 还没达到最少时间要求，提醒用户
-        self.speekLabel.text = [NSString stringWithFormat:NSLocalizedString(@"Recording, recommend at least 30 seconds, release to finish (%lds)", @""), (long)self.recordedTime];
+        self.speekLabel.text = [NSString stringWithFormat:LocalString(@"录音中，建议至少30秒，松开结束（%ld秒）"), (long)self.recordedTime];
     } else {
         // 已达到建议时间，正常显示
-        self.speekLabel.text = [NSString stringWithFormat:NSLocalizedString(@"Recording, release to finish (%lds)", @""), (long)self.recordedTime];
+        self.speekLabel.text = [NSString stringWithFormat:LocalString(@"录音中，松开结束（%ld秒）"), (long)self.recordedTime];
     }
 }
 
@@ -2202,7 +2222,7 @@
     NSLog(@"⚠️ 录音时间不足30秒 (实际: %lds)", (long)self.recordedTime);
     
     // ✅ 使用SVProgressHUD显示提示
-    [SVProgressHUD showErrorWithStatus:LocalString(@"Recording too short, at least 30 seconds required")];
+    [SVProgressHUD showErrorWithStatus:LocalString(LocalString(@"录音过短，至少需要30秒"))];
     [SVProgressHUD dismissWithDelay:2.0];
     
     // 删除录音文件
@@ -2224,7 +2244,7 @@
     self.finalRecognizedText = nil;
     
     // 恢复录音标签文字
-    self.speekLabel.text = NSLocalizedString(@"Hold to start recording", @"");
+    self.speekLabel.text = LocalString(@"按住开始录音");
     
     
 }
@@ -2252,7 +2272,7 @@
     [self showSoundProcessingAnimation];
     
     // 显示录音完成提示
-    self.speekLabel.text = @"Voice cloning takes 3-5 mins, you can save now";
+    self.speekLabel.text = LocalString(@"音色克隆约需3-5分钟，可先保存");
     
     
     
@@ -2304,30 +2324,30 @@
 #pragma mark - Alert Methods
 
 - (void)showAlert:(NSString *)message {
-    [LGBaseAlertView showAlertWithTitle:NSLocalizedString(@"Tips", @"")
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"提示")
                                 content:message
                            cancelBtnStr:nil
-                          confirmBtnStr:NSLocalizedString(@"OK", @"")
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         // 用户点击确定，无需额外操作
     }];
 }
 
 - (void)showSuccessAlertWithMessage:(NSString *)message {
-    [LGBaseAlertView showAlertWithTitle:NSLocalizedString(@"Success", @"")
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"成功")
                                 content:message
                            cancelBtnStr:nil
-                          confirmBtnStr:NSLocalizedString(@"OK", @"")
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         // 用户点击确定，无需额外操作
     }];
 }
 
 - (void)showSuccessAlertWithCompletion:(NSString *)message {
-    [LGBaseAlertView showAlertWithTitle:NSLocalizedString(@"Success", @"")
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"成功")
                                 content:message
                            cancelBtnStr:nil
-                          confirmBtnStr:NSLocalizedString(@"OK", @"")
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户点击确定后，跳转到列表页面
@@ -2350,12 +2370,13 @@
     // 清空主 label 的文本
     self.voiceTextLabel.text = @"";
     
-    // 在 placeholder label 中显示回显的文本
-    self.placeholderLabel.text = text;
+    // 该页面示例文本是固定稿，加载时统一显示当前语言版本
+    NSString *localizedText = [self defaultVoiceSampleText];
+    self.placeholderLabel.text = localizedText;
     self.placeholderLabel.hidden = NO;
     
     // 更新高度以适应回显的文本
-    [self updateVoiceTextLabelHeight:text];
+    [self updateVoiceTextLabelHeight:localizedText];
     
     NSLog(@"📝 以 placeholder 样式显示回显文本: %@", text);
 }
@@ -2363,7 +2384,7 @@
 /// ✅ 显示默认的 placeholder 文本
 - (void)showDefaultPlaceholder {
     self.voiceTextLabel.text = @"";
-    self.placeholderLabel.text = @"Lila found a lost puppy in the rain, shivering under a bench. She took it home, but her mom said they couldn't keep pets. Heartbroken, Lila put up 'Found' posters. The next day, an old lady knocked—she was the puppy's owner! Grateful, she gave Lila a handwritten recipe for her famous cookies. Now Lila visits weekly, and the puppy wags its tail every time she arrives.";
+    self.placeholderLabel.text = [self defaultVoiceSampleText];
     self.placeholderLabel.hidden = NO;
     
     // 使用默认文本计算高度
@@ -2444,7 +2465,7 @@
 /// ✅ 处理中按钮被点击时的提示
 - (void)processingButtonTapped:(UITapGestureRecognizer *)gesture {
     // 显示处理中的提示
-    [self showAlert:@"Sound is being processed, please wait..."];
+    [self showAlert:LocalString(@"声音处理中，请稍候...")];
 }
 
 /// ✅ 重置录音按钮到初始状态（在需要重新录音时调用）

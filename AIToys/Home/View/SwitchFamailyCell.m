@@ -27,7 +27,8 @@
     self.nameLabel.text = model.name;
     if(model.dealStatus == 1){
         self.statusLabel.hidden = NO;
-        self.nameTrailing.constant = [LocalString(@"待加入") isEqualToString:@"待加入"] ? 78 : 133;
+        CGFloat statusWidth = ceil([self.statusLabel sizeThatFits:CGSizeMake(CGFLOAT_MAX, CGRectGetHeight(self.statusLabel.bounds))].width);
+        self.nameTrailing.constant = statusWidth + 36;
     }else{
         self.statusLabel.hidden = YES;
         self.nameTrailing.constant = 20;

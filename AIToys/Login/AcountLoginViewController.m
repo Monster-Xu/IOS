@@ -11,6 +11,7 @@
 #import "UserPermmitVC.h"
 #import "ATFontManager.h"
 #import "NegotiateViewController.h"
+#import "ATLanguageHelper.h"
 
 @interface AcountLoginViewController ()<UITextFieldDelegate,UITextViewDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -53,66 +54,121 @@
 }
 
 -(void)setUpUI{
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     self.accountTextField.delegate = self;
     self.pwdTextField.delegate = self;
     self.agreeTextView.delegate =  self;
-    self.titleLabel.text = NSLocalizedString(@"登录", @"");
-    self.accountNameLab.text = NSLocalizedString(@"账号", @"");
-    self.accountTextField.placeholder = NSLocalizedString(@"账号", @"");
-    self.pwdNameLab.text = NSLocalizedString(@"密码", @"");
-    self.pwdTextField.placeholder = NSLocalizedString(@"密码", @"");
-    [self.loginBtn setTitle:NSLocalizedString(@"登录", @"") forState:0];
-    [self.forgetBtn setTitle:NSLocalizedString(@"忘记密码", @"") forState:0];
+    self.titleLabel.text = LocalString(@"登录");
+    self.accountNameLab.text = LocalString(@"账号");
+    self.accountTextField.placeholder = LocalString(@"账号");
+    self.pwdNameLab.text = LocalString(@"密码");
+    self.pwdTextField.placeholder = LocalString(@"密码");
+    self.accountTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.pwdTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    [self.loginBtn setTitle:LocalString(@"登录") forState:0];
+    [self.forgetBtn setTitle:LocalString(@"忘记密码") forState:0];
     
-    // 获取本地化的协议文本
-    NSString *fullText = NSLocalizedString(@"同意隐私政策、用户协议、儿童协议、创作协议", @"");
-    NSString *privacyText = NSLocalizedString(@"隐私政策", @"");
-    NSString *userAgreementText = NSLocalizedString(@"用户协议", @"");
-    NSString *childAgreementText = NSLocalizedString(@"儿童协议", @"");
-    NSString *creativeAgreementText = NSLocalizedString(@"创作协议", @"");
-    
-    NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:fullText];
-    [attrStr addAttribute:NSForegroundColorAttributeName
-                       value:UIColorFromRGBA(000000, 0.5)
-                       range:NSMakeRange(0, fullText.length)];
-    
-    // 设置隐私政策文本样式
-    NSRange privacyRange = [fullText rangeOfString:privacyText];
-    if (privacyRange.location != NSNotFound) {
-        [attrStr addAttribute:NSForegroundColorAttributeName value:mainColor range:privacyRange];
-        [attrStr addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:privacyRange];
-        [attrStr addAttribute:NSLinkAttributeName value:@"privacyPolicy://" range:privacyRange];
-    }
-    
-    // 设置用户协议文本样式
-    NSRange userAgreementRange = [fullText rangeOfString:userAgreementText];
-    if (userAgreementRange.location != NSNotFound) {
-        [attrStr addAttribute:NSForegroundColorAttributeName value:mainColor range:userAgreementRange];
-        [attrStr addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:userAgreementRange];
-        [attrStr addAttribute:NSLinkAttributeName value:@"userProtocol://" range:userAgreementRange];
-    }
-    
-    // 设置儿童协议文本样式
-    NSRange childAgreementRange = [fullText rangeOfString:childAgreementText];
-    if (childAgreementRange.location != NSNotFound) {
-        [attrStr addAttribute:NSForegroundColorAttributeName value:mainColor range:childAgreementRange];
-        [attrStr addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:childAgreementRange];
-        [attrStr addAttribute:NSLinkAttributeName value:@"ChildAgreement://" range:childAgreementRange];
-    }
-    
-    // 设置创作协议文本样式
-    NSRange creativeAgreementRange = [fullText rangeOfString:creativeAgreementText];
-    if (creativeAgreementRange.location != NSNotFound) {
-        [attrStr addAttribute:NSForegroundColorAttributeName value:mainColor range:creativeAgreementRange];
-        [attrStr addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:creativeAgreementRange];
-        [attrStr addAttribute:NSLinkAttributeName value:@"creativeAgreement://" range:creativeAgreementRange];
-    }
-    
-    self.agreeTextView.attributedText = attrStr;
+    self.agreeTextView.attributedText = [self agreementAttributedText];
     self.agreeTextView.editable = NO;
     self.agreeTextView.selectable = YES;
     [self setRightBtn];
     self.pwdTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
+}
+
+
+- (NSAttributedString *)agreementAttributedText {
+    NSString *languageCode = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
+    NSArray<NSDictionary<NSString *, NSString *> *> *segments = nil;
+    if ([languageCode hasPrefix:@"fr"]) {
+        segments = @[
+            @{@"text": @"J'accepte la "},
+            @{@"text": @"Politique de Confidentialité", @"link": @"privacyPolicy://"},
+            @{@"text": @", l'"},
+            @{@"text": @"Accord Utilisateur", @"link": @"userProtocol://"},
+            @{@"text": @", l'"},
+            @{@"text": @"Accord Enfant", @"link": @"ChildAgreement://"},
+            @{@"text": @" et l'"},
+            @{@"text": @"Accord de Création", @"link": @"creativeAgreement://"}
+        ];
+    } else if ([languageCode hasPrefix:@"de"]) {
+        segments = @[
+            @{@"text": @"Ich stimme der "},
+            @{@"text": @"Datenschutzerklärung", @"link": @"privacyPolicy://"},
+            @{@"text": @", der "},
+            @{@"text": @"Nutzungsvereinbarung", @"link": @"userProtocol://"},
+            @{@"text": @", der "},
+            @{@"text": @"Kindervereinbarung", @"link": @"ChildAgreement://"},
+            @{@"text": @" und der "},
+            @{@"text": @"Kreativvereinbarung", @"link": @"creativeAgreement://"},
+            @{@"text": @" zu"}
+        ];
+    } else {
+        segments = @[
+            @{@"text": @"同意"},
+            @{@"text": LocalString(@"隐私政策") ?: @"", @"link": @"privacyPolicy://"},
+            @{@"text": @"、"},
+            @{@"text": LocalString(@"用户协议") ?: @"", @"link": @"userProtocol://"},
+            @{@"text": @"、"},
+            @{@"text": LocalString(@"儿童协议") ?: @"", @"link": @"ChildAgreement://"},
+            @{@"text": @"、"},
+            @{@"text": LocalString(@"创作协议") ?: @"", @"link": @"creativeAgreement://"}
+        ];
+        if ([languageCode hasPrefix:@"en"]) {
+            segments = @[
+                @{@"text": @"Agree to the "},
+                @{@"text": @"Privacy Policy", @"link": @"privacyPolicy://"},
+                @{@"text": @", "},
+                @{@"text": @"User Agreement", @"link": @"userProtocol://"},
+                @{@"text": @", "},
+                @{@"text": @"Children's Agreement", @"link": @"ChildAgreement://"},
+                @{@"text": @", and "},
+                @{@"text": @"Creative Agreement", @"link": @"creativeAgreement://"}
+            ];
+        } else if ([languageCode hasPrefix:@"ar"]) {
+            segments = @[
+                @{@"text": @"الموافقة على "},
+                @{@"text": @"سياسة الخصوصية", @"link": @"privacyPolicy://"},
+                @{@"text": @" و"},
+                @{@"text": @"اتفاقية المستخدم", @"link": @"userProtocol://"},
+                @{@"text": @" و"},
+                @{@"text": @"اتفاقية الطفل", @"link": @"ChildAgreement://"},
+                @{@"text": @" و"},
+                @{@"text": @"اتفاقية الإبداع", @"link": @"creativeAgreement://"}
+            ];
+        } else if ([languageCode hasPrefix:@"es"]) {
+            segments = @[
+                @{@"text": @"Acepto la "},
+                @{@"text": @"Política de privacidad", @"link": @"privacyPolicy://"},
+                @{@"text": @", el "},
+                @{@"text": @"Acuerdo de usuario", @"link": @"userProtocol://"},
+                @{@"text": @", el "},
+                @{@"text": @"Acuerdo infantil", @"link": @"ChildAgreement://"},
+                @{@"text": @" y el "},
+                @{@"text": @"Acuerdo de creación", @"link": @"creativeAgreement://"}
+            ];
+        }
+    }
+
+    NSMutableString *fullText = [NSMutableString string];
+    NSMutableArray<NSDictionary<NSString *, id> *> *linkRanges = [NSMutableArray array];
+    for (NSDictionary<NSString *, NSString *> *segment in segments) {
+        NSString *segmentText = segment[@"text"] ?: @"";
+        NSRange range = NSMakeRange(fullText.length, segmentText.length);
+        [fullText appendString:segmentText];
+        if (segment[@"link"]) {
+            [linkRanges addObject:@{@"range": [NSValue valueWithRange:range], @"link": segment[@"link"]}];
+        }
+    }
+
+    NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:fullText];
+    [attrStr addAttribute:NSForegroundColorAttributeName value:UIColorFromRGBA(000000, 0.5) range:NSMakeRange(0, fullText.length)];
+    for (NSDictionary<NSString *, id> *item in linkRanges) {
+        NSRange range = [item[@"range"] rangeValue];
+        [attrStr addAttribute:NSForegroundColorAttributeName value:mainColor range:range];
+        [attrStr addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:range];
+        [attrStr addAttribute:NSLinkAttributeName value:item[@"link"] range:range];
+    }
+    return attrStr;
 }
 
 //设置右侧按钮

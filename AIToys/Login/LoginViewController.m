@@ -8,6 +8,7 @@
 #import "LoginViewController.h"
 #import "AcountLoginViewController.h"
 #import "RegistViewController.h"
+#import "ATLanguageHelper.h"
 
 @interface LoginViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (weak, nonatomic) IBOutlet UIView *bgView;
@@ -42,10 +43,13 @@
     [super viewDidLoad];
     self.hj_NavIsHidden = YES;
     self.bgImgView.image = [PublicObj createImageSize:self.bgView.size gradientColors:@[UIColorFromRGB(0x1EAAFD),UIColorFromRGB(0xD1EEFF),UIColorFromRGB(0xFFFFFF)] percentage:@[@(0),@(0.71),@(1)] gradientType:GradientFromTopToBottom];
-    [self.loginBtn setTitle:NSLocalizedString(@"登录", @"") forState:0];
-    [self.registerBtn setTitle:NSLocalizedString(@"注册", @"") forState:0];
+    [self.loginBtn setTitle:LocalString(@"登录") forState:0];
+    [self.registerBtn setTitle:LocalString(@"注册") forState:0];
     self.slogoLabel.text = LocalString(@"专注蒙氏教育，发掘孩子独特天赋");
     [self setupLanguageSelector];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.languageTitleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.languageValueLabel.textAlignment = isRTL ? NSTextAlignmentLeft : NSTextAlignmentRight;
     [self setupLanguageOptions];
     if([CoreArchive boolForKey:KACCOUNT_ISCANCEL]){
         [LGBaseAlertView showAlertWithTitle:@"" content:LocalString(@"账号已删除，请重新登录") cancelBtnStr:nil confirmBtnStr:LocalString(@"确定") confirmBlock:^(BOOL isValue, id obj) {
@@ -360,7 +364,7 @@
 
 - (void)showRestartAlertWithLanguageCode:(NSString *)languageCode {
     NSString *resolvedCode = languageCode ?: @"en";
-    NSString *message = [self localizedStringForKey:@"切换多语言后，APP将会重启，是否继续？" languageCode:resolvedCode];
+    NSString *message = [self localizedStringForKey:@"切换多语言后，App将会重启，是否继续？" languageCode:resolvedCode];
     NSString *cancelTitle = [self localizedStringForKey:@"取消" languageCode:resolvedCode];
     NSString *confirmTitle = [self localizedStringForKey:@"确定" languageCode:resolvedCode];
     [LGBaseAlertView showAlertWithTitle:@""

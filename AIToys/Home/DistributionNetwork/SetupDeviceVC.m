@@ -17,6 +17,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.fd_prefersNavigationBarHidden = YES;
+    self.titleLabel.text = LocalString(@"设置设备");
+    self.detaileLabel.text = LocalString(@"长按重置按钮，直到指示灯闪烁（以说明书为准）");
+    [self.resetBtn setTitle:LocalString(@"指示灯已闪烁") forState:UIControlStateNormal];
 }
 
 //返回

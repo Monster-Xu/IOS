@@ -6,6 +6,7 @@
 //
 
 #import "SwitchConfigViewController.h"
+#import "ATLanguageHelper.h"
 #import <ThingSmartMiniAppBizBundle/ThingSmartMiniAppBizBundle.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import "WCQRCodeScanningVC.h"
@@ -20,11 +21,6 @@
 @end
 
 @implementation SwitchConfigViewController
-
-- (NSString *)currentMiniAppLangType {
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
-    return [preferredLanguage hasPrefix:@"ar"] ? @"ar" : @"en";
-}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -57,7 +53,7 @@
     WCQRCodeScanningVC *WBVC = [[WCQRCodeScanningVC alloc] init];
     WBVC.scanResultBlock = ^(NSString *result) {
         // 通过二维码打开小程序
-        [[ThingMiniAppClient coreClient] openMiniAppByQrcode:result params:@{@"BearerId":(kMyUser.accessToken?:@""),@"langType":[self currentMiniAppLangType]}];
+        [[ThingMiniAppClient coreClient] openMiniAppByQrcode:result params:@{@"BearerId":(kMyUser.accessToken?:@""),@"langType":[ATLanguageHelper miniAppLangType]}];
     };
     [self QRCodeScanVC:WBVC];
 }

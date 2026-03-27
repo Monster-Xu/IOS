@@ -6,6 +6,7 @@
 //
 
 #import "UnReceiveCodeView.h"
+#import "ATLanguageHelper.h"
 
 @interface UnReceiveCodeView()
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -22,9 +23,13 @@
     if (self) {
         self = [[[NSBundle mainBundle]loadNibNamed:@"UnReceiveCodeView" owner:nil options:nil]objectAtIndex:0];
         self.frame = frame;
+        BOOL isRTL = [ATLanguageHelper isRTLLanguage];
         self.titleLabel.text = LocalString(@"收不到验证码?");
         self.subTitleLabel.text = LocalString(@"如果没有收到手机验证码，建议您进行以下操作:");
         self.contentLabel.text = LocalString(@"1.请您检查电子邮箱地址是否正确。\n2.请您检查电子邮件不在垃圾邮件中。\n3.如果你找不到电子邮件，它可能会被防火墙阻止。请使用兼容性更好的电子邮件。\n4.如果您仍然无法获得代码，请联系我们的客服并提供帐户名。");
+        [self.sureBtn setTitle:LocalString(@"确定") forState:UIControlStateNormal];
+        self.subTitleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+        self.contentLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
         
     }
     return self;

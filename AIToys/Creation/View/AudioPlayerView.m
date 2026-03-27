@@ -128,7 +128,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         [AudioPlayerView stopAllOtherPlayers:self];
         
         self.audioURL = audioURL;
-        self.storyTitle = title ?: @"Story Audio";
+        self.storyTitle = title ?: LocalString(@"故事音频");
         self.coverImageURL = coverImageURL;
         self.isCancelledByUser = NO; // 初始化为未取消
         self.isBackgroundPlayMode = NO; // 默认不是后台播放模式
@@ -163,7 +163,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         [AudioPlayerView stopAllOtherPlayers:self];
         
         self.audioURL = audioURL;
-        self.storyTitle = @"Story Audio";
+        self.storyTitle = LocalString(@"故事音频");
         self.coverImageURL = nil;
         self.isCancelledByUser = NO;
         self.isBackgroundPlayMode = backgroundPlay;
@@ -426,38 +426,38 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
         // 背景视图约束 - 使用autoresizingMask避免约束冲突
         self.backgroundView.translatesAutoresizingMaskIntoConstraints = NO;
         [NSLayoutConstraint activateConstraints:@[
-            [self.backgroundView.leftAnchor constraintEqualToAnchor:self.leftAnchor constant:8],
-            [self.backgroundView.rightAnchor constraintEqualToAnchor:self.rightAnchor constant:-8],
+            [self.backgroundView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:8],
+            [self.backgroundView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor constant:-8],
             [self.backgroundView.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor constant:-30],
             [self.backgroundView.heightAnchor constraintEqualToConstant:70]
         ]];
     
     // 封面图 - 左侧圆形
     [self.coverImageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.containerView).offset(5);
+        make.leading.equalTo(self.containerView).offset(5);
         make.centerY.equalTo(self.containerView);
         make.width.height.mas_equalTo(60);
     }];
     
     // 标题 - 封面图右侧，但要避开关闭按钮
     [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.coverImageView.mas_right).offset(12);
+        make.leading.equalTo(self.coverImageView.mas_trailing).offset(12);
         make.top.equalTo(self.containerView).offset(8);
-        make.right.lessThanOrEqualTo(self.closeButton.mas_left).offset(-8);
+        make.trailing.lessThanOrEqualTo(self.closeButton.mas_leading).offset(-8);
     }];
     
     // 关闭按钮 - 直接定位到背景视图的右上角
         [self.closeButton mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.backgroundView).offset(-10); // 在背景视图上方10点
-            make.right.equalTo(self.backgroundView).offset(-10); // 在背景视图右方10点
+            make.trailing.equalTo(self.backgroundView).offset(-10); // 在背景视图右方10点
             make.width.height.mas_equalTo(24);
         }];
     
     // 进度条 - 标题下方，占据更多可用空间
     [self.progressSlider mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.titleLabel);
+        make.leading.equalTo(self.titleLabel);
         make.top.equalTo(self.titleLabel.mas_bottom).offset(8);
-        make.right.equalTo(self.previousButton.mas_left).offset(-15);
+        make.trailing.equalTo(self.previousButton.mas_leading).offset(-15);
         make.height.mas_equalTo(20);
     }];
     
@@ -471,21 +471,21 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     
     // 下一首按钮 - 最右侧
     [self.nextButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.containerView).offset(-15);
+        make.trailing.equalTo(self.containerView).offset(-15);
         make.centerY.equalTo(self.containerView);
         make.width.height.mas_equalTo(30);
     }];
     
     // 播放按钮 - 下一首左侧，较大
     [self.playButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.nextButton.mas_left).offset(-12);
+        make.trailing.equalTo(self.nextButton.mas_leading).offset(-12);
         make.centerY.equalTo(self.containerView);
         make.width.height.mas_equalTo(50);
     }];
     
     // 上一首按钮 - 播放按钮左侧
     [self.previousButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.playButton.mas_left).offset(-12);
+        make.trailing.equalTo(self.playButton.mas_leading).offset(-12);
         make.centerY.equalTo(self.containerView);
         make.width.height.mas_equalTo(30);
     }];
@@ -738,7 +738,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     
     // 先移除旧的约束
     [self.backgroundView mas_remakeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self).offset(frame.origin.x);
+        make.leading.equalTo(self).offset(frame.origin.x);
         make.top.equalTo(self).offset(frame.origin.y);
         make.width.mas_equalTo(frame.size.width);
         make.height.mas_equalTo(frame.size.height);
@@ -841,8 +841,8 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     
     // 移除现有约束并重新设置
     [self.backgroundView mas_remakeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self).offset(8);           // 直接使用left/right
-        make.right.equalTo(self).offset(-8);
+        make.leading.equalTo(self).offset(8);           // 直接使用left/right
+        make.trailing.equalTo(self).offset(-8);
         make.bottom.equalTo(self.mas_safeAreaLayoutGuideBottom).offset(-30);
         make.height.mas_equalTo(70);
     }];
@@ -1141,7 +1141,7 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     // 更新约束，相对于进度条的左边
     [self.timeLabelCenterXConstraint uninstall];
     [self.timeLabel mas_updateConstraints:^(MASConstraintMaker *make) {
-        self.timeLabelCenterXConstraint = make.centerX.equalTo(self.progressSlider.mas_left).offset(thumbCenterOffset);
+        self.timeLabelCenterXConstraint = make.centerX.equalTo(self.progressSlider.mas_leading).offset(thumbCenterOffset);
     }];
     
     // 强制布局更新
@@ -1391,8 +1391,8 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     
     // 设置基本信息
     [nowPlayingInfo setValue:self.storyTitle forKey:MPMediaItemPropertyTitle];
-    [nowPlayingInfo setValue:@"Story" forKey:MPMediaItemPropertyArtist]; // 可以设置为应用名称或其他
-    [nowPlayingInfo setValue:@"Audio Book" forKey:MPMediaItemPropertyAlbumTitle];
+    [nowPlayingInfo setValue:LocalString(@"故事") forKey:MPMediaItemPropertyArtist]; // 可以设置为应用名称或其他
+    [nowPlayingInfo setValue:LocalString(@"音频书") forKey:MPMediaItemPropertyAlbumTitle];
     
     // 设置时长和当前播放时间
     [nowPlayingInfo setValue:@(self.audioPlayer.duration) forKey:MPMediaItemPropertyPlaybackDuration];

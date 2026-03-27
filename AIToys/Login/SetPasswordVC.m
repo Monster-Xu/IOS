@@ -8,6 +8,7 @@
 #import "SetPasswordVC.h"
 #import "AcountLoginViewController.h"
 #import "LoginViewController.h"
+#import "ATLanguageHelper.h"
 
 @interface SetPasswordVC ()<UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -40,14 +41,17 @@
 -(void)setUpUI{
     self.pwdTextField.delegate = self;
     self.pwdAgainTextField.delegate = self;
-    self.titleLabel.text = NSLocalizedString(@"设置密码", @"");
-    self.pwdTitleLabel.text = NSLocalizedString(@"输入密码", @"");
-    self.pwsAgainTitleLabel.text = NSLocalizedString(@"再次输入密码", @"");
-    self.pwdTextField.placeholder = NSLocalizedString(@"输入密码", @"");
-    self.pwdAgainTextField.placeholder = NSLocalizedString(@"再次输入密码", @"");
-    self.alertLabel.text = NSLocalizedString(@"密码支持6-20位，必须包含字母和数字", @"");
-    self.subAlertLabel.text = NSLocalizedString(@"密码不一致", @"");
-    [self.surBtn setTitle:NSLocalizedString(@"确定", @"") forState:0];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.titleLabel.text = LocalString(@"设置密码");
+    self.pwdTitleLabel.text = LocalString(@"输入密码");
+    self.pwsAgainTitleLabel.text = LocalString(@"再次输入密码");
+    self.pwdTextField.placeholder = LocalString(@"输入密码");
+    self.pwdAgainTextField.placeholder = LocalString(@"再次输入密码");
+    self.alertLabel.text = LocalString(@"密码支持6-20位，必须包含字母和数字");
+    self.subAlertLabel.text = LocalString(@"密码不一致");
+    [self.surBtn setTitle:LocalString(@"确定") forState:0];
+    self.pwdTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.pwdAgainTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     [PublicObj makeButtonUnEnable:self.surBtn];
 }
 
@@ -74,12 +78,12 @@
     
     WS(weakSelf);
     [[ThingSmartUser sharedInstance] registerByEmail:Country_Code email:self.numStr password:password code:self.codeStr success:^{
-        [SVProgressHUD showSuccessWithStatus:@"Registered Successfully"];
+        [SVProgressHUD showSuccessWithStatus:LocalString(@"注册成功")];
 
         kMyUser.email = self.numStr;
         kMyUser.passWord = self.pwdTextField.text;
         ThingSmartHomeManager *homeManager = [[ThingSmartHomeManager alloc] init];
-        [homeManager addHomeWithName:@"My Home" geoName:nil rooms:@[@"客厅"] latitude:0 longitude:0 success:^(long long result) {
+        [homeManager addHomeWithName:LocalString(@"创建一个家庭") geoName:nil rooms:@[@"客厅"] latitude:0 longitude:0 success:^(long long result) {
             //跳转去一个特定的界面
            NSArray *vcsArr =  self.navigationController.viewControllers;
            NSMutableArray *vcsMutArr = [[NSMutableArray alloc]initWithArray:vcsArr];
@@ -161,7 +165,7 @@
         //格式错误
         self.alertLabel.hidden = YES;
         self.subAlertLabel.hidden = NO;
-        self.subAlertLabel.text = NSLocalizedString(@"密码不一致", @"");
+        self.subAlertLabel.text = LocalString(@"密码不一致");
         [PublicObj makeButtonUnEnable:self.surBtn];
     }else if(![password validateForRegex:[NSString passWordRegex]]){
         self.alertLabel.hidden = YES;

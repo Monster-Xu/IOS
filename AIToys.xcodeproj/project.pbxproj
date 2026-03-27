@@ -30,6 +30,7 @@
 		1896661B2EB3976C00D7C9EA /* WiFiListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 189666182EB3976C00D7C9EA /* WiFiListViewController.m */; };
 		1896661F2EB397DB00D7C9EA /* WiFiListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1896661E2EB397DB00D7C9EA /* WiFiListTableViewCell.xib */; };
 		189666202EB397DB00D7C9EA /* WiFiListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1896661D2EB397DB00D7C9EA /* WiFiListTableViewCell.m */; };
+		18AF94042F6C4C9D002F73FB /* ATLanguageHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */; };
 		18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */; };
 		18E8C74F2EE71E4700366022 /* getOTAInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 18E8C74E2EE71E4700366022 /* getOTAInfo.m */; };
 		18EE7F4E2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18EE7F4C2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m */; };
@@ -453,6 +454,8 @@
 		18AF936E2F6B026C002F73FB /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		18AF936F2F6B0275002F73FB /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		18AF93702F6B027C002F73FB /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		18AF94022F6C4C95002F73FB /* ATLanguageHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ATLanguageHelper.h; sourceTree = "<group>"; };
+		18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ATLanguageHelper.m; sourceTree = "<group>"; };
 		18CF0EF22E92626900F9E19E /* AFStoryAPIManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AFStoryAPIManager.h; sourceTree = "<group>"; };
 		18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AFStoryAPIManager.m; sourceTree = "<group>"; };
 		18E8C74D2EE71E4700366022 /* getOTAInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = getOTAInfo.h; sourceTree = "<group>"; };
@@ -1159,6 +1162,15 @@
 				180406422F1E669600C4438D /* LocationManager.m */,
 			);
 			path = LocationManager;
+			sourceTree = "<group>";
+		};
+		18AF94012F6C4C8E002F73FB /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				18AF94022F6C4C95002F73FB /* ATLanguageHelper.h */,
+				18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */,
+			);
+			path = Localization;
 			sourceTree = "<group>";
 		};
 		68A0715CB115E9CAA61B5483 /* Pods */ = {
@@ -2141,6 +2153,7 @@
 				E49272842E01C1C300DB6A2A /* ConvertJsonStr */,
 				E49272872E01C1C300DB6A2A /* Header */,
 				DCEE59FA2E0928AE00408120 /* JHCustomMenu */,
+				18AF94012F6C4C8E002F73FB /* Localization */,
 			);
 			path = Helper;
 			sourceTree = "<group>";
@@ -2959,6 +2972,7 @@
 				DC3E06A32E2A50270099A9FB /* ComponentLicenseModel.m in Sources */,
 				DC984EFE2E0D325A00CD9E7B /* JXPageListMainTableView.m in Sources */,
 				DC984EFF2E0D325A00CD9E7B /* JXPageListView.m in Sources */,
+				18AF94042F6C4C9D002F73FB /* ATLanguageHelper.m in Sources */,
 				DCF802402E121E5500C72B4D /* DeviceConnectingVC.m in Sources */,
 				DCEA01002E12702300170D8C /* WifiManuallyInputCell.m in Sources */,
 				DC1583E42E0533920097CF0A /* SetNewPasswordViewController.m in Sources */,
@@ -3295,8 +3309,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.2;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
+				MARKETING_VERSION = 1.4.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -3344,8 +3358,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.2;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
+				MARKETING_VERSION = 1.4.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

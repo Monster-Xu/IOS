@@ -10,6 +10,7 @@
 
 @interface WiFiListViewController ()<UITableViewDelegate,UITableViewDataSource>
 @property (weak, nonatomic) IBOutlet UIView *emptyView;
+@property (weak, nonatomic) IBOutlet UILabel *emptyStateLabel;
 @property(nonatomic,strong)NSMutableArray * dataArr;
 @end
 
@@ -23,7 +24,8 @@
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     [self.listTableView registerNib:[UINib nibWithNibName:@"WiFiListTableViewCell" bundle:nil] forCellReuseIdentifier:@"WiFiListTableViewCell"];
     self.dataArr = [NSMutableArray new];
-    [SVProgressHUD showWithStatus:@"Loading..."];
+    self.emptyStateLabel.text = LocalString(@"暂无WiFi记录，快去添加设备吧！");
+    [SVProgressHUD showWithStatus:LocalString(@"加载中...")];
     [self loadDate];
     
 }
@@ -61,10 +63,9 @@
     // 修复：为cell赋值 - 获取当前section对应的数据
     NSDictionary * wifiData = self.dataArr[indexPath.section];
     if(wifiData){
-        // 根据WiFiListTableViewCell的属性来赋值，示例：
-         cell.wifiNameLabel.text = wifiData[@"ssid"];
-        // cell.timeLabel.text = [self formatTimeFromTimeStamp:[wifiData[@"createTime"] longLongValue]];
-        // 这里需要根据你的cell具体属性来修改
+        NSString *ssid = [NSString stringWithFormat:@"%@", wifiData[@"ssid"] ?: @""];
+        NSString *trimmedSSID = [ssid stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        cell.wifiNameLabel.text = trimmedSSID.length > 0 ? trimmedSSID : LocalString(@"未命名WiFi");
     }
     
     cell.clickItemBlock = ^{
@@ -106,7 +107,7 @@
     [[APIManager shared] DELETE:[APIPortConfiguration getWifiRemoveUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
         NSDictionary * dic = [NSDictionary dictionaryWithDictionary:result];
         if ([dic[@"code"] integerValue] == 0) {
-            [SVProgressHUD showSuccessWithStatus:@"Successfully Deleted"];
+            [SVProgressHUD showSuccessWithStatus:LocalString(@"删除成功")];
         }
         // 优化：删除成功后，先从数组中移除，再更新UI，不需要重新加载全部数据
         // 找到并删除该项

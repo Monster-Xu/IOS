@@ -15,9 +15,11 @@
 #import "LGBaseAlertView.h"
 #import <AVFoundation/AVFoundation.h>
 #import <SVProgressHUD/SVProgressHUD.h>
+#import "ATLanguageHelper.h"
 
 @interface VoiceManagementViewController ()<UITableViewDelegate, UITableViewDataSource, AVAudioPlayerDelegate>
 @property (weak, nonatomic) IBOutlet UIView *emptyView;
+@property (weak, nonatomic) IBOutlet UILabel *emptyLabel;
 @property (weak, nonatomic) IBOutlet UIButton *createVoiceBtn;
 @property (weak, nonatomic) IBOutlet UITableView *voiceListTabelView;
 @property (nonatomic, strong) UIActivityIndicatorView *loadingIndicator;
@@ -42,6 +44,8 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     
     // ✅ 重要：禁用BaseViewController的导航栏颜色变更，避免冲突
     self.changeNavColor = NO;  // 我们自己管理导航栏样式
@@ -136,7 +140,7 @@
     // ✅ 检查BaseViewController是否已经设置了返回按钮
     if (self.leftBarButton) {
         // BaseViewController已经设置了返回按钮，我们只需要确保图片正确
-        UIImage *backImage = [[UIImage imageNamed:@"icon_back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        UIImage *backImage = [QD_IMG(@"icon_back") imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
         if (backImage && [self.leftBarButton respondsToSelector:@selector(setImage:forState:)]) {
             [(UIButton *)self.leftBarButton setImage:backImage forState:UIControlStateNormal];
             
@@ -159,7 +163,7 @@
     }
     
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    UIImage *backImage = [[UIImage imageNamed:@"icon_back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    UIImage *backImage = [QD_IMG(@"icon_back") imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     
     if (backImage) {
         [backButton setImage:backImage forState:UIControlStateNormal];
@@ -192,6 +196,8 @@
 - (void)setupUI {
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     [self.createVoiceBtn addTarget:self action:@selector(createVoiceBtnClick) forControlEvents:UIControlEventTouchDown];
+    self.emptyLabel.text = LocalString(@"暂无音色，请先创建");
+    [self.createVoiceBtn setTitle:LocalString(@"创建音色") forState:UIControlStateNormal];
     self.emptyView.hidden = YES;
 }
 
@@ -303,7 +309,7 @@
             UIImage *currentImage = [button imageForState:UIControlStateNormal];
             if (!currentImage) {
                 NSLog(@"⚠️ 返回按钮图片丢失，重新设置图片");
-                UIImage *backImage = [[UIImage imageNamed:@"icon_back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+                UIImage *backImage = [QD_IMG(@"icon_back") imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
                 [button setImage:backImage forState:UIControlStateNormal];
             }
         }
@@ -645,7 +651,7 @@
     // 检查音频URL
     if (!voice.sampleAudioUrl || voice.sampleAudioUrl.length == 0) {
         NSLog(@"⚠️ 音频URL为空，无法播放");
-        [self showErrorAlert:@"Playback Failed" message:@"No audio available for this voice"];
+        [self showErrorAlert:LocalString(@"播放失败") message:LocalString(@"该音色没有可播放的音频")];
         return;
     }
     
@@ -669,7 +675,7 @@
     NSLog(@"🎵 开始播放音色: %@", voice.voiceName);
     
     // 显示音频加载进度弹窗
-    [SVProgressHUD showWithStatus:@"Audio loading..."];
+    [SVProgressHUD showWithStatus:LocalString(@"音频加载中...")];
     
     // 从网络URL创建音频播放器
     NSURL *audioURL = [NSURL URLWithString:voice.sampleAudioUrl];
@@ -688,7 +694,7 @@
                 NSLog(@"❌ 音频下载失败: %@", error.localizedDescription);
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [SVProgressHUD dismiss];
-                    [self showErrorAlert:@"Playback Failed" message:@"Audio download failed"];
+                    [self showErrorAlert:LocalString(@"播放失败") message:LocalString(@"音频下载失败")];
                 });
                 return;
             }
@@ -703,7 +709,7 @@
                         NSLog(@"❌ 音频播放器初始化失败: %@", error.localizedDescription);
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [SVProgressHUD dismiss];
-                            [self showErrorAlert:@"Playback Failed" message:@"Audio format not supported"];
+                            [self showErrorAlert:LocalString(@"播放失败") message:LocalString(@"音频格式不支持")];
                         });
                         return;
                     }
@@ -732,18 +738,18 @@
                             NSLog(@"✅ 音频开始播放成功");
                             
                             // 显示播放成功提示
-                            [SVProgressHUD showSuccessWithStatus:@"Start playing"];
+                            [SVProgressHUD showSuccessWithStatus:LocalString(@"开始播放")];
                             [SVProgressHUD dismissWithDelay:1.0];
                         } else {
                             NSLog(@"❌ 音频播放失败");
-                            [self showErrorAlert:@"Playback Failed" message:@"Cannot play this audio file"];
+                            [self showErrorAlert:LocalString(@"播放失败") message:LocalString(@"无法播放该音频文件")];
                         }
                     });
                 } else {
                     NSLog(@"❌ 音频数据读取失败");
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [SVProgressHUD dismiss];
-                        [self showErrorAlert:@"Playback Failed" message:@"Failed to read audio data"];
+                        [self showErrorAlert:LocalString(@"播放失败") message:LocalString(@"读取音频数据失败")];
                     });
                 }
             }
@@ -840,7 +846,7 @@
     self.currentPlayingVoice = nil;
     self.audioPlayer = nil;
     
-    [self showErrorAlert:@"Playback Error" message:@"Audio file is corrupted or format not supported"];
+    [self showErrorAlert:LocalString(@"播放错误") message:LocalString(@"音频文件损坏或格式不支持")];
 }
 
 #pragma mark - 删除声音
@@ -855,15 +861,15 @@
     
     // 检查是否可以删除
     if (!voice.canDelete) {
-        [self showErrorAlert:@"Delete Failed" message:@"This voice is associated with the story and cannot be deleted."];
+        [self showErrorAlert:LocalString(@"删除失败") message:LocalString(@"该音色已关联故事，无法删除。")];
         return;
     }
     
     // 确认删除
-    [LGBaseAlertView showAlertWithTitle:@"Delete Voice"
-                                content:[NSString stringWithFormat:@"Are you sure you want to delete voice \"%@\"?", voice.voiceName]
-                           cancelBtnStr:@"Cancel"
-                          confirmBtnStr:@"Delete"
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"删除音色")
+                                content:[NSString stringWithFormat:LocalString(@"确定要删除音色“%@”吗？"), voice.voiceName]
+                           cancelBtnStr:LocalString(@"取消")
+                          confirmBtnStr:LocalString(@"删除")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户确认删除，调用删除API
@@ -881,7 +887,7 @@
     NSLog(@"[VoiceManagement] 删除音色 ID: %ld, 索引: %ld", (long)voiceId, (long)index);
     
     // ✅ 显示删除进度
-    [SVProgressHUD showWithStatus:@"Deleting..."];
+    [SVProgressHUD showWithStatus:LocalString(@"正在删除...")];
     
     [[AFStoryAPIManager sharedManager] deleteVoiceWithId:voiceId success:^(APIResponseModel *response) {
         
@@ -915,7 +921,7 @@
             [self updateCreateButtonState];
             
             // 显示成功提示
-            [SVProgressHUD showSuccessWithStatus:@"Deleted Successfully"];
+            [SVProgressHUD showSuccessWithStatus:LocalString(@"删除成功")];
             [SVProgressHUD dismissWithDelay:1.5];
         });
         
@@ -927,7 +933,7 @@
             [SVProgressHUD dismiss];
             
             // 显示错误提示
-//            [self showErrorAlert:@"Delete Failed" message:error.localizedDescription];
+//            [self showErrorAlert:LocalString(@"删除失败") message:error.localizedDescription];
         });
     }];
 }
@@ -1011,12 +1017,12 @@
         // ✅ 达到最大数量时禁用按钮并改变样式
         self.createVoiceBtn.enabled = NO;
         self.createVoiceBtn.alpha = 0.5;
-        [self.createVoiceBtn setTitle:[NSString stringWithFormat:@"Limit Reached (%ld/%ld)", (long)currentCount, (long)maxVoiceCount] forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:[NSString stringWithFormat:LocalString(@"已达上限（%ld/%ld）"), (long)currentCount, (long)maxVoiceCount] forState:UIControlStateNormal];
     } else {
         // ✅ 未达到最大数量时启用按钮
         self.createVoiceBtn.enabled = YES;
         self.createVoiceBtn.alpha = 1.0;
-        [self.createVoiceBtn setTitle:[NSString stringWithFormat:@"Create Voice (%ld/%ld)", (long)currentCount, (long)maxVoiceCount] forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:[NSString stringWithFormat:LocalString(@"创建音色（%ld/%ld）"), (long)currentCount, (long)maxVoiceCount] forState:UIControlStateNormal];
     }
     
     NSLog(@"[VoiceManagement] 创建按钮状态已更新: %ld/%ld", (long)currentCount, (long)maxVoiceCount);
@@ -1026,7 +1032,7 @@
     // ✅ 检查声音数量是否已达到最大限制
     NSInteger maxVoiceCount = 3;
     if (self.voiceList.count >= maxVoiceCount) {
-        [self showErrorAlert:@"Creation Failed" message:[NSString stringWithFormat:@"Maximum %ld voices allowed. Please delete some voices first.", (long)maxVoiceCount]];
+        [self showErrorAlert:LocalString(@"创建失败") message:[NSString stringWithFormat:LocalString(@"最多只能创建%ld个音色，请先删除部分音色。"), (long)maxVoiceCount]];
         return;
     }
     
@@ -1044,10 +1050,10 @@
 
 /// 显示成功提示
 - (void)showSuccessAlert:(NSString *)message {
-    [LGBaseAlertView showAlertWithTitle:@"Success"
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"成功")
                                 content:message
                            cancelBtnStr:nil
-                          confirmBtnStr:@"OK"
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         // 用户点击确定，无需额外操作
     }];
@@ -1058,7 +1064,7 @@
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
                            cancelBtnStr:nil
-                          confirmBtnStr:@"OK"
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         // 用户点击确定，无需额外操作
     }];
@@ -1077,7 +1083,7 @@
     
     // ✅ 创建备用返回按钮
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    UIImage *backImage = [[UIImage imageNamed:@"icon_back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    UIImage *backImage = [QD_IMG(@"icon_back") imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     
     if (backImage) {
         [backButton setImage:backImage forState:UIControlStateNormal];
@@ -1098,7 +1104,7 @@
         NSLog(@"❌ 备用方案：返回按钮图片不存在，使用文字按钮");
         
         // ✅ 如果图片不存在，创建文字返回按钮
-        UIBarButtonItem *textBackButton = [[UIBarButtonItem alloc] initWithTitle:@"Back" 
+        UIBarButtonItem *textBackButton = [[UIBarButtonItem alloc] initWithTitle:LocalString(@"返回") 
                                                                            style:UIBarButtonItemStylePlain 
                                                                           target:self 
                                                                           action:@selector(fallbackBackButtonTapped)];
@@ -1217,7 +1223,7 @@
 /// 设置编辑模式的导航栏
 - (void)setupEditingNavigationBar {
     // ✅ 创建完成按钮
-    self.editDoneButton = [[UIBarButtonItem alloc] initWithTitle:@"Done" 
+    self.editDoneButton = [[UIBarButtonItem alloc] initWithTitle:LocalString(@"完成") 
                                                            style:UIBarButtonItemStyleDone 
                                                           target:self 
                                                           action:@selector(doneButtonTapped)];
@@ -1301,7 +1307,7 @@
 
 /// 更新底部按钮为编辑模式（删除按钮）
 - (void)updateBottomButtonForEditingMode {
-    [self.createVoiceBtn setTitle:@"Delete Selected Item" forState:UIControlStateNormal];
+    [self.createVoiceBtn setTitle:LocalString(@"删除所选项") forState:UIControlStateNormal];
     
     // ✅ 设置红色字体白色底，边框为1的红色
     [self.createVoiceBtn setTitleColor:[UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0] forState:UIControlStateNormal];
@@ -1349,9 +1355,9 @@
     self.createVoiceBtn.alpha = hasSelection ? 1.0 : 0.5;
     
     if (hasSelection) {
-        [self.createVoiceBtn setTitle:@"Delete Selected Item" forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:LocalString(@"删除所选项") forState:UIControlStateNormal];
     } else {
-        [self.createVoiceBtn setTitle:@"Delete Selected Item" forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:LocalString(@"删除所选项") forState:UIControlStateNormal];
     }
 }
 
@@ -1367,19 +1373,19 @@
     
     // ✅ 检查选中的音色是否可以删除
     if (!voice.canDelete) {
-        NSString *message = [NSString stringWithFormat:@"Voice \"%@\" is associated with stories and cannot be deleted.\n\nPlease remove the associations first.", voice.voiceName];
-        [self showErrorAlert:@"Delete Failed" message:message];
+        NSString *message = [NSString stringWithFormat:LocalString(@"音色“%@”已关联故事，无法删除。\n\n请先解除关联。"), voice.voiceName];
+        [self showErrorAlert:LocalString(@"删除失败") message:message];
         return;
     }
     
     // ✅ 显示确认删除对话框
-    NSString *title = @"Delete Voice";
-    NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete voice \"%@\"?\n\nThis action cannot be undone.", voice.voiceName];
+    NSString *title = LocalString(@"删除音色");
+    NSString *message = [NSString stringWithFormat:LocalString(@"确定要删除音色“%@”吗？\n\n此操作无法撤销。"), voice.voiceName];
     
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
-                           cancelBtnStr:@"Cancel"
-                          confirmBtnStr:@"Delete"
+                           cancelBtnStr:LocalString(@"取消")
+                          confirmBtnStr:LocalString(@"删除")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户确认删除

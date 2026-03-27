@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DeviceManuallyAddCell : UITableViewCell
 @property (weak, nonatomic) IBOutlet UIButton *devicebtnClick;
+@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+@property (weak, nonatomic) IBOutlet UILabel *subTitleLabel;
 @property (nonatomic, strong) NSArray <FindDollModel *> *dataArr;
 @property (nonatomic, copy) void(^devicebtnClickClickBlock)(void);
 @end

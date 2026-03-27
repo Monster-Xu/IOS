@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *protagonistName;
 @property (nonatomic, assign) NSInteger storyLength;
 @property (nonatomic, copy) NSString *illustrationUrl;
+@property (nonatomic, copy) NSString *language;
 
 // 便利初始化方法
 - (instancetype)initWithName:(NSString *)name

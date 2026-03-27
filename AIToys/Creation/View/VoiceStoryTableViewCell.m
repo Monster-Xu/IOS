@@ -44,8 +44,8 @@
     
     // 使用Masonry设置卡片容器的约束：左右各16，上下填满（无边距）
     [cardContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.contentView).offset(16);
-        make.right.equalTo(self.contentView).offset(-16);
+        make.leading.equalTo(self.contentView).offset(16);
+        make.trailing.equalTo(self.contentView).offset(-16);
         make.top.equalTo(self.contentView);      // ✅ 移除上边距
         make.bottom.equalTo(self.contentView);   // ✅ 移除下边距
     }];
@@ -81,13 +81,13 @@
     
     self.statusLabel = [[UILabel alloc] init];
     self.statusLabel.font = [UIFont systemFontOfSize:14]; // 更小的字体
-    self.statusLabel.textAlignment = NSTextAlignmentLeft;
+    self.statusLabel.textAlignment = NSTextAlignmentNatural;
     self.statusLabel.numberOfLines = 2; // 允许两行显示
     [self.statusView addSubview:self.statusLabel];
     
     // 使用Masonry设置failureImageView约束 - 距离statusView左侧16px
     [self.failureImageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.statusView).offset(16);
+        make.leading.equalTo(self.statusView).offset(16);
         make.centerY.equalTo(self.statusView);
         make.width.height.mas_equalTo(16); // 设置图标大小为16x16
     }];
@@ -96,7 +96,7 @@
     [self.statusLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.statusView).offset(3);
         make.bottom.equalTo(self.statusView).offset(-3);
-        make.right.equalTo(self.statusView).offset(-4);
+        make.trailing.equalTo(self.statusView).offset(-4);
         // 左侧约束将在状态配置方法中动态设置
     }];
     
@@ -158,7 +158,7 @@
  - (void)setupConstraintsWithContainer:(UIView *)cardContainer {
     // 封面图 - 左上角
     [self.coverImageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(cardContainer).offset(12);
+        make.leading.equalTo(cardContainer).offset(12);
         make.top.equalTo(cardContainer).offset(12);
         make.width.mas_equalTo(64);
         make.height.mas_equalTo(64);
@@ -166,7 +166,7 @@
     
     // New标签 - 在封面图上层
     [self.badgeImageView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.coverImageView).offset(0);
+        make.leading.equalTo(self.coverImageView).offset(0);
         make.top.equalTo(self.coverImageView).offset(0);
         make.width.mas_equalTo(40);
         make.height.mas_equalTo(20);
@@ -174,7 +174,7 @@
     
     // 播放按钮 - 最右侧居中（先布局，因为标题需要参考它）
     [self.playButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(cardContainer).offset(-16);
+        make.trailing.equalTo(cardContainer).offset(-16);
         make.centerY.equalTo(cardContainer);
         make.width.height.mas_equalTo(24);
     }];
@@ -187,21 +187,21 @@
     
     // 编辑按钮 - 播放按钮左侧居中
     [self.editButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.playButton.mas_left).offset(-12);
+        make.trailing.equalTo(self.playButton.mas_leading).offset(-12);
         make.centerY.equalTo(cardContainer);
         make.width.height.mas_equalTo(24);
     }];
     
     // 标题 - 封面图右侧顶部对齐
     [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.coverImageView.mas_right).offset(12);
+        make.leading.equalTo(self.coverImageView.mas_trailing).offset(12);
         make.top.equalTo(cardContainer).offset(14);
-        make.right.equalTo(self.editButton.mas_left).offset(-8);
+        make.trailing.equalTo(self.editButton.mas_leading).offset(-8);
     }];
     
      // 副标题容器 - 标题下方
      [self.subtitleContainerView mas_makeConstraints:^(MASConstraintMaker *make) {
-         make.left.equalTo(self.titleLabel);
+         make.leading.equalTo(self.titleLabel);
          make.bottom.equalTo(self.coverImageView.mas_bottom).offset(0);
          make.height.mas_equalTo(15);
          
@@ -214,16 +214,16 @@
      
      // 副标题文字 - 容器内部，左右内边距为2
      [self.subtitleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-         make.left.equalTo(self.subtitleContainerView).offset(3);
-         make.right.equalTo(self.subtitleContainerView).offset(-3);
+         make.leading.equalTo(self.subtitleContainerView).offset(3);
+         make.trailing.equalTo(self.subtitleContainerView).offset(-3);
          make.top.equalTo(self.subtitleContainerView);
          make.bottom.equalTo(self.subtitleContainerView);
      }];
     
     // 状态视图 - 卡片底部，左右各12边距
     [self.statusView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(cardContainer).offset(12);
-        make.right.equalTo(cardContainer).offset(-12);
+        make.leading.equalTo(cardContainer).offset(12);
+        make.trailing.equalTo(cardContainer).offset(-12);
         make.bottom.equalTo(cardContainer).offset(-12);
         make.height.mas_equalTo(28);
     }];
@@ -237,14 +237,14 @@
     [self.statusLabel mas_remakeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.statusView).offset(3);
         make.bottom.equalTo(self.statusView).offset(-3);
-        make.right.equalTo(self.statusView).offset(-4);
+        make.trailing.equalTo(self.statusView).offset(-4);
         
         if (showFailureIcon) {
             // 如果显示失败图标，statusLabel左侧距离失败图标12px
-            make.left.equalTo(self.failureImageView.mas_right).offset(12);
+            make.leading.equalTo(self.failureImageView.mas_trailing).offset(12);
         } else {
             // 如果不显示失败图标，statusLabel左侧距离statusView 4px
-            make.left.equalTo(self.statusView).offset(4);
+            make.leading.equalTo(self.statusView).offset(4);
         }
     }];
 }
@@ -342,10 +342,10 @@
     
     // 设置声音信息
     if (self.model.voiceName && self.model.voiceName.length > 0 && ![self.model.voiceName isEqualToString:@"--"]) {
-        self.subtitleLabel.text = [NSString stringWithFormat:@"Voice - %@", self.model.voiceName];
+        self.subtitleLabel.text = [NSString stringWithFormat:LocalString(@"音色 - %@"), self.model.voiceName];
         self.subtitleLabel.textColor = [UIColor systemBlueColor];
     } else {
-        self.subtitleLabel.text = @"No Voice";
+        self.subtitleLabel.text = LocalString(@"暂无音色");
         self.subtitleLabel.textColor = [UIColor systemGrayColor];
     }
     
@@ -380,11 +380,11 @@
     
     // 设置声音信息 - 确保显示音色名称
     if (self.model.voiceName && self.model.voiceName.length > 0 && ![self.model.voiceName isEqualToString:@"--"]) {
-        self.subtitleLabel.text = [NSString stringWithFormat:@"Voice - %@", self.model.voiceName];
+        self.subtitleLabel.text = [NSString stringWithFormat:LocalString(@"音色 - %@"), self.model.voiceName];
         self.subtitleLabel.textColor = [UIColor systemBlueColor];
         self.subtitleLabel.hidden = NO;
     } else {
-        self.subtitleLabel.text = @"No Voice";
+        self.subtitleLabel.text = LocalString(@"暂无音色");
         self.subtitleLabel.textColor = [UIColor systemGrayColor];
         self.subtitleLabel.hidden = NO;
     }
@@ -414,10 +414,10 @@
     
     // 设置声音信息
     if (self.model.voiceName && self.model.voiceName.length > 0 && ![self.model.voiceName isEqualToString:@"--"]) {
-        self.subtitleLabel.text = [NSString stringWithFormat:@"Voice - %@", self.model.voiceName];
+        self.subtitleLabel.text = [NSString stringWithFormat:LocalString(@"音色 - %@"), self.model.voiceName];
         self.subtitleLabel.textColor = [UIColor systemBlueColor];
     } else {
-        self.subtitleLabel.text = @"No Voice";
+        self.subtitleLabel.text = LocalString(@"暂无音色");
         self.subtitleLabel.textColor = [UIColor systemGrayColor];
     }
     
@@ -455,10 +455,10 @@
     
     // 设置声音信息
     if (self.model.voiceName && self.model.voiceName.length > 0 && ![self.model.voiceName isEqualToString:@"--"]) {
-        self.subtitleLabel.text = [NSString stringWithFormat:@"Voice - %@", self.model.voiceName];
+        self.subtitleLabel.text = [NSString stringWithFormat:LocalString(@"音色 - %@"), self.model.voiceName];
         self.subtitleLabel.textColor = [UIColor systemBlueColor];
     } else {
-        self.subtitleLabel.text = @"No Voice";
+        self.subtitleLabel.text = LocalString(@"暂无音色");
         self.subtitleLabel.textColor = [UIColor systemGrayColor];
     }
     
@@ -488,10 +488,10 @@
     
     // 设置声音信息
     if (self.model.voiceName && self.model.voiceName.length > 0 && ![self.model.voiceName isEqualToString:@"--"]) {
-        self.subtitleLabel.text = [NSString stringWithFormat:@"Voice - %@", self.model.voiceName];
+        self.subtitleLabel.text = [NSString stringWithFormat:LocalString(@"音色 - %@"), self.model.voiceName];
         self.subtitleLabel.textColor = [UIColor systemBlueColor];
     } else {
-        self.subtitleLabel.text = @"No Voice";
+        self.subtitleLabel.text = LocalString(@"暂无音色");
         self.subtitleLabel.textColor = [UIColor systemGrayColor];
     }
     
@@ -532,10 +532,10 @@
     
     // 设置声音信息
     if (self.model.voiceName && self.model.voiceName.length > 0 && ![self.model.voiceName isEqualToString:@"--"]) {
-        self.subtitleLabel.text = [NSString stringWithFormat:@"Voice - %@", self.model.voiceName];
+        self.subtitleLabel.text = [NSString stringWithFormat:LocalString(@"音色 - %@"), self.model.voiceName];
         self.subtitleLabel.textColor = [UIColor systemBlueColor];
     } else {
-        self.subtitleLabel.text = @"No Voice";
+        self.subtitleLabel.text = LocalString(@"暂无音色");
         self.subtitleLabel.textColor = [UIColor systemGrayColor];
     }
     
@@ -568,7 +568,7 @@
     // ⭐️ 隐藏状态视图，显示副标题
     self.statusView.hidden = YES;
     self.subtitleLabel.hidden = NO;
-    self.subtitleLabel.text = @"No Voice";
+    self.subtitleLabel.text = LocalString(@"暂无音色");
     self.subtitleLabel.textColor = [UIColor systemGrayColor];
         
     // 禁用播放按钮
@@ -618,7 +618,7 @@
     
     // 设置约束 - 与编辑和播放按钮相同位置
     [self.chooseButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(cardContainerView).offset(-16);
+        make.trailing.equalTo(cardContainerView).offset(-16);
         make.centerY.equalTo(cardContainerView);
         make.width.height.mas_equalTo(24);
     }];

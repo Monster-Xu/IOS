@@ -90,7 +90,7 @@
     }else{
         self.batteryImageW.constant = 0;
         self.batteryLabel.hidden = NO;
-        self.batteryLabel.text =  @" Change Wi-Fi > ";
+        self.batteryLabel.text = LocalString(@"更换Wi-Fi >");
     }
     
 }

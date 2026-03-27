@@ -31,8 +31,8 @@
     [[UIBarButtonItem appearance] setTitleTextAttributes:dic forState:UIControlStateHighlighted];
     
     //返回按钮图片设置
-    self.navigationBar.backIndicatorImage = [[UIImage imageNamed:@"icon_back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
-    self.navigationBar.backIndicatorTransitionMaskImage = [[UIImage imageNamed:@"icon_back"] imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    self.navigationBar.backIndicatorImage = [QD_IMG(@"icon_back") imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+    self.navigationBar.backIndicatorTransitionMaskImage = [QD_IMG(@"icon_back") imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
     self.interactivePopGestureRecognizer.delegate = self;
     [self configUIBarAppearance];
 }

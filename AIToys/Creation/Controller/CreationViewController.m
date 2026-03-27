@@ -20,6 +20,7 @@
 #import "AudioPlayerView.h"
 #import <SVProgressHUD/SVProgressHUD.h>
 #import "LGBaseAlertView.h"
+#import "ATLanguageHelper.h"
 
 static NSString *const kNormalCellIdentifier = @"NormalCell";
 static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
@@ -53,6 +54,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     // 设置整体背景色为 #F6F7FB
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     
@@ -152,10 +155,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.view addSubview:self.customNavBarView];
     
     UILabel *titleLabel = [[UILabel alloc] init];
-    titleLabel.text = @"Story Creation";
+    titleLabel.text = LocalString(@"故事创作");
     titleLabel.font = [UIFont fontWithName:@"SFRounded-Bold" size:24] ?: [UIFont boldSystemFontOfSize:24];
     titleLabel.textColor = [UIColor blackColor];
-    titleLabel.textAlignment = NSTextAlignmentLeft;
+    titleLabel.textAlignment = NSTextAlignmentNatural;
     [self.customNavBarView addSubview:titleLabel];
     
     UIButton *soundButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -171,24 +174,24 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.customNavBarView addSubview:addButton];
     
     [self.customNavBarView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.right.equalTo(self.view);
+        make.leading.trailing.equalTo(self.view);
         make.top.equalTo(self.view.mas_safeAreaLayoutGuideTop);
         make.height.mas_equalTo(44);
     }];
     
     [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.equalTo(self.customNavBarView).offset(16);
+        make.leading.equalTo(self.customNavBarView).offset(16);
         make.centerY.equalTo(self.customNavBarView);
     }];
     
     [addButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(self.customNavBarView).offset(-16);
+        make.trailing.equalTo(self.customNavBarView).offset(-16);
         make.centerY.equalTo(self.customNavBarView);
         make.width.height.mas_equalTo(28);
     }];
     
     [soundButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.equalTo(addButton.mas_left).offset(-21);
+        make.trailing.equalTo(addButton.mas_leading).offset(-21);
         make.centerY.equalTo(self.customNavBarView);
         make.width.height.mas_equalTo(28);
     }];
@@ -229,7 +232,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 - (void)setupTableViewConstraints {
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.customNavBarView.mas_bottom).offset(5);
-        make.left.right.equalTo(self.view);
+        make.leading.trailing.equalTo(self.view);
         make.bottom.equalTo(self.view.mas_safeAreaLayoutGuideBottom);
     }];
 }
@@ -248,14 +251,15 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.emptyStateView addSubview:emptyImageView];
     
     UILabel *emptyLabel = [[UILabel alloc] init];
-    emptyLabel.text = LocalString(@"No stories yet, please create one first");
+    emptyLabel.text = LocalString(@"暂无故事，请先创建");
     emptyLabel.font = [UIFont systemFontOfSize:16];
     emptyLabel.textColor = [UIColor systemGrayColor];
     emptyLabel.textAlignment = NSTextAlignmentCenter;
     [self.emptyStateView addSubview:emptyLabel];
     
     UIButton *guideButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [guideButton setTitle:@"View the Guide" forState:UIControlStateNormal];
+    NSString *guideTitle = LocalString(@"查看指南");
+    [guideButton setTitle:guideTitle forState:UIControlStateNormal];
     // 链接样式：更小的字体，下划线效果
     guideButton.titleLabel.font = [UIFont systemFontOfSize:14];
     [guideButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
@@ -263,7 +267,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     
     // 添加下划线效果，让它看起来更像链接
     NSAttributedString *attributedTitle = [[NSAttributedString alloc] 
-        initWithString:@"View the Guide" 
+        initWithString:guideTitle
         attributes:@{
             NSUnderlineStyleAttributeName: @(NSUnderlineStyleSingle),
             NSForegroundColorAttributeName: [UIColor systemBlueColor],
@@ -273,7 +277,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     
     // 高亮状态的下划线效果
     NSAttributedString *highlightedTitle = [[NSAttributedString alloc] 
-        initWithString:@"View the Guide" 
+        initWithString:guideTitle
         attributes:@{
             NSUnderlineStyleAttributeName: @(NSUnderlineStyleSingle),
             NSForegroundColorAttributeName: [UIColor colorWithRed:0.0 green:0.48 blue:1.0 alpha:0.6],
@@ -285,7 +289,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.emptyStateView addSubview:guideButton];
     
     UIButton *emptyMyVoiceButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [emptyMyVoiceButton setTitle:@"My Voice" forState:UIControlStateNormal];
+    [emptyMyVoiceButton setTitle:LocalString(@"我的声音") forState:UIControlStateNormal];
     [emptyMyVoiceButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
     emptyMyVoiceButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
     emptyMyVoiceButton.layer.borderColor = [UIColor systemBlueColor].CGColor;
@@ -296,7 +300,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.emptyStateView addSubview:emptyMyVoiceButton];
     
     UIButton *emptyCreateButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [emptyCreateButton setTitle:@"Create Story" forState:UIControlStateNormal];
+    [emptyCreateButton setTitle:LocalString(@"创建故事") forState:UIControlStateNormal];
     [emptyCreateButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     emptyCreateButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
     emptyCreateButton.backgroundColor = [UIColor systemBlueColor];
@@ -306,7 +310,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     
     [self.emptyStateView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.customNavBarView.mas_bottom);
-        make.left.right.equalTo(self.view);
+        make.leading.trailing.equalTo(self.view);
         make.bottom.equalTo(self.view.mas_safeAreaLayoutGuideBottom);
     }];
     
@@ -319,8 +323,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [emptyLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(emptyImageView.mas_bottom).offset(24);
         make.centerX.equalTo(self.emptyStateView);
-        make.left.greaterThanOrEqualTo(self.emptyStateView).offset(16);
-        make.right.lessThanOrEqualTo(self.emptyStateView).offset(-16);
+        make.leading.greaterThanOrEqualTo(self.emptyStateView).offset(16);
+        make.trailing.lessThanOrEqualTo(self.emptyStateView).offset(-16);
     }];
     
     [guideButton mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -329,7 +333,9 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }];
     
     [emptyMyVoiceButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(self.emptyStateView).multipliedBy(0.7);
+        BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+        CGFloat myVoiceMultiplier = isRTL ? 1.3 : 0.7;
+        make.centerX.equalTo(self.emptyStateView).multipliedBy(myVoiceMultiplier);
         make.top.equalTo(guideButton.mas_bottom).offset(32);
         
         CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
@@ -339,7 +345,9 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }];
     
     [emptyCreateButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.centerX.equalTo(self.emptyStateView).multipliedBy(1.3);
+        BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+        CGFloat createMultiplier = isRTL ? 0.7 : 1.3;
+        make.centerX.equalTo(self.emptyStateView).multipliedBy(createMultiplier);
         make.top.equalTo(guideButton.mas_bottom).offset(32);
         
         CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
@@ -362,8 +370,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.editingToolbar addSubview:topLine];
     
     self.deleteSelectedButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [self.deleteSelectedButton setTitle:@"Delete Stories" forState:UIControlStateNormal];
-    [self.deleteSelectedButton setTitle:@"Delete Stories" forState:UIControlStateDisabled];
+    [self.deleteSelectedButton setTitle:LocalString(@"删除故事") forState:UIControlStateNormal];
+    [self.deleteSelectedButton setTitle:LocalString(@"删除故事") forState:UIControlStateDisabled];
     
     [self.deleteSelectedButton setTitleColor:[UIColor systemRedColor] forState:UIControlStateNormal];
     [self.deleteSelectedButton setTitleColor:[UIColor colorWithWhite:0.7 alpha:1] forState:UIControlStateDisabled];
@@ -559,7 +567,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 
 - (void)endRefreshingWithSuccess {
     if (self.tableView.mj_header.isRefreshing) {
-        NSAttributedString *title = [[NSAttributedString alloc] initWithString:@"Pull to Refresh"
+        NSAttributedString *title = [[NSAttributedString alloc] initWithString:LocalString(@"下拉刷新")
                                                                     attributes:@{
             NSForegroundColorAttributeName: [UIColor systemGrayColor],
             NSFontAttributeName: [UIFont systemFontOfSize:14]
@@ -1100,28 +1108,28 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     
     if (isEditing) {
         UIButton *cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
-        [cancelButton setTitle:@"Cancel" forState:UIControlStateNormal];
+        [cancelButton setTitle:LocalString(@"取消") forState:UIControlStateNormal];
         [cancelButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         cancelButton.titleLabel.font = [UIFont systemFontOfSize:16];
         [cancelButton addTarget:self action:@selector(cancelSingleEditingMode) forControlEvents:UIControlEventTouchUpInside];
         [self.customNavBarView addSubview:cancelButton];
         
         UILabel *titleLabel = [[UILabel alloc] init];
-        titleLabel.text = @"Delete Story";
+        titleLabel.text = LocalString(@"删除故事");
         titleLabel.font = [UIFont systemFontOfSize:17 weight:UIFontWeightMedium];
         titleLabel.textColor = [UIColor blackColor];
         titleLabel.textAlignment = NSTextAlignmentCenter;
         [self.customNavBarView addSubview:titleLabel];
         
         UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeSystem];
-        [doneButton setTitle:@"Done" forState:UIControlStateNormal];
+        [doneButton setTitle:LocalString(@"完成") forState:UIControlStateNormal];
         [doneButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
         doneButton.titleLabel.font = [UIFont systemFontOfSize:16];
         [doneButton addTarget:self action:@selector(cancelSingleEditingMode) forControlEvents:UIControlEventTouchUpInside];
         [self.customNavBarView addSubview:doneButton];
         
         [cancelButton mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.left.equalTo(self.customNavBarView).offset(16);
+            make.leading.equalTo(self.customNavBarView).offset(16);
             make.centerY.equalTo(self.customNavBarView);
         }];
         
@@ -1130,16 +1138,16 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         }];
         
         [doneButton mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.right.equalTo(self.customNavBarView).offset(-16);
+            make.trailing.equalTo(self.customNavBarView).offset(-16);
             make.centerY.equalTo(self.customNavBarView);
         }];
         
     } else {
         UILabel *titleLabel = [[UILabel alloc] init];
-        titleLabel.text = @"Story Creation";
+        titleLabel.text = LocalString(@"故事创作");
         titleLabel.font = [UIFont fontWithName:@"SFRounded-Bold" size:20] ?: [UIFont boldSystemFontOfSize:20];
         titleLabel.textColor = [UIColor blackColor];
-        titleLabel.textAlignment = NSTextAlignmentLeft;
+        titleLabel.textAlignment = NSTextAlignmentNatural;
         [self.customNavBarView addSubview:titleLabel];
         
         UIButton *soundButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -1155,18 +1163,18 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         [self.customNavBarView addSubview:addButton];
         
         [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.left.equalTo(self.customNavBarView).offset(16);
+            make.leading.equalTo(self.customNavBarView).offset(16);
             make.centerY.equalTo(self.customNavBarView);
         }];
         
         [addButton mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.right.equalTo(self.customNavBarView).offset(-16);
+            make.trailing.equalTo(self.customNavBarView).offset(-16);
             make.centerY.equalTo(self.customNavBarView);
             make.width.height.mas_equalTo(28);
         }];
         
         [soundButton mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.right.equalTo(addButton.mas_left).offset(-21);
+            make.trailing.equalTo(addButton.mas_leading).offset(-21);
             make.centerY.equalTo(self.customNavBarView);
             make.width.height.mas_equalTo(28);
         }];
@@ -1179,8 +1187,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     self.deleteSelectedButton.enabled = hasSelection;
     
     if (hasSelection) {
-        [self.deleteSelectedButton setTitle:@"Delete Story" forState:UIControlStateNormal];
-        [self.deleteSelectedButton setTitle:@"Delete Story" forState:UIControlStateDisabled];
+        [self.deleteSelectedButton setTitle:LocalString(@"删除故事") forState:UIControlStateNormal];
+        [self.deleteSelectedButton setTitle:LocalString(@"删除故事") forState:UIControlStateDisabled];
         
         // ✅ 设置红色字体白色底，边框为1的红色
         [self.deleteSelectedButton setTitleColor:[UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0] forState:UIControlStateNormal];
@@ -1188,8 +1196,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         self.deleteSelectedButton.layer.borderColor = [UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0].CGColor;
         self.deleteSelectedButton.layer.borderWidth = 1.5;
     } else {
-        [self.deleteSelectedButton setTitle:@"Delete Story" forState:UIControlStateNormal];
-        [self.deleteSelectedButton setTitle:@"Delete Story" forState:UIControlStateDisabled];
+        [self.deleteSelectedButton setTitle:LocalString(@"删除故事") forState:UIControlStateNormal];
+        [self.deleteSelectedButton setTitle:LocalString(@"删除故事") forState:UIControlStateDisabled];
         
         // ✅ 设置禁用状态的样式
         [self.deleteSelectedButton setTitleColor:[UIColor colorWithWhite:0.7 alpha:1] forState:UIControlStateDisabled];
@@ -1214,14 +1222,14 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }
     
     // 正常删除确认流程
-    NSString *title = @"Confirm Deletion";
-    NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete the story '%@'?", model.storyName ?: @"Untitled Story"];
+    NSString *title = LocalString(@"确认删除");
+    NSString *message = [NSString stringWithFormat:LocalString(@"确定要删除故事“%@”吗？"), model.storyName ?: LocalString(@"未命名故事")];
     
     __weak typeof(self) weakSelf = self;
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
-                             cancelBtnStr:@"Cancel"
-                            confirmBtnStr:@"Delete"
+                             cancelBtnStr:LocalString(@"取消")
+                            confirmBtnStr:LocalString(@"删除")
                             confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (strongSelf && is_value) { // 用户点击了"Delete"按钮
@@ -1240,7 +1248,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }
     
     VoiceStoryModel *model = self.dataSource[index];
-    NSString *storyName = model.storyName ?: @"Untitled Story";
+    NSString *storyName = model.storyName ?: LocalString(@"未命名故事");
     
     // 如果有正在播放的音频，且要删除的是正在播放的项目，则停止播放
     if (self.currentPlayingIndex == index) {
@@ -1268,7 +1276,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         
         // 显示删除成功提示
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSString *successMessage = [NSString stringWithFormat:@"Story '%@' has been successfully deleted.", storyName];
+            NSString *successMessage = [NSString stringWithFormat:LocalString(@"故事“%@”已删除"), storyName];
             [LGBaseAlertView showAlertWithContent:successMessage confirmBlock:^(BOOL is_value, id obj) {
                 // 用户点击确定按钮，无需额外处理
             }];
@@ -1385,7 +1393,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         MyWebViewController* VC  = [[ MyWebViewController alloc] init];
          VC.changeNavColor = YES;
 //       [VC setNavigationBarColor:[UIColor redColor]];
-        VC.title =@"View the Guide";
+        VC.title = LocalString(@"查看指南");
         VC.mainUrl = @"https://app-pre.talenpalussaastest.com/static/Guidingdiagram.png";
         [self.navigationController pushViewController:VC animated:YES];
     // 可以跳转到教程页面或显示使用说明
@@ -1436,14 +1444,14 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }
     
     // 正常删除确认流程
-    NSString *title = @"Confirm Deletion";
-    NSString *message = [NSString stringWithFormat:@"Are you sure you want to delete the story '%@'?", model.storyName ?: @"Untitled Story"];
+    NSString *title = LocalString(@"确认删除");
+    NSString *message = [NSString stringWithFormat:LocalString(@"确定要删除故事“%@”吗？"), model.storyName ?: LocalString(@"未命名故事")];
     
     __weak typeof(self) weakSelf = self;
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
-                             cancelBtnStr:@"Cancel"
-                            confirmBtnStr:@"Delete"
+                             cancelBtnStr:LocalString(@"取消")
+                            confirmBtnStr:LocalString(@"删除")
                             confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (strongSelf && is_value) { // 用户点击了"Delete"按钮
@@ -1522,7 +1530,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     self.currentLoadingIndex = index;
     
     // 显示加载中
-    [SVProgressHUD showWithStatus:@"Loading audio..."];
+    [SVProgressHUD showWithStatus:LocalString(@"音频加载中...")];
     [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
     
     // 更新 cell 状态为加载中
@@ -1534,7 +1542,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (strongSelf && strongSelf.currentLoadingIndex == index) {
             NSLog(@"⚠️ 音频加载超时");
-            [SVProgressHUD showErrorWithStatus:@"Loading timeout, please try again"];
+            [SVProgressHUD showErrorWithStatus:LocalString(@"加载超时，请稍后重试")];
             [strongSelf updateLoadingStateForStory:index isLoading:NO];
             strongSelf.currentLoadingIndex = -1;
         }
@@ -1651,19 +1659,19 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 - (void)showBoundDollDeletionConfirmForModel:(VoiceStoryModel *)model atIndex:(NSInteger)index {
     // 获取第一个公仔的 customName
     StoryBoundDoll *firstDoll = model.boundDolls.firstObject;
-    NSString *customName = firstDoll.customName ?: @"Unknown Doll";
+    NSString *customName = firstDoll.customName ?: LocalString(@"未知公仔");
     
     NSLog(@"⚠️ 故事 '%@' 已绑定公仔 '%@'，显示删除确认弹窗", model.storyName, customName);
     
     // 构建提示信息
-    NSString *title = @"Delete Bound Story";
-    NSString *message = [NSString stringWithFormat:@"This story is already associated with creative doll '%@'. Please place the doll back on the device to get the latest resources.\n\nAre you sure you want to delete this story?", customName];
+    NSString *title = LocalString(@"删除已绑定故事");
+    NSString *message = [NSString stringWithFormat:LocalString(@"该故事已关联公仔“%@”。请将公仔放回设备以获取最新资源。\n\n确定要删除该故事吗？"), customName];
     
     __weak typeof(self) weakSelf = self;
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
-                             cancelBtnStr:@"Cancel"
-                            confirmBtnStr:@"Delete"
+                             cancelBtnStr:LocalString(@"取消")
+                            confirmBtnStr:LocalString(@"删除")
                             confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
@@ -1685,8 +1693,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 }
 
 - (void)showStoryLimitAlert {
-    NSString *title = @"Story Limit Reached";
-    NSString *message = @"You can create a maximum of 10 stories.\n\nTo create a new story, please delete some existing stories first.";
+    NSString *message = LocalString(@"最多只能创建10个故事。\n\n如需创建新故事，请先删除部分已有故事。");
     
     [LGBaseAlertView showAlertWithContent:message confirmBlock:^(BOOL is_value, id obj) {
         // 用户点击确定按钮，无需额外处理
@@ -1697,7 +1704,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
 
 - (void)showErrorAlert:(NSString *)errorMessage {
     dispatch_async(dispatch_get_main_queue(), ^{
-        [LGBaseAlertView showAlertWithContent:errorMessage ?: @"Network request failed, please try again later" confirmBlock:^(BOOL is_value, id obj) {
+        [LGBaseAlertView showAlertWithContent:errorMessage ?: LocalString(@"网络请求失败，请稍后重试") confirmBlock:^(BOOL is_value, id obj) {
             // 用户点击确定按钮，无需额外处理
         }];
     });

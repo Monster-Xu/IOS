@@ -29,7 +29,7 @@
                             <constraint firstAttribute="width" constant="140" id="3VH-cC-0IS"/>
                         </constraints>
                     </imageView>
-                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Talenpal Player" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VAn-cJ-Mkb">
+                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="VAn-cJ-Mkb">
                         <rect key="frame" x="0.0" y="254" width="421" height="13"/>
                         <constraints>
                             <constraint firstAttribute="height" constant="13" id="2rf-q7-1BX"/>
@@ -38,7 +38,7 @@
                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.90000000000000002" colorSpace="custom" customColorSpace="calibratedRGB"/>
                         <nil key="highlightedColor"/>
                     </label>
-                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Screen Number" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Iaf-A3-zwF">
+                    <label hidden="YES" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Iaf-A3-zwF">
                         <rect key="frame" x="164.66666666666666" y="222" width="91.666666666666657" height="17"/>
                         <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="14"/>
                         <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.45000000000000001" colorSpace="custom" customColorSpace="calibratedRGB"/>
@@ -52,8 +52,8 @@
                             <constraint firstAttribute="width" constant="160" id="LBM-TG-xUp"/>
                         </constraints>
                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <state key="normal" title="Button"/>
-                        <buttonConfiguration key="configuration" style="plain" title="Add This Device">
+                        <state key="normal" title=""/>
+                        <buttonConfiguration key="configuration" style="plain" title="">
                             <fontDescription key="titleFontDescription" name="PingFangSC-Regular" family="PingFang SC" pointSize="14"/>
                         </buttonConfiguration>
                         <userDefinedRuntimeAttributes>
@@ -93,6 +93,7 @@
                 </userDefinedRuntimeAttribute>
             </userDefinedRuntimeAttributes>
             <connections>
+                <outlet property="addDeviceBtn" destination="3QK-Vs-qOp" id="n4h-fH-hL2"/>
                 <outlet property="imgView" destination="7Gb-Ox-g1z" id="dGm-9F-kJS"/>
                 <outlet property="nameLabel" destination="VAn-cJ-Mkb" id="EMp-X8-bh5"/>
             </connections>

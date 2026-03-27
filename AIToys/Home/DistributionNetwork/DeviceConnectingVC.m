@@ -31,6 +31,8 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
     self.fd_prefersNavigationBarHidden = YES;
+    self.titleLabel.text = LocalString(@"正在连接设备");
+    self.subTitleLabel.text = LocalString(@"请保持设备通电");
     [self getToken];
     
 

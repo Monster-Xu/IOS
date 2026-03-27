@@ -23,10 +23,12 @@
                 <outlet property="deletBtn" destination="Mqj-Be-7er" id="lpX-rk-CaW"/>
                 <outlet property="deletHeaderBtn" destination="Fa3-e2-APd" id="Yvz-bT-9jm"/>
                 <outlet property="emptyView" destination="OQL-X8-37d" id="lgc-DE-RTM"/>
+                <outlet property="emptyVoiceLabel" destination="uK5-zv-IWV" id="m7T-fN-5oM"/>
                 <outlet property="failedView" destination="95z-OG-ZLO" id="NOI-s9-k34"/>
                 <outlet property="saveStoryBtn" destination="xCG-VL-qab" id="gRv-ul-JBr"/>
                 <outlet property="storyNameTop" destination="hfG-QQ-XSJ" id="7LT-Nx-y1p"/>
                 <outlet property="storyStautsLabel" destination="v09-ph-1ZX" id="ZZZ-nx-VO4"/>
+                <outlet property="storyNameLabel" destination="u4U-Jd-g39" id="Re1-v2-k1a"/>
                 <outlet property="storyTextField" destination="goa-wh-pQu" id="eBa-AY-A2Z"/>
                 <outlet property="storyThemeView" destination="62J-69-Jwf" id="6YQ-af-nca"/>
                 <outlet property="storyView" destination="BRh-ya-U8H" id="u28-Qc-eIn"/>
@@ -50,7 +52,7 @@
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="create_Generating" translatesAutoresizingMaskIntoConstraints="NO" id="2bh-ct-YAj">
                             <rect key="frame" x="17" y="15" width="20" height="20"/>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Currently creating Story Description..." lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v09-ph-1ZX">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="v09-ph-1ZX">
                             <rect key="frame" x="40" y="13.666666666666659" width="280.66666666666669" height="22.666666666666671"/>
                             <fontDescription key="fontDescription" name="PingFangSC-Regular" family="PingFang SC" pointSize="16"/>
                             <nil key="textColor"/>
@@ -59,7 +61,7 @@
                         <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="goa-wh-pQu">
                             <rect key="frame" x="16" y="44.33333333333335" width="329" height="118.66666666666669"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                            <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                            
                             <color key="textColor" systemColor="labelColor"/>
                             <fontDescription key="fontDescription" type="system" pointSize="14"/>
                             <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
@@ -90,7 +92,7 @@
                         <constraint firstAttribute="height" constant="48" id="qFJ-ds-4w6"/>
                     </constraints>
                     <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                    <state key="normal" title="Save"/>
+                    <state key="normal" title=""/>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="number" keyPath="cornerRadius">
                             <real key="value" value="24"/>
@@ -103,13 +105,13 @@
                 <view clipsSubviews="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="62J-69-Jwf">
                     <rect key="frame" x="16" y="10" width="361" height="100"/>
                     <subviews>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Story Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u4U-Jd-g39">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u4U-Jd-g39">
                             <rect key="frame" x="17" y="15" width="90" height="21"/>
                             <fontDescription key="fontDescription" type="system" pointSize="17"/>
                             <nil key="textColor"/>
                             <nil key="highlightedColor"/>
                         </label>
-                        <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="This is a story about Little Riding Hood's adventure" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="4RH-Go-JMw">
+                        <textField opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="248" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="4RH-Go-JMw">
                             <rect key="frame" x="17" y="40" width="328" height="48"/>
                             <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="16"/>
@@ -138,7 +140,7 @@
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="create_chooseVoice" translatesAutoresizingMaskIntoConstraints="NO" id="xFf-aw-Xsn">
                             <rect key="frame" x="17" y="15" width="20" height="20"/>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Choose Voice" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uRd-NY-5zs">
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uRd-NY-5zs">
                             <rect key="frame" x="40.000000000000007" y="15.333333333333313" width="92.666666666666686" height="19.333333333333329"/>
                             <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="16"/>
                             <nil key="textColor"/>
@@ -152,7 +154,7 @@
                             </constraints>
                             <fontDescription key="fontDescription" name="PingFangSC-Regular" family="PingFang SC" pointSize="14"/>
                             <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
-                            <state key="normal" title="Add New Voice">
+                            <state key="normal" title="">
                                 <color key="titleColor" red="0.11764705882352941" green="0.66666666666666663" blue="0.99215686274509807" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </state>
                             <userDefinedRuntimeAttributes>
@@ -173,7 +175,7 @@
                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="create_empty" translatesAutoresizingMaskIntoConstraints="NO" id="B65-Ec-Ra3">
                                     <rect key="frame" x="97.666666666666686" y="59.666666666666686" width="166" height="124"/>
                                 </imageView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No sound available" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uK5-zv-IWV">
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="uK5-zv-IWV">
                                     <rect key="frame" x="121.33333333333334" y="193.66666666666663" width="118.66666666666666" height="18"/>
                                     <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="15"/>
                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.24799185739436619" colorSpace="custom" customColorSpace="sRGB"/>

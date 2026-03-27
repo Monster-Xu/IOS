@@ -46,7 +46,7 @@
         [UIView animateWithDuration:0.2 animations:^{
             weakSelf.alpha = 1;
             weakSelf.backImgView = [[UIImageView alloc]initWithFrame:CGRectMake(origin.x + LeftToView, origin.y, width, rowHeight * dataArr.count + TopToView)];
-            weakSelf.backImgView.image = [UIImage imageNamed:@"bg_top_right_popup"];
+            weakSelf.backImgView.image = QD_IMG(@"bg_top_right_popup");
             weakSelf.backImgView.transform = CGAffineTransformMakeScale(1, 1);
             
         } completion:^(BOOL finished) {

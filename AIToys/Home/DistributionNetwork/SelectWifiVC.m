@@ -24,7 +24,7 @@
     [super viewDidLoad];
     self.fd_prefersNavigationBarHidden = YES;
     self.titleLabel.text = LocalString(@"请选择以下可用Wi-Fi连接");
-    self.nameLabel.text = LocalString(@"Wi-Fi列表");
+    self.nameLabel.text = LocalString(@"WiFi列表");
     self.tableView.sectionHeaderHeight = 10;
     self.tableView.sectionFooterHeight = 42;
     self.tableView.backgroundColor = UIColor.clearColor;
@@ -141,7 +141,7 @@
 
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     
-    [SVProgressHUD showWithStatus:@"Check if this Wi-Fi is already connected."];
+    [SVProgressHUD showWithStatus:LocalString(@"检查当前 Wi-Fi 是否已连接")];
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
     [param setValue:@"connectedWifi" forKey:@"propKey"];
     

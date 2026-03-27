@@ -8,6 +8,14 @@
 #import "DeviceConnectFailedViewController.h"
 
 @interface DeviceConnectFailedViewController ()
+@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+@property (weak, nonatomic) IBOutlet UILabel *causeTitleLabel;
+@property (weak, nonatomic) IBOutlet UILabel *reasonOneLabel;
+@property (weak, nonatomic) IBOutlet UILabel *reasonTwoLabel;
+@property (weak, nonatomic) IBOutlet UILabel *reasonThreeLabel;
+@property (weak, nonatomic) IBOutlet UILabel *reasonFourLabel;
+@property (weak, nonatomic) IBOutlet UIButton *retryBtn;
+@property (weak, nonatomic) IBOutlet UIButton *exitBtn;
 
 @end
 
@@ -16,6 +24,14 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.fd_prefersNavigationBarHidden = YES;
+    self.titleLabel.text = LocalString(@"设备添加失败");
+    self.causeTitleLabel.text = LocalString(@"配网失败的常见原因：");
+    self.reasonOneLabel.text = LocalString(@"1.请选择 2.4G Wi-Fi，不要选择 5G Wi-Fi");
+    self.reasonTwoLabel.text = LocalString(@"2.请检查 Wi-Fi 密码是否输入正确");
+    self.reasonThreeLabel.text = LocalString(@"3.请确认设备已进入配网模式并显示 4 位数字");
+    self.reasonFourLabel.text = LocalString(@"4.请检查 Wi-Fi 路由器状态是否允许正常联网");
+    [self.retryBtn setTitle:LocalString(@"重试") forState:UIControlStateNormal];
+    [self.exitBtn setTitle:LocalString(@"退出配网") forState:UIControlStateNormal];
     
     // Do any additional setup after loading the view from its nib.
 }

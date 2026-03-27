@@ -8,20 +8,18 @@
 #import "DeviceConnectSuccessViewController.h"
 #import <ThingSmartMiniAppBizBundle/ThingSmartMiniAppBizBundle.h>
 #import "HomeViewController.h"
-
+#import "ATLanguageHelper.h"
 
 @interface DeviceConnectSuccessViewController ()
 @property (weak, nonatomic) IBOutlet UITextField *deviceNameTextView;
 @property (weak, nonatomic) IBOutlet UILabel *deviceLabel;
+@property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+@property (weak, nonatomic) IBOutlet UILabel *subTitleLabel;
+@property (weak, nonatomic) IBOutlet UIButton *startUseBtn;
 
 @end
 
 @implementation DeviceConnectSuccessViewController
-
-- (NSString *)currentMiniAppLangType {
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
-    return [preferredLanguage hasPrefix:@"ar"] ? @"ar" : @"en";
-}
 
 -(void)setWifiName:(NSString *)wifiName{
     _wifiName = wifiName;
@@ -33,6 +31,11 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.fd_prefersNavigationBarHidden = YES;
+    self.titleLabel.text = LocalString(@"设备添加成功");
+    self.subTitleLabel.text = LocalString(@"给你的设备起个名字吧");
+    self.deviceLabel.text = LocalString(@"设备名称");
+    self.deviceNameTextView.placeholder = LocalString(@"设备名称");
+    [self.startUseBtn setTitle:LocalString(@"开始使用") forState:UIControlStateNormal];
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
     [param setValue:self.wifiName forKey:@"ssid"];
     [self modifySettingWithParam:param];
@@ -62,24 +65,28 @@
 }
 - (IBAction)startUseBtnClick:(id)sender {
     ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.deviceModel.devId];
+    NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
+    NSString *envType = [bundleId isEqualToString:@"com.talenpal.talenpalapp"] ? @"prod" : @"dev";
     if (![self.deviceNameTextView.text isEqualToString:self.deviceModel.name]) {
         
         [device updateName:self.deviceNameTextView.text success:^{
                 NSLog(@"updateName success");
-            [SVProgressHUD showSuccessWithStatus:LocalString(@"Modification successful, start using.")];
+            [SVProgressHUD showSuccessWithStatus:LocalString(@"修改成功，开始使用")];
             // 跳转小程序
             NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
-            [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":[self currentMiniAppLangType],@"initialEntry":@"1",@"envtype": @"prod"}];
+
+            [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":[ATLanguageHelper miniAppLangType],@"initialEntry":@"1",@"envtype": envType}];
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
                 [self.navigationController popToRootViewControllerAnimated:NO];
             });
            
-            } failure:^(NSError *error) {
-                [SVProgressHUD showSuccessWithStatus:LocalString(@"Modification failed, please try again.")];
+           } failure:^(NSError *error) {
+                [SVProgressHUD showErrorWithStatus:LocalString(@"修改失败，请重试")];
             }];
     }else{
         NSLog(@"deviceId:%@,token:%@",self.deviceModel.devId,kMyUser.accessToken);
-        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":[self currentMiniAppLangType],@"initialEntry":@"1",@"envtype": @"prod"}];
+
+        [[ThingMiniAppClient coreClient] openMiniAppByUrl:@"godzilla://ty7y8au1b7tamhvzij/pages/main/index" params:@{@"deviceId":self.deviceModel.devId,@"BearerId":(kMyUser.accessToken?:@""),@"langType":[ATLanguageHelper miniAppLangType],@"initialEntry":@"1",@"envtype": envType}];
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             [self.navigationController popToRootViewControllerAnimated:NO];
         });

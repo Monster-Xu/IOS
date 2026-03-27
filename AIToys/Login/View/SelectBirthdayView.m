@@ -48,9 +48,10 @@
     self.pickerView.dataSource = self;
     [self.containerView addSubview:self.pickerView];
     
-    self.months = @[@"January", @"February", @"March", @"April",
-                   @"May", @"June", @"July", @"August",
-                   @"September", @"October", @"November", @"December"];
+    NSLocale *locale = [NSLocale localeWithLocaleIdentifier:[NSLocale preferredLanguages].firstObject ?: @"en"];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.locale = locale;
+    self.months = formatter.standaloneMonthSymbols ?: formatter.monthSymbols;
     
     NSCalendar *calendar = [NSCalendar currentCalendar];
     NSDateComponents *components = [calendar components:NSCalendarUnitYear fromDate:[NSDate date]];
@@ -99,7 +100,10 @@
 
 //确定
 - (IBAction)sureBtnClick:(id)sender {
-    NSString *dateStr = [NSString stringWithFormat:@"%@ %@",self.selMonth,self.selYear];
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    formatter.locale = [NSLocale localeWithLocaleIdentifier:[NSLocale preferredLanguages].firstObject ?: @"en"];
+    [formatter setLocalizedDateFormatFromTemplate:@"yMMMM"];
+    NSString *dateStr = [formatter stringFromDate:self.selectedDate];
     if(self.confirmBlock){
         self.confirmBlock(dateStr,self.selectedDate);
     }

@@ -8,6 +8,7 @@
 #import "ConnectWifiVC.h"
 #import "DeviceAddCell.h"
 #import "DeviceConnectingVC.h"
+#import "ATLanguageHelper.h"
 
 @interface ConnectWifiVC ()<UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -27,6 +28,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     if(self.ssid){
         self.nameTextField.text = self.ssid;
     }
@@ -39,6 +41,9 @@
     self.settingAlertLab.hidden = YES;
     self.nameTextField.placeholder = LocalString(@"Wi-Fi名称");
     self.pwdTextField.placeholder = LocalString(@"Wi-Fi密码");
+    self.nameTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.pwdTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    [self.nextBtn setTitle:LocalString(@"下一步") forState:UIControlStateNormal];
 //    [self getToken];
 //    [ThingSmartBLEWifiActivator sharedInstance].bleWifiDelegate = self;
 }

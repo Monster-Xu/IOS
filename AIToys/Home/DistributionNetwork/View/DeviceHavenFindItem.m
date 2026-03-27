@@ -11,7 +11,7 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    [self.addDeviceBtn setTitle:LocalString(@"添加设备") forState:UIControlStateNormal];
 }
 - (IBAction)addDeviceBtnClick:(id)sender {
     if (self.clickItemBlock) {

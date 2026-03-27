@@ -20,7 +20,7 @@
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QlH-oZ-Htw">
                             <rect key="frame" x="32" y="296" width="350" height="236"/>
                             <subviews>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="还有设备待添加，是否退出？" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5So-kV-4RD">
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5So-kV-4RD">
                                     <rect key="frame" x="0.0" y="50" width="350" height="19.5"/>
                                     <fontDescription key="fontDescription" name="SFRounded-Medium" family="SF Pro Rounded" pointSize="16"/>
                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.90000000000000002" colorSpace="custom" customColorSpace="calibratedRGB"/>
@@ -29,7 +29,7 @@
                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WcQ-Hd-YPp">
                                     <rect key="frame" x="15" y="173" width="320" height="48"/>
                                     <fontDescription key="fontDescription" name="SFRounded-Medium" family="SF Pro Rounded" pointSize="16"/>
-                                    <state key="normal" title="仍然退出">
+                                    <state key="normal" title="">
                                         <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="0.90000000000000002" colorSpace="custom" customColorSpace="calibratedRGB"/>
                                     </state>
                                     <userDefinedRuntimeAttributes>
@@ -66,7 +66,7 @@
                                         <constraint firstAttribute="height" constant="48" id="QKd-h0-f7q"/>
                                     </constraints>
                                     <fontDescription key="fontDescription" name="SFRounded-Medium" family="SF Pro Rounded" pointSize="16"/>
-                                    <state key="normal" title="继续添加">
+                                    <state key="normal" title="">
                                         <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                     </state>
                                     <userDefinedRuntimeAttributes>

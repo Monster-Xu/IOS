@@ -38,10 +38,7 @@
     }];
        
     UIButton *closeBtn = [[UIButton alloc] init];
-    UIImage *closeImage = [UIImage imageNamed:@"right_close"];
-    if (@available(iOS 9.0, *)) {
-        closeImage = [closeImage imageFlippedForRightToLeftLayoutDirection];
-    }
+    UIImage *closeImage = QD_IMG(@"right_close");
     [closeBtn setImage:closeImage forState:0];
     [closeBtn addTarget:self action:@selector(close) forControlEvents:UIControlEventTouchUpInside];
     [self.alertView addSubview:closeBtn];

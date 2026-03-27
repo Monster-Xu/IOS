@@ -28,21 +28,21 @@
 - (NSString *)storyTypeDescription {
     switch (self.storyType) {
         case StoryTypeFairyTale:
-            return @"童话";
+            return LocalString(@"童话");
         case StoryTypeFable:
-            return @"寓言";
+            return LocalString(@"寓言");
         case StoryTypeAdventure:
-            return @"冒险";
+            return LocalString(@"冒险");
         case StoryTypeSuperhero:
-            return @"超级英雄";
+            return LocalString(@"超级英雄");
         case StoryTypeScienceFiction:
-            return @"科幻";
+            return LocalString(@"科幻");
         case StoryTypeEducational:
-            return @"教育";
+            return LocalString(@"教育");
         case StoryTypeBedtime:
-            return @"睡前故事";
+            return LocalString(@"睡前故事");
         default:
-            return @"童话";
+            return LocalString(@"童话");
     }
 }
 

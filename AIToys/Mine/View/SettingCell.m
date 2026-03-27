@@ -6,12 +6,17 @@
 //
 
 #import "SettingCell.h"
+#import "ATLanguageHelper.h"
 
 @implementation SettingCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    UIImage *arrowImage = [UIImage imageNamed:@"cell_right_arrow"];
+    if (arrowImage && [ATLanguageHelper isRTLLanguage] && @available(iOS 9.0, *)) {
+        arrowImage = [arrowImage imageFlippedForRightToLeftLayoutDirection];
+    }
+    self.rightImgView.image = arrowImage;
 }
 
 -(void)layoutSubviews{
@@ -37,7 +42,9 @@
 -(void)setModel:(MineItemModel *)model{
     _model = model;
     self.titleLabel.text = model.title;
-    self.subTitleLabel.text = model.value;
+    BOOL hideSubtitle = [PublicObj isEmptyObject:model.value];
+    self.subTitleLabel.hidden = hideSubtitle;
+    self.subTitleLabel.text = hideSubtitle ? @"" : model.value;
     self.rightImgView.hidden = [PublicObj isEmptyObject:model.toVC];
     self.rightImgW.constant = [PublicObj isEmptyObject:model.toVC] ? 0 : 24;
 }

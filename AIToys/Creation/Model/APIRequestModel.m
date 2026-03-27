@@ -8,6 +8,7 @@
 //
 
 #import "APIRequestModel.h"
+#import "ATLanguageHelper.h"
 
 @implementation CreateStoryRequestModel
 
@@ -17,6 +18,7 @@
         _storyLength = 180;
         // ⭐ 自动获取当前 familyId
         _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
+        _language = [ATLanguageHelper miniAppLangType];
     }
     return self;
 }
@@ -36,6 +38,7 @@
         _illustrationUrl = [illustrationUrl copy];
         // ⭐ 自动获取当前 familyId
         _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
+        _language = [ATLanguageHelper miniAppLangType];
     }
     return self;
 }
@@ -46,30 +49,30 @@
 
 - (NSString *)validationError {
     if (self.familyId <= 0) {
-        return @"familyId 不能为空";
+        return LocalString(@"familyId 不能为空");
     }
-    
+
     if (self.storyName.length == 0 || self.storyName.length > 120) {
-        return @"故事名称长度必须在1-120字符之间";
+        return LocalString(@"故事名称长度必须在1-120字符之间");
     }
-    
+
     if (self.storySummary.length == 0 || self.storySummary.length > 2400) {
-        return @"故事概述长度必须在1-2400字符之间";
+        return LocalString(@"故事概述长度必须在1-2400字符之间");
     }
-    
+
     if (self.protagonistName.length == 0 || self.protagonistName.length > 30) {
-        return @"主角姓名长度必须在1-30字符之间";
+        return LocalString(@"主角姓名长度必须在1-30字符之间");
     }
-    
+
     NSArray *validLengths = @[@90, @180, @270, @360];
-    if (!(self.storyLength>0)) {
-        return @"请选择故事时长";
+    if (!(self.storyLength > 0)) {
+        return LocalString(@"请选择故事时长");
     }
-    
+
 //    if (self.illustrationUrl.length == 0) {
-//        return @"插画URL不能为空";
+//        return LocalString(@"插画URL不能为空");
 //    }
-    
+
     return nil;
 }
 
@@ -81,7 +84,8 @@
         @"storyType": @(self.storyType),
         @"protagonistName": self.protagonistName ?: @"",
         @"storyLength": @(self.storyLength),
-        @"illustrationUrl": self.illustrationUrl ?: @""
+        @"illustrationUrl": self.illustrationUrl ?: @"",
+        @"language": self.language ?: @"en"
     };
 }
 
@@ -119,10 +123,10 @@
 
 - (NSDictionary *)toDictionary {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    
+
     dict[@"familyId"] = @(self.familyId);
     dict[@"storyId"] = @(self.storyId);
-    
+
     if (self.storyName) {
         dict[@"storyName"] = self.storyName;
     }
@@ -135,7 +139,7 @@
     if (self.voiceId > 0) {
         dict[@"voiceId"] = @(self.voiceId);
     }
-    
+
     return [dict copy];
 }
 
@@ -170,33 +174,33 @@
 
 - (NSString *)validationError {
     if (self.storyId <= 0) {
-        return @"故事ID不能为空";
+        return LocalString(@"故事ID不能为空");
     }
-    
+
     if (self.familyId <= 0) {
-        return @"家庭ID不能为空";
+        return LocalString(@"家庭ID不能为空");
     }
-    
+
     if (self.storyName.length == 0 || self.storyName.length > 120) {
-        return @"故事名称长度必须在1-120字符之间";
+        return LocalString(@"故事名称长度必须在1-120字符之间");
     }
-    
+
     if (self.storySummary.length == 0 || self.storySummary.length > 2400) {
-        return @"故事摘要长度必须在1-2400字符之间";
+        return LocalString(@"故事摘要长度必须在1-2400字符之间");
     }
-    
+
     if (self.storyType < 1 || self.storyType > 7) {
-        return @"故事类型必须在1-7之间";
+        return LocalString(@"故事类型必须在1-7之间");
     }
-    
+
     if (self.protagonistName.length == 0 || self.protagonistName.length > 30) {
-        return @"主角名称长度必须在1-30字符之间";
+        return LocalString(@"主角名称长度必须在1-30字符之间");
     }
-    
+
     if (self.storyLength <= 0) {
-        return @"故事长度必须大于0";
+        return LocalString(@"故事长度必须大于0");
     }
-    
+
     return nil;
 }
 
@@ -226,7 +230,8 @@
 
 - (instancetype)initWithName:(NSString *)name
                    avatarUrl:(NSString *)avatarUrl
-                audioFileUrl:(NSString *)audioFileUrl fileId:(NSInteger)fileId{
+                audioFileUrl:(NSString *)audioFileUrl
+                      fileId:(NSInteger)fileId {
     if (self = [super init]) {
         _voiceName = [name copy];
         _avatarUrl = [avatarUrl copy];
@@ -244,21 +249,21 @@
 
 - (NSString *)validationError {
     if (self.familyId <= 0) {
-        return @"familyId 不能为空";
+        return LocalString(@"familyId 不能为空");
     }
-    
+
     if (self.voiceName.length == 0 || self.voiceName.length > 30) {
-        return @"声音名称长度必须在1-30字符之间";
+        return LocalString(@"声音名称长度必须在1-30字符之间");
     }
-    
+
     if (self.avatarUrl.length == 0) {
-        return @"头像URL不能为空";
+        return LocalString(@"头像URL不能为空");
     }
-    
+
     if (self.audioFileUrl.length == 0) {
-        return @"录音文件URL不能为空";
+        return LocalString(@"录音文件URL不能为空");
     }
-    
+
     return nil;
 }
 
@@ -268,7 +273,7 @@
         @"voiceName": self.voiceName ?: @"",
         @"avatarUrl": self.avatarUrl ?: @"",
         @"audioFileUrl": self.audioFileUrl ?: @"",
-        @"fileId":@(self.fileId)
+        @"fileId": @(self.fileId)
     };
 }
 
@@ -293,10 +298,10 @@
 
 - (NSDictionary *)toDictionary {
     NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-    
+
     dict[@"familyId"] = @(self.familyId);
     dict[@"voiceId"] = @(self.voiceId);
-    
+
     if (self.voiceName) {
         dict[@"voiceName"] = self.voiceName;
     }
@@ -309,7 +314,7 @@
     if (self.fileId) {
         dict[@"fileId"] = @(self.fileId);
     }
-    
+
     return [dict copy];
 }
 

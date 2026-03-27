@@ -42,6 +42,7 @@
 #import "AudioPlayerView.h"
 #import "StarterGuideView.h"
 #import "StarterGuideViewTwo.h"
+#import "ATLanguageHelper.h"
 
 static const CGFloat JXPageheightForHeaderInSection = 100;
 
@@ -93,11 +94,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @end
 
 @implementation HomeViewController
-
-- (NSString *)currentMiniAppLangType {
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
-    return [preferredLanguage hasPrefix:@"ar"] ? @"ar" : @"en";
-}
 
 // 添加数组安全访问方法
 - (id)safeObjectAtIndex:(NSUInteger)index fromArray:(NSArray *)array {
@@ -1315,6 +1311,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [self.listViewArray removeAllObjects];
     
     // 🔒 安全遍历：防止在遍历过程中数组被修改
+    // JXCategoryView/PageListView already mirrors horizontally in RTL.
+    // Keep the source order unchanged here, otherwise the list tabs and content views drift apart.
     NSArray *safeDollList = [NSArray arrayWithArray:self.exploreDollList];
     
     for (FindDollModel *item in safeDollList) {
@@ -1335,7 +1333,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         }
     }
     
-    for (FindDollModel *item in safeDollList) {
+    NSArray *contentDollList = safeDollList;
+    if ([[ATLanguageHelper miniAppLangType].lowercaseString isEqualToString:@"ar"]) {
+        contentDollList = [[safeDollList reverseObjectEnumerator] allObjects];
+    }
+    for (FindDollModel *item in contentDollList) {
         HomeExploreToysView *exploreView = [[HomeExploreToysView alloc] init];
         exploreView.model = item;
         [self safeAddObject:exploreView toArray:self.listViewArray];
@@ -1358,6 +1360,14 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.pageListView.pinCategoryView.imageSize = CGSizeMake(64, 64);
     
     [self.pageListView reloadData];
+}
+
+- (NSArray<ThingSmartDeviceModel *> *)displayDeviceArray {
+    return [NSArray arrayWithArray:self.deviceArr ?: @[]];
+}
+
+- (NSArray<HomeDollModel *> *)displayDiyDollArray {
+    return [NSArray arrayWithArray:self.diyDollList ?: @[]];
 }
 
 - (void)handleDisplayModeUpdate {
@@ -1466,14 +1476,39 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 //导航栏右侧按钮
 - (IBAction)operationBtnClick:(id)sender {
     WEAK_SELF
+    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
+    if ([preferredLanguage hasPrefix:@"ar"]) {
+        if(self.homeList.count == 0){
+            [SVProgressHUD showErrorWithStatus:LocalString(@"请先创建家庭")];
+            return;
+        }
+        FindDeviceViewController *VC = [FindDeviceViewController new];
+        VC.homeId = self.currentHome.homeId;
+        [self.navigationController pushViewController:VC animated:YES];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"isHomefun"];
+        [[AnalyticsManager sharedManager]reportEventWithName:@"home_function_button_tap_add_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"从功能按钮点击添加设备时" properties:@{} completion:^(BOOL success, NSString * _Nullable message) {
+        }];
+        return;
+    }
     if (!self.menu) {
-        self.menu = [[JHCustomMenu alloc] initWithDataArr:@[LocalString(@"添加设备") , LocalString(@"切换家庭")] origin:CGPointMake( kScreenWidth  - 144, StatusBar_Height + 50) width:134 rowHeight:45];
-        _menu.delegate = self;
-        _menu.dismiss = ^() {
-            weakSelf.menu = nil;
-        };
+        UIButton *operationButton = [sender isKindOfClass:[UIButton class]] ? (UIButton *)sender : nil;
+        CGRect buttonFrame = operationButton ? [operationButton.superview convertRect:operationButton.frame toView:self.view] : CGRectMake(kScreenWidth - 60, StatusBar_Height + 15, 60, 34);
+        CGFloat menuWidth = 134;
+        CGFloat menuX = CGRectGetMaxX(buttonFrame) - menuWidth;
+        menuX = MAX(10, MIN(menuX, kScreenWidth - menuWidth - 10));
+        CGFloat menuY = CGRectGetMaxY(buttonFrame) + 8;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (weakSelf.menu) {
+                return;
+            }
+            weakSelf.menu = [[JHCustomMenu alloc] initWithDataArr:@[LocalString(@"添加设备") , LocalString(@"切换家庭")] origin:CGPointMake(menuX, menuY) width:menuWidth rowHeight:45];
+            weakSelf.menu.delegate = weakSelf;
+            weakSelf.menu.dismiss = ^() {
+                weakSelf.menu = nil;
+            };
 //        _menu.arrImgName = @[@"share_pop.png", @"complain_pop.png"];
-        [self.view addSubview:_menu];
+            [weakSelf.view addSubview:weakSelf.menu];
+        });
     } else {
         [_menu dismissWithCompletion:^(JHCustomMenu *object) {
             weakSelf.menu = nil;
@@ -1580,27 +1615,32 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     WEAK_SELF
     if (indexPath.section == 0) {
-        if(self.deviceArr.count>0){
+        NSArray<ThingSmartDeviceModel *> *displayDeviceArray = [self displayDeviceArray];
+        if(displayDeviceArray.count>0){
             HomeDeviceCell *cell = [tableView dequeueReusableCellWithIdentifier:@"HomeDeviceCell" forIndexPath:indexPath];
-            cell.deviceList = self.deviceArr;
+            cell.deviceList = displayDeviceArray;
             cell.itemClickBlock = ^(NSInteger index) {
-                if (index < 0 || index >= weakSelf.deviceArr.count) {
-                    NSLog(@"⚠️ 设备索引越界: index=%ld, count=%lu", (long)index, (unsigned long)weakSelf.deviceArr.count);
+                NSArray<ThingSmartDeviceModel *> *currentDisplayDeviceArray = [weakSelf displayDeviceArray];
+                if (index < 0 || index >= currentDisplayDeviceArray.count) {
+                    NSLog(@"⚠️ 设备索引越界: index=%ld, count=%lu", (long)index, (unsigned long)currentDisplayDeviceArray.count);
                     return;
                 }
+                ThingSmartDeviceModel *selectedDevice = currentDisplayDeviceArray[index];
                 // 埋点上报：我的设备点击
-                [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:weakSelf.deviceArr[index].devId pid:weakSelf.deviceArr[index].uuid];
+                [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:selectedDevice.devId pid:selectedDevice.uuid];
 
                 // 跳转小程序
-                NSLog(@"deviceId:%@,token:%@",weakSelf.deviceArr[index].devId,kMyUser.accessToken);
+                NSLog(@"deviceId:%@,token:%@",selectedDevice.devId,kMyUser.accessToken);
                 
                 // 获取当前音频播放状态信息
+                NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
+                NSString *envType = [bundleId isEqualToString:@"com.talenpal.talenpalapp"] ? @"prod" : @"dev";
                 NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
-                    @"deviceId": weakSelf.deviceArr[index].devId,
+                    @"deviceId": selectedDevice.devId,
                     @"BearerId": (kMyUser.accessToken ?: @""),
-                    @"langType": [weakSelf currentMiniAppLangType],
+                    @"langType": [ATLanguageHelper miniAppLangType],
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"prod"
+                    @"envtype": envType
                 }];
                 
                 // 添加音频播放状态参数
@@ -1641,7 +1681,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         }
         
     }else if (indexPath.section == 1) {
-        if(self.diyDollList.count == 0){
+        NSArray<HomeDollModel *> *displayDiyDollArray = [self displayDiyDollArray];
+        if(displayDiyDollArray.count == 0){
             HomeNoDeviceCell *cell = [tableView dequeueReusableCellWithIdentifier:@"HomeNoDeviceCell" forIndexPath:indexPath];
             cell.type = indexPath.section;
             cell.addBtnClickBlock = ^{
@@ -1655,30 +1696,33 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             return cell;
         }else{
             HomeToysCell *cell = [tableView dequeueReusableCellWithIdentifier:@"HomeToysCell" forIndexPath:indexPath];
-            cell.dataArr = self.diyDollList;
+            cell.dataArr = displayDiyDollArray;
             cell.itemClickBlock = ^(NSInteger index) {
-                if (index < 0 || index >= weakSelf.diyDollList.count) {
-                    NSLog(@"⚠️ 公仔索引越界: index=%ld, count=%lu", (long)index, (unsigned long)weakSelf.diyDollList.count);
+                NSArray<HomeDollModel *> *currentDisplayDiyDollArray = [weakSelf displayDiyDollArray];
+                if (index < 0 || index >= currentDisplayDiyDollArray.count) {
+                    NSLog(@"⚠️ 公仔索引越界: index=%ld, count=%lu", (long)index, (unsigned long)currentDisplayDiyDollArray.count);
                     return;
                 }
+                HomeDollModel *dollModel = currentDisplayDiyDollArray[index];
                 // 埋点上报：我的公仔点击
-                HomeDollModel *dollModel = weakSelf.diyDollList[index];
                 [[AnalyticsManager sharedManager] reportMyDollClickWithId:dollModel.dollModelId ?: @""
                                                                      name:dollModel.dollModel.name ?: @""];
                 
 
-                NSLog(@"deviceId:%@,token:%@",weakSelf.diyDollList[index].Id,kMyUser.accessToken);
+                NSLog(@"deviceId:%@,token:%@",dollModel.Id,kMyUser.accessToken);
                 // 跳转小程序
                 NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
                 
                 // 获取当前音频播放状态信息
+                NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
+                NSString *envType = [bundleId isEqualToString:@"com.talenpal.talenpalapp"] ? @"prod" : @"dev";
                 NSMutableDictionary *params = [NSMutableDictionary dictionaryWithDictionary:@{
-                    @"dollId": weakSelf.diyDollList[index].Id,
+                    @"dollId": dollModel.Id,
                     @"BearerId": (kMyUser.accessToken ?: @""),
                     @"homeId": (currentHomeId ?: @""),
-                    @"langType": [weakSelf currentMiniAppLangType],
+                    @"langType": [ATLanguageHelper miniAppLangType],
                     @"ownerId": @([[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue]) ?: @"",
-                    @"envtype": @"prod"
+                    @"envtype": envType
                 }];
                 
                 // 添加音频播放状态参数
@@ -1761,9 +1805,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         UIButton *moreBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         [moreBtn setTitle:LocalString(@"更多") forState:UIControlStateNormal];
         UIImage *moreImage = QD_IMG(@"home_section_more");
-        if (@available(iOS 9.0, *)) {
-            moreImage = [moreImage imageFlippedForRightToLeftLayoutDirection];
-        }
         [moreBtn setImage:moreImage forState:UIControlStateNormal];
         [moreBtn setTitleColor:UIColorHex(1DA9FF) forState:UIControlStateNormal];
         moreBtn.titleLabel.font = [ATFontManager systemFontOfSize:14];

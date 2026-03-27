@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIImage *)imageWithColor:(UIColor *)color;
 
++ (UIImage *)at_imageNamed:(NSString *)name;
+
 - (UIImage *)imageForThemeColor:(UIColor *)color;
 - (UIImage *)imageForThemeColor:(UIColor *)color blendMode:(CGBlendMode)blendMode;
 @end
