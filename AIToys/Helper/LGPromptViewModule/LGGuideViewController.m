@@ -94,7 +94,7 @@
         _joinBtn.backgroundColor = UIColor.whiteColor;
         _joinBtn.layer.cornerRadius = 5;
         [_joinBtn setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
-        [_joinBtn setTitle:@"跳过" forState:UIControlStateNormal];
+        [_joinBtn setTitle:LocalString(@"跳过") forState:UIControlStateNormal];
         [_joinBtn.titleLabel setFont:[ATFontManager systemFontOfSize:16]];
         [_joinBtn addTarget:self action:@selector(startGoApp) forControlEvents:UIControlEventTouchUpInside];
         [self.view addSubview:_joinBtn];

@@ -35,6 +35,18 @@
 -(void)setUpUI{
     self.pwdTextField.delegate = self;
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.titleLabel.numberOfLines = 2;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.pwdTitleLabel.numberOfLines = 1;
+    self.pwdTitleLabel.adjustsFontSizeToFitWidth = YES;
+    self.pwdTitleLabel.minimumScaleFactor = 0.8;
+    self.alertLabel.numberOfLines = 0;
+    self.alertLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.subAlertLabel.numberOfLines = 0;
+    self.subAlertLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.surBtn.titleLabel.numberOfLines = 1;
+    self.surBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.surBtn.titleLabel.minimumScaleFactor = 0.75;
     self.titleLabel.text = LocalString(@"新密码");
     self.pwdTitleLabel.text = LocalString(@"密码");
     self.pwdTextField.placeholder = LocalString(@"输入密码");

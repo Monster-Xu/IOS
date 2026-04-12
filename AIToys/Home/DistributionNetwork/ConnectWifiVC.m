@@ -29,6 +29,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     if(self.ssid){
         self.nameTextField.text = self.ssid;
     }
@@ -41,9 +42,16 @@
     self.settingAlertLab.hidden = YES;
     self.nameTextField.placeholder = LocalString(@"Wi-Fi名称");
     self.pwdTextField.placeholder = LocalString(@"Wi-Fi密码");
+    self.titleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.subTitleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.nameTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.pwdTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.nameTextField.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.pwdTextField.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     [self.nextBtn setTitle:LocalString(@"下一步") forState:UIControlStateNormal];
+    if (@available(iOS 15.0, *)) {
+        self.nextBtn.configuration.title = LocalString(@"下一步");
+    }
 //    [self getToken];
 //    [ThingSmartBLEWifiActivator sharedInstance].bleWifiDelegate = self;
 }

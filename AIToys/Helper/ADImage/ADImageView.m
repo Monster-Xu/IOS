@@ -52,8 +52,12 @@
     self.pushButton.layer.masksToBounds = YES;
     self.pushButton.layer.borderWidth = 1;
     self.pushButton.layer.cornerRadius = 5;
+    self.pushButton.contentEdgeInsets = UIEdgeInsetsMake(0, 12, 0, 12);
     [self.pushButton setTitle:[NSString stringWithFormat:LocalString(@"跳过(%d)s"), secondCount] forState:UIControlStateNormal];
     self.pushButton.titleLabel.font = [ATFontManager systemFontOfSize:14];
+    self.pushButton.titleLabel.lineBreakMode = NSLineBreakByClipping;
+    self.pushButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.pushButton.titleLabel.minimumScaleFactor = 0.7;
     [self.pushButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     [self.pushButton setTitleColor:[UIColor clearColor] forState:UIControlStateHighlighted];
     [self.pushButton addTarget:self action:@selector(jumpOver) forControlEvents:UIControlEventTouchUpInside];
@@ -61,7 +65,8 @@
     [self.pushButton mas_makeConstraints:^(MASConstraintMaker *make) {
         make.right.mas_equalTo(self.mas_right).offset(-10);
         make.top.mas_equalTo(self.mas_top).offset(StatusBar_Height + 5);
-        make.width.mas_equalTo(@(80));
+        make.left.greaterThanOrEqualTo(self.mas_left).offset(10);
+        make.width.greaterThanOrEqualTo(@(80));
         make.height.mas_equalTo(@(30));
     }];
 }
@@ -120,4 +125,3 @@
 }
 
 @end
-

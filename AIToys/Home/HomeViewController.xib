@@ -17,6 +17,7 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="HomeViewController">
             <connections>
                 <outlet property="containerView" destination="LSE-tw-sOv" id="I69-1d-Urs"/>
+                <outlet property="moreImageView" destination="eqT-RU-9na" id="cN3-Jj-yL1"/>
                 <outlet property="titleLabel" destination="hVN-c8-D0p" id="H4k-tB-0Hx"/>
                 <outlet property="topView" destination="vdC-PV-OvE" id="jDv-bs-jNr"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>

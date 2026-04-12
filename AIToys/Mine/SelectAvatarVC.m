@@ -62,6 +62,9 @@
     
     UIButton *sureBtn = [[UIButton alloc] init];
     sureBtn.titleLabel.font = [ATFontManager systemFontOfSize:16];
+    sureBtn.titleLabel.numberOfLines = 2;
+    sureBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+    sureBtn.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
     [sureBtn setTitle:LocalString(@"完成") forState:0];
     [sureBtn setTitleColor:mainColor forState:0];
     [sureBtn addTarget:self action:@selector(sureBtnClick) forControlEvents:UIControlEventTouchUpInside];
@@ -69,7 +72,7 @@
     [sureBtn mas_makeConstraints:^(MASConstraintMaker *make) {
         make.right.mas_equalTo(self.alertView);
         make.height.mas_equalTo(40);
-        make.width.mas_equalTo(50);
+        make.width.mas_equalTo(88);
         make.centerY.equalTo(titleLabel);
     }];
     

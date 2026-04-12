@@ -12,6 +12,7 @@
 #import "ATFontManager.h"
 #import "NegotiateViewController.h"
 #import "ATLanguageHelper.h"
+#import "LGBaseAlertView.h"
 
 @interface AcountLoginViewController ()<UITextFieldDelegate,UITextViewDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -58,6 +59,20 @@
     self.accountTextField.delegate = self;
     self.pwdTextField.delegate = self;
     self.agreeTextView.delegate =  self;
+    self.titleLabel.numberOfLines = 2;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.accountNameLab.numberOfLines = 1;
+    self.accountNameLab.adjustsFontSizeToFitWidth = YES;
+    self.accountNameLab.minimumScaleFactor = 0.8;
+    self.pwdNameLab.numberOfLines = 1;
+    self.pwdNameLab.adjustsFontSizeToFitWidth = YES;
+    self.pwdNameLab.minimumScaleFactor = 0.8;
+    self.loginBtn.titleLabel.numberOfLines = 1;
+    self.loginBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.loginBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.forgetBtn.titleLabel.numberOfLines = 1;
+    self.forgetBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.forgetBtn.titleLabel.minimumScaleFactor = 0.75;
     self.titleLabel.text = LocalString(@"登录");
     self.accountNameLab.text = LocalString(@"账号");
     self.accountTextField.placeholder = LocalString(@"账号");
@@ -71,6 +86,7 @@
     self.agreeTextView.attributedText = [self agreementAttributedText];
     self.agreeTextView.editable = NO;
     self.agreeTextView.selectable = YES;
+    self.agreeTextView.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     [self setRightBtn];
     self.pwdTextField.clearButtonMode = UITextFieldViewModeWhileEditing;
 }
@@ -85,8 +101,6 @@
             @{@"text": @"Politique de Confidentialité", @"link": @"privacyPolicy://"},
             @{@"text": @", l'"},
             @{@"text": @"Accord Utilisateur", @"link": @"userProtocol://"},
-            @{@"text": @", l'"},
-            @{@"text": @"Accord Enfant", @"link": @"ChildAgreement://"},
             @{@"text": @" et l'"},
             @{@"text": @"Accord de Création", @"link": @"creativeAgreement://"}
         ];
@@ -96,8 +110,6 @@
             @{@"text": @"Datenschutzerklärung", @"link": @"privacyPolicy://"},
             @{@"text": @", der "},
             @{@"text": @"Nutzungsvereinbarung", @"link": @"userProtocol://"},
-            @{@"text": @", der "},
-            @{@"text": @"Kindervereinbarung", @"link": @"ChildAgreement://"},
             @{@"text": @" und der "},
             @{@"text": @"Kreativvereinbarung", @"link": @"creativeAgreement://"},
             @{@"text": @" zu"}
@@ -109,8 +121,6 @@
             @{@"text": @"、"},
             @{@"text": LocalString(@"用户协议") ?: @"", @"link": @"userProtocol://"},
             @{@"text": @"、"},
-            @{@"text": LocalString(@"儿童协议") ?: @"", @"link": @"ChildAgreement://"},
-            @{@"text": @"、"},
             @{@"text": LocalString(@"创作协议") ?: @"", @"link": @"creativeAgreement://"}
         ];
         if ([languageCode hasPrefix:@"en"]) {
@@ -119,8 +129,6 @@
                 @{@"text": @"Privacy Policy", @"link": @"privacyPolicy://"},
                 @{@"text": @", "},
                 @{@"text": @"User Agreement", @"link": @"userProtocol://"},
-                @{@"text": @", "},
-                @{@"text": @"Children's Agreement", @"link": @"ChildAgreement://"},
                 @{@"text": @", and "},
                 @{@"text": @"Creative Agreement", @"link": @"creativeAgreement://"}
             ];
@@ -131,8 +139,6 @@
                 @{@"text": @" و"},
                 @{@"text": @"اتفاقية المستخدم", @"link": @"userProtocol://"},
                 @{@"text": @" و"},
-                @{@"text": @"اتفاقية الطفل", @"link": @"ChildAgreement://"},
-                @{@"text": @" و"},
                 @{@"text": @"اتفاقية الإبداع", @"link": @"creativeAgreement://"}
             ];
         } else if ([languageCode hasPrefix:@"es"]) {
@@ -141,8 +147,6 @@
                 @{@"text": @"Política de privacidad", @"link": @"privacyPolicy://"},
                 @{@"text": @", el "},
                 @{@"text": @"Acuerdo de usuario", @"link": @"userProtocol://"},
-                @{@"text": @", el "},
-                @{@"text": @"Acuerdo infantil", @"link": @"ChildAgreement://"},
                 @{@"text": @" y el "},
                 @{@"text": @"Acuerdo de creación", @"link": @"creativeAgreement://"}
             ];
@@ -173,11 +177,18 @@
 
 //设置右侧按钮
 -(void)setRightBtn{
-    UIButton *rightButton = [[UIButton alloc] initWithFrame:CGRectMake(0,0, 40, 44)];
-    [rightButton setTitle:LocalString(@"注册") forState:UIControlStateNormal];
+    NSString *registerTitle = LocalString(@"注册");
+    UIFont *buttonFont = [ATFontManager systemFontOfSize:15];
+    CGFloat textWidth = ceil([registerTitle sizeWithAttributes:@{NSFontAttributeName : buttonFont}].width);
+    CGFloat buttonWidth = MIN(MAX(52.0, textWidth + 12.0), 108.0);
+    UIButton *rightButton = [[UIButton alloc] initWithFrame:CGRectMake(0,0, buttonWidth, 44)];
+    [rightButton setTitle:registerTitle forState:UIControlStateNormal];
     [rightButton setTitleColor:mainColor forState:UIControlStateNormal];
-    rightButton.titleLabel.font = [ATFontManager systemFontOfSize:15];
+    rightButton.titleLabel.font = buttonFont;
     rightButton.titleLabel.textAlignment = NSTextAlignmentCenter;
+    rightButton.titleLabel.numberOfLines = 1;
+    rightButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    rightButton.titleLabel.minimumScaleFactor = 0.75;
     [rightButton addTarget:self action:@selector(regist) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem* rightItem = [[UIBarButtonItem alloc]initWithCustomView:rightButton];
     self.navigationItem.rightBarButtonItem = rightItem;
@@ -207,12 +218,12 @@
 //登录
 - (IBAction)loginBtnClick:(UIButton *)sender {
     if(!self.agreeImg.highlighted){
-        [MBProgressHUD showTipMessageInView:LocalString(@"请勾选协议") ];
+        [LGBaseAlertView showAlertWithTitle:@"" content:LocalString(@"请勾选协议") cancelBtnStr:nil confirmBtnStr:LocalString(@"确定") confirmBlock:nil];
         return;
     }
     if(![self.accountTextField.text validateForRegex:[NSString emailRegex]]) {
         //格式错误
-        [MBProgressHUD showErrorMessage:LocalString(@"请输入正确的邮箱地址")];
+        [LGBaseAlertView showAlertWithTitle:@"" content:LocalString(@"请输入正确的邮箱地址") cancelBtnStr:nil confirmBtnStr:LocalString(@"确定") confirmBlock:nil];
         return;
     }
     [self showHud];
@@ -344,11 +355,9 @@
         return NO;
         
     } else if ([URL.scheme isEqualToString:@"ChildAgreement"]) {
-        //儿童协议
-        NSLog(@"点击了儿童协议");
-        [self pushToNegotiateVCWithTitle:NSLocalizedString(@"儿童协议", @"") type:2];
-        //埋点：点击协议
-        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@3} completion:^(BOOL success, NSString * _Nullable message) {
+        NSLog(@"点击了合并后的用户协议");
+        [self pushToNegotiateVCWithTitle:NSLocalizedString(@"用户协议", @"") type:2];
+        [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@2} completion:^(BOOL success, NSString * _Nullable message) {
                 
         }];
         return NO;

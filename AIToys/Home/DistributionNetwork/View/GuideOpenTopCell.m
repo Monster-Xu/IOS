@@ -11,7 +11,14 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    self.titleLabel.numberOfLines = 1;
+    self.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.titleLabel.minimumScaleFactor = 0.75;
+    self.titleLabel.lineBreakMode = NSLineBreakByClipping;
+    self.subTitleLab.numberOfLines = 2;
+    self.subTitleLab.lineBreakMode = NSLineBreakByWordWrapping;
+    [self.titleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor constant:-20.0].active = YES;
+    [self.subTitleLab.trailingAnchor constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor constant:-20.0].active = YES;
 }
 
 - (void)setIsBluetooth:(BOOL)isBluetooth{

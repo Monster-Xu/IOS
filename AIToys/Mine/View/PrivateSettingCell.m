@@ -11,13 +11,17 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    self.titleLabel.numberOfLines = 0;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.subTitleLabel.numberOfLines = 0;
+    self.subTitleLabel.lineBreakMode = NSLineBreakByWordWrapping;
 }
 
 -(void)setModel:(MineItemModel *)model{
     _model = model;
     self.titleLabel.text = model.title;
     CGSize labSize = QDSize(model.title,self.titleLabel.font,CGSizeMake(kScreenWidth-140, MAXFLOAT));
-    self.titleLabH.constant = labSize.height > 20 ? 40 : 20;
+    self.titleLabH.constant = MAX(20.0, ceil(labSize.height));
     self.subTitleLabel.text = model.value;
     self.switchView.on = model.isOn;
 }

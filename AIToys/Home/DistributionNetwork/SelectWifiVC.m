@@ -10,6 +10,7 @@
 #import "WifiManuallyInputCell.h"
 #import "ConnectWifiVC.h"
 #import "DeviceConnectingVC.h"
+#import "ATLanguageHelper.h"
 
 @interface SelectWifiVC ()<UITableViewDataSource,UITableViewDelegate,ThingSmartBLEWifiActivatorDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -22,9 +23,13 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     self.fd_prefersNavigationBarHidden = YES;
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     self.titleLabel.text = LocalString(@"请选择以下可用Wi-Fi连接");
     self.nameLabel.text = LocalString(@"WiFi列表");
+    self.titleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.nameLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.tableView.sectionHeaderHeight = 10;
     self.tableView.sectionFooterHeight = 42;
     self.tableView.backgroundColor = UIColor.clearColor;
@@ -112,7 +117,8 @@
     if(section == 0){
         UIView *headView = [[UIView alloc]initWithFrame:CGRectMake(0, 0, tableView.width, 10)];
         headView.backgroundColor = [UIColor clearColor];
-        UIView *containerView = [[UIView alloc]initWithFrame:CGRectMake(32, 0, tableView.width - 64, 10)];
+        CGFloat horizontalInset = 32;
+        UIView *containerView = [[UIView alloc]initWithFrame:CGRectMake(horizontalInset, 0, tableView.width - horizontalInset * 2, 10)];
         containerView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.05];
         [PublicObj makeCornerToView:containerView withFrame:containerView.bounds withRadius:10 position:1];
         [headView addSubview:containerView];
@@ -128,7 +134,8 @@
     footerView.frame = CGRectMake(0, 0, tableView.width, 42);
     if(section == 0){
         UIView *containerView = [[UIView alloc]init];
-        containerView.frame = CGRectMake(32, 0, tableView.width - 64, 10);
+        CGFloat horizontalInset = 32;
+        containerView.frame = CGRectMake(horizontalInset, 0, tableView.width - horizontalInset * 2, 10);
         containerView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.05];
         [footerView addSubview:containerView];
         [PublicObj makeCornerToView:containerView withFrame:containerView.bounds withRadius:10 position:2];

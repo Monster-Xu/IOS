@@ -12,7 +12,14 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     self.statusLabel.text = LocalString(@"待加入");
-    // Initialization code
+    self.nameLabel.numberOfLines = 1;
+    self.nameLabel.adjustsFontSizeToFitWidth = YES;
+    self.nameLabel.minimumScaleFactor = 0.75;
+    self.nameLabel.lineBreakMode = NSLineBreakByClipping;
+    self.statusLabel.numberOfLines = 1;
+    self.statusLabel.adjustsFontSizeToFitWidth = YES;
+    self.statusLabel.minimumScaleFactor = 0.8;
+    self.statusLabel.lineBreakMode = NSLineBreakByClipping;
 }
 - (void)setIsSel:(BOOL)isSel{
     _isSel = isSel;

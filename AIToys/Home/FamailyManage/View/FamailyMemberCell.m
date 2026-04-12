@@ -11,7 +11,18 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    self.nameLabel.numberOfLines = 1;
+    self.nameLabel.adjustsFontSizeToFitWidth = YES;
+    self.nameLabel.minimumScaleFactor = 0.75;
+    self.nameLabel.lineBreakMode = NSLineBreakByClipping;
+    self.phoneLabel.numberOfLines = 1;
+    self.phoneLabel.adjustsFontSizeToFitWidth = YES;
+    self.phoneLabel.minimumScaleFactor = 0.8;
+    self.phoneLabel.lineBreakMode = NSLineBreakByClipping;
+    self.roleLabel.numberOfLines = 1;
+    self.roleLabel.adjustsFontSizeToFitWidth = YES;
+    self.roleLabel.minimumScaleFactor = 0.7;
+    self.roleLabel.lineBreakMode = NSLineBreakByClipping;
 }
 
 -(void)setIsExpire:(BOOL)isExpire{

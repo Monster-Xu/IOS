@@ -6,13 +6,16 @@
 //
 
 #import "WifiManuallyInputCell.h"
+#import "ATLanguageHelper.h"
 
 @implementation WifiManuallyInputCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
     self.titleLabel.text = LocalString(@"手动输入");
-    // Initialization code
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.contentView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.titleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

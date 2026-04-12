@@ -20,11 +20,8 @@
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="E9Y-fq-Mjv">
                             <rect key="frame" x="32" y="276" width="329" height="300"/>
                             <subviews>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="收不到验证码" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qUM-Nc-1wh">
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="收不到验证码" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qUM-Nc-1wh">
                                     <rect key="frame" x="16" y="24" width="297" height="24"/>
-                                    <constraints>
-                                        <constraint firstAttribute="height" constant="24" id="GUx-eA-b3P"/>
-                                    </constraints>
                                     <fontDescription key="fontDescription" name="SFRounded-Bold" family="SF Pro Rounded" pointSize="16"/>
                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.90000000000000002" colorSpace="custom" customColorSpace="calibratedRGB"/>
                                     <nil key="highlightedColor"/>
@@ -53,16 +50,13 @@
                                         <action selector="sureBtnClick:" destination="iN0-l3-epB" eventType="touchUpInside" id="rA9-RR-BR0"/>
                                     </connections>
                                 </button>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cmt-D3-eMO">
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Cmt-D3-eMO">
                                     <rect key="frame" x="16" y="56" width="297" height="36"/>
-                                    <constraints>
-                                        <constraint firstAttribute="height" constant="36" id="jcs-j2-F8Q"/>
-                                    </constraints>
                                     <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="14"/>
                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.80000000000000004" colorSpace="custom" customColorSpace="calibratedRGB"/>
                                     <nil key="highlightedColor"/>
                                 </label>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KmW-aZ-m7a">
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KmW-aZ-m7a">
                                     <rect key="frame" x="16" y="99.999999999999986" width="297" height="133.66666666666663"/>
                                     <string key="text"></string>
                                     <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="14"/>
@@ -86,7 +80,6 @@
                                 <constraint firstItem="Afz-bR-Qqt" firstAttribute="leading" secondItem="E9Y-fq-Mjv" secondAttribute="leading" id="Cqb-5H-bsv"/>
                                 <constraint firstItem="Afz-bR-Qqt" firstAttribute="top" secondItem="QOR-xa-EOh" secondAttribute="bottom" id="Csl-RD-rvo"/>
                                 <constraint firstItem="QOR-xa-EOh" firstAttribute="leading" secondItem="E9Y-fq-Mjv" secondAttribute="leading" id="EQr-U6-GKR"/>
-                                <constraint firstAttribute="height" constant="300" id="HtC-pm-4RK"/>
                                 <constraint firstAttribute="trailing" secondItem="qUM-Nc-1wh" secondAttribute="trailing" constant="16" id="Ngs-kp-aCa"/>
                                 <constraint firstItem="Cmt-D3-eMO" firstAttribute="trailing" secondItem="qUM-Nc-1wh" secondAttribute="trailing" id="R0h-9v-NUZ"/>
                                 <constraint firstItem="qUM-Nc-1wh" firstAttribute="top" secondItem="E9Y-fq-Mjv" secondAttribute="top" constant="24" id="YdX-Wn-RnI"/>
@@ -94,6 +87,7 @@
                                 <constraint firstItem="Cmt-D3-eMO" firstAttribute="top" secondItem="qUM-Nc-1wh" secondAttribute="bottom" constant="8" id="dVU-oU-nVo"/>
                                 <constraint firstItem="KmW-aZ-m7a" firstAttribute="leading" secondItem="qUM-Nc-1wh" secondAttribute="leading" id="jga-gl-dzf"/>
                                 <constraint firstAttribute="trailing" secondItem="QOR-xa-EOh" secondAttribute="trailing" id="kRP-6A-TKa"/>
+                                <constraint firstItem="QOR-xa-EOh" firstAttribute="top" secondItem="KmW-aZ-m7a" secondAttribute="bottom" constant="10" id="s3D-V3-K4X"/>
                                 <constraint firstItem="KmW-aZ-m7a" firstAttribute="top" secondItem="Cmt-D3-eMO" secondAttribute="bottom" constant="8" id="vDC-bK-3Ew"/>
                             </constraints>
                             <userDefinedRuntimeAttributes>

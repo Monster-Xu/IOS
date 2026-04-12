@@ -13,6 +13,18 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     [self.addBtn setTitle:LocalString(@"添加") forState:0];
+    self.nameLabel.numberOfLines = 1;
+    self.nameLabel.adjustsFontSizeToFitWidth = YES;
+    self.nameLabel.minimumScaleFactor = 0.75;
+    self.nameLabel.lineBreakMode = NSLineBreakByClipping;
+    self.statusLabel.numberOfLines = 2;
+    self.statusLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.addBtn.titleLabel.numberOfLines = 1;
+    self.addBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.addBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.addBtn.titleLabel.lineBreakMode = NSLineBreakByClipping;
+    [self.nameLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.addBtn.leadingAnchor constant:-12.0].active = YES;
+    [self.statusLabel.trailingAnchor constraintLessThanOrEqualToAnchor:self.addBtn.leadingAnchor constant:-12.0].active = YES;
     self.progressView = [[DACircularProgressView alloc] initWithFrame:CGRectMake(0, 0, 32.0f, 32.0f)];
     self.progressView.roundedCorners = YES;
     self.progressView.thicknessRatio = 0.1f;

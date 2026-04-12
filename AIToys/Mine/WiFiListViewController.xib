@@ -37,8 +37,8 @@
                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="create_empty" translatesAutoresizingMaskIntoConstraints="NO" id="Ia7-jf-lzi">
                             <rect key="frame" x="113.66666666666669" y="305" width="166" height="124"/>
                         </imageView>
-                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8Z9-Hj-AZk">
-                            <rect key="frame" x="68" y="489" width="257" height="20"/>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8Z9-Hj-AZk">
+                            <rect key="frame" x="24" y="489" width="345" height="42"/>
                             <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="17"/>
                             <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="calibratedRGB"/>
                             <nil key="highlightedColor"/>
@@ -47,9 +47,11 @@
                     <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                     <constraints>
                         <constraint firstItem="8Z9-Hj-AZk" firstAttribute="centerX" secondItem="FFF-fO-uJu" secondAttribute="centerX" id="2K2-Hi-yHx"/>
+                        <constraint firstItem="8Z9-Hj-AZk" firstAttribute="leading" secondItem="FFF-fO-uJu" secondAttribute="leading" constant="24" id="abj-jP-9Vh"/>
                         <constraint firstItem="Ia7-jf-lzi" firstAttribute="centerY" secondItem="FFF-fO-uJu" secondAttribute="centerY" id="ASa-oN-Vca"/>
                         <constraint firstItem="8Z9-Hj-AZk" firstAttribute="top" secondItem="Ia7-jf-lzi" secondAttribute="bottom" constant="60" id="F0g-8U-pYu"/>
                         <constraint firstItem="Ia7-jf-lzi" firstAttribute="centerX" secondItem="FFF-fO-uJu" secondAttribute="centerX" id="HYg-D9-y5N"/>
+                        <constraint firstAttribute="trailing" secondItem="8Z9-Hj-AZk" secondAttribute="trailing" constant="24" id="sPq-9W-tt6"/>
                     </constraints>
                 </view>
             </subviews>

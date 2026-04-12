@@ -75,9 +75,9 @@
 }
 + (instancetype)showAddedTo:(UIView *)view delegate:(id)delegate{
     return [self showAddedTo:view
-                        text:@"数据加载异常~"
+                        text:LocalString(@"数据加载异常~")
                     delegate:delegate
-                 buttonTitle:@"重新加载"
+                 buttonTitle:LocalString(@"重新加载")
        buttomBackgroundImage:nil
                        image:QD_IMG(@"nulldata")];
 }

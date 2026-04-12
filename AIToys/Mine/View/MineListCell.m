@@ -15,6 +15,14 @@
     [super awakeFromNib];
     self.redPointView.layer.cornerRadius = self.redPointView.width *0.5;
     _titleLabel.textColor = UIColorFromRGBA(000000, 0.7);
+    self.titleLabel.numberOfLines = 1;
+    self.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.titleLabel.minimumScaleFactor = 0.75;
+    self.titleLabel.lineBreakMode = NSLineBreakByClipping;
+    UIImageView *arrowView = [self findArrowImageViewInView:self.contentView];
+    if (arrowView) {
+        [self.titleLabel.trailingAnchor constraintLessThanOrEqualToAnchor:arrowView.leadingAnchor constant:-12.0].active = YES;
+    }
     [self applyRTLArrowIfNeeded];
 }
 
@@ -42,6 +50,22 @@
             [self replaceArrowInView:subview matchImage:image targetImage:targetImage];
         }
     }
+}
+
+- (UIImageView *)findArrowImageViewInView:(UIView *)view {
+    for (UIView *subview in view.subviews) {
+        if ([subview isKindOfClass:[UIImageView class]]) {
+            UIImageView *imageView = (UIImageView *)subview;
+            if ([self isArrowImage:imageView.image baseImage:[UIImage imageNamed:@"cell_right_arrow"]]) {
+                return imageView;
+            }
+        }
+        UIImageView *matchedImageView = [self findArrowImageViewInView:subview];
+        if (matchedImageView) {
+            return matchedImageView;
+        }
+    }
+    return nil;
 }
 
 - (BOOL)isArrowImage:(UIImage *)candidate baseImage:(UIImage *)baseImage {

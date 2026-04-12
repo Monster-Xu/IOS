@@ -1,0 +1,16 @@
+/* 
+ InfoPlist.strings
+ AIToys
+
+ Created by 乔不赖 on 2025/6/17.
+ 
+*/
+CFBundleDisplayName = "Talenpal";
+NSBluetoothAlwaysUsageDescription = "Bluetooth access is needed to find and connect devices";
+NSBluetoothPeripheralUsageDescription = "Bluetooth access is needed to find and connect devices";
+NSLocationWhenInUseUsageDescription = "Location permissions will be used for smart device automation, discovery of nearby devices, Wi-Fi lists, and more. Please grant the permission to the app.";
+NSLocationAlwaysUsageDescription = "Location permissions will be used for smart device automation, discovery of nearby devices, Wi-Fi lists, and more. Please grant the permission to the app.";
+NSCameraUsageDescription = "Camera access is needed to scan device QR codes and take photos";
+NSMicrophoneUsageDescription = "Microphone access is needed to record voice content";
+NSPhotoLibraryUsageDescription = "Photo Library access is needed to choose images";
+NSPhotoLibraryAddUsageDescription = "Photo Library access is needed to save images";

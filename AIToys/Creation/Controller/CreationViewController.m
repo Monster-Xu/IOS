@@ -255,6 +255,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     emptyLabel.font = [UIFont systemFontOfSize:16];
     emptyLabel.textColor = [UIColor systemGrayColor];
     emptyLabel.textAlignment = NSTextAlignmentCenter;
+    emptyLabel.numberOfLines = 0;
+    emptyLabel.lineBreakMode = NSLineBreakByWordWrapping;
     [self.emptyStateView addSubview:emptyLabel];
     
     UIButton *guideButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -292,6 +294,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [emptyMyVoiceButton setTitle:LocalString(@"我的声音") forState:UIControlStateNormal];
     [emptyMyVoiceButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
     emptyMyVoiceButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+    emptyMyVoiceButton.titleLabel.numberOfLines = 2;
+    emptyMyVoiceButton.titleLabel.textAlignment = NSTextAlignmentCenter;
     emptyMyVoiceButton.layer.borderColor = [UIColor systemBlueColor].CGColor;
     emptyMyVoiceButton.layer.borderWidth = 1.5;
     emptyMyVoiceButton.layer.cornerRadius = 18;
@@ -303,6 +307,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [emptyCreateButton setTitle:LocalString(@"创建故事") forState:UIControlStateNormal];
     [emptyCreateButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     emptyCreateButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
+    emptyCreateButton.titleLabel.numberOfLines = 2;
+    emptyCreateButton.titleLabel.textAlignment = NSTextAlignmentCenter;
     emptyCreateButton.backgroundColor = [UIColor systemBlueColor];
     emptyCreateButton.layer.cornerRadius = 18;
     [emptyCreateButton addTarget:self action:@selector(createButtonTapped) forControlEvents:UIControlEventTouchUpInside];
@@ -341,7 +347,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
         CGFloat myVoiceWidth = screenWidth <= 320 ? 70 : (screenWidth <= 375 ? 80 : (screenWidth <= 390 ? 85 : (screenWidth <= 414 ? 88 : 90)));
         make.width.mas_equalTo(myVoiceWidth);
-        make.height.mas_equalTo(36);
+        make.height.mas_equalTo(44);
     }];
     
     [emptyCreateButton mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -353,7 +359,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
         CGFloat createStoryWidth = screenWidth <= 320 ? 100 : (screenWidth <= 375 ? 110 : (screenWidth <= 390 ? 115 : (screenWidth <= 414 ? 120 : 122)));
         make.width.mas_equalTo(createStoryWidth);
-        make.height.mas_equalTo(36);
+        make.height.mas_equalTo(44);
     }];
 }
 
@@ -1394,7 +1400,10 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
          VC.changeNavColor = YES;
 //       [VC setNavigationBarColor:[UIColor redColor]];
         VC.title = LocalString(@"查看指南");
-        VC.mainUrl = @"https://app-pre.talenpalussaastest.com/static/Guidingdiagram.png";
+        NSString *langType = [ATLanguageHelper miniAppLangType].lowercaseString ?: @"en";
+        NSString *langCode = [[langType componentsSeparatedByString:@"-"] firstObject] ?: @"en";
+        NSString *guideUrl = [langCode isEqualToString:@"zh"] ? @"https://app-pre.talenpalussaastest.com/static/Guidingdiagram.png" : [NSString stringWithFormat:@"https://app-pre.talenpalussaastest.com/static/Guidingdiagram_%@.png", langCode];
+        VC.mainUrl = guideUrl;
         [self.navigationController pushViewController:VC animated:YES];
     // 可以跳转到教程页面或显示使用说明
 }

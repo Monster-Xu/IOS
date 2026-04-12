@@ -14,6 +14,27 @@
 #import <string.h>
 
 static int gCrashLogFD = -1;
+static void *kLogQueueSpecificKey = &kLogQueueSpecificKey;
+
+static NSString *AITLogTimestampString(NSDate *date) {
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss.SSS"];
+    [formatter setLocale:[NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"]];
+    return [formatter stringFromDate:date ?: [NSDate date]];
+}
+
+static void updateCrashLogFD(NSString *logFilePath) {
+    if (logFilePath.length == 0) {
+        return;
+    }
+
+    if (gCrashLogFD >= 0) {
+        close(gCrashLogFD);
+        gCrashLogFD = -1;
+    }
+
+    gCrashLogFD = open(logFilePath.UTF8String, O_WRONLY | O_CREAT | O_APPEND, 0644);
+}
 
 static const char *crashSignalName(int signal) {
     switch (signal) {
@@ -60,7 +81,7 @@ static void signalCrashHandler(int signo) {
 @property (nonatomic, strong) NSString *logFilePath;
 @property (nonatomic, strong) NSFileHandle *fileHandle;
 @property (nonatomic, strong) dispatch_queue_t logQueue;
-@property (nonatomic, strong) NSDateFormatter *dateFormatter;
+@property (nonatomic, strong) dispatch_queue_t stateQueue;
 @property (nonatomic, assign) BOOL isAutoLogging;
 @property (nonatomic, strong) NSMutableDictionary *activeRequests; // 追踪活跃的网络请求
 
@@ -96,11 +117,9 @@ static void signalCrashHandler(int signo) {
 
 - (void)setupLogSystem {
     _logQueue = dispatch_queue_create("com.app.logQueue", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_set_specific(_logQueue, kLogQueueSpecificKey, kLogQueueSpecificKey, NULL);
+    _stateQueue = dispatch_queue_create("com.app.logStateQueue", DISPATCH_QUEUE_SERIAL);
     _activeRequests = [NSMutableDictionary dictionary];
-    
-    _dateFormatter = [[NSDateFormatter alloc] init];
-    [_dateFormatter setDateFormat:@"yyyy-MM-dd HH:mm:ss.SSS"];
-    [_dateFormatter setLocale:[NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"]];
     
     NSString *documentPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
     NSString *logDirectory = [documentPath stringByAppendingPathComponent:@"Logs"];
@@ -321,11 +340,10 @@ static void signalCrashHandler(int signo) {
 }
 
 - (void)setupSignalHandlers {
+    updateCrashLogFD(self.logFilePath);
+
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        if (gCrashLogFD < 0) {
-            gCrashLogFD = open(self.logFilePath.UTF8String, O_WRONLY | O_APPEND);
-        }
         signal(SIGABRT, signalCrashHandler);
         signal(SIGSEGV, signalCrashHandler);
         signal(SIGBUS, signalCrashHandler);
@@ -337,7 +355,7 @@ static void signalCrashHandler(int signo) {
 
 void uncaughtExceptionHandler(NSException *exception) {
     LogManager *manager = [LogManager sharedManager];
-    NSString *timestamp = [manager.dateFormatter stringFromDate:[NSDate date]];
+    NSString *timestamp = AITLogTimestampString([NSDate date]);
     NSString *appVersion = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"] ?: @"unknown";
     NSString *appBuild = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"] ?: @"unknown";
     NSString *systemVersion = [[UIDevice currentDevice] systemVersion] ?: @"unknown";
@@ -364,16 +382,15 @@ void uncaughtExceptionHandler(NSException *exception) {
                          exception.name,
                          exception.reason,
                          [exception.callStackSymbols componentsJoinedByString:@"\n"]];
-    
-    [manager writeLogToFile:crashLog];
-    [manager.fileHandle synchronizeFile];
+
+    [manager appendCrashLogSynchronously:crashLog];
 }
 
 #pragma mark - 日志记录方法
 
 - (void)logWithLevel:(LogLevel)level message:(NSString *)message {
     NSString *levelString = [self stringForLogLevel:level];
-    NSString *timestamp = [self.dateFormatter stringFromDate:[NSDate date]];
+    NSString *timestamp = AITLogTimestampString([NSDate date]);
     NSString *logMessage = [NSString stringWithFormat:@"[%@] [%@] %@\n", timestamp, levelString, message];
     
     [self writeLogToFile:logMessage];
@@ -459,7 +476,7 @@ void uncaughtExceptionHandler(NSException *exception) {
     }
     
     // 存储请求信息用于后续匹配响应
-    self.activeRequests[requestId] = requestInfo;
+    [self storeActiveRequestInfo:requestInfo forRequestId:requestId];
     
     NSString *logMessage = [NSString stringWithFormat:@"🚀 API请求开始 [%@] %@ %@", 
                            requestId, request.HTTPMethod ?: @"GET", request.URL.absoluteString ?: @""];
@@ -515,13 +532,7 @@ void uncaughtExceptionHandler(NSException *exception) {
     NSString *url = response.URL.absoluteString ?: @"unknown";
     
     // 尝试找到对应的请求ID
-    for (NSString *key in self.activeRequests.allKeys) {
-        NSDictionary *requestInfo = self.activeRequests[key];
-        if ([requestInfo[@"url"] isEqualToString:url]) {
-            requestId = key;
-            break;
-        }
-    }
+    requestId = [self activeRequestIdForURL:url];
     
     if (!requestId) {
         requestId = [NSUUID UUID].UUIDString;
@@ -652,7 +663,7 @@ void uncaughtExceptionHandler(NSException *exception) {
     
     // 移除已完成的请求
     if (requestId) {
-        [self.activeRequests removeObjectForKey:requestId];
+        [self removeActiveRequestForId:requestId];
     }
 }
 
@@ -660,7 +671,7 @@ void uncaughtExceptionHandler(NSException *exception) {
     NSMutableDictionary *errorLog = [NSMutableDictionary dictionary];
     errorLog[@"type"] = @"服务器错误";
     errorLog[@"api"] = apiPath ?: @"unknown";
-    errorLog[@"timestamp"] = [self.dateFormatter stringFromDate:[NSDate date]];
+    errorLog[@"timestamp"] = AITLogTimestampString([NSDate date]);
     errorLog[@"errorInfo"] = errorInfo;
     
     // 提取常见的错误字段
@@ -695,7 +706,7 @@ void uncaughtExceptionHandler(NSException *exception) {
     NSMutableDictionary *errorLog = [NSMutableDictionary dictionary];
     errorLog[@"type"] = @"SDK错误";
     errorLog[@"sdk"] = sdkName ?: @"unknown";
-    errorLog[@"timestamp"] = [self.dateFormatter stringFromDate:[NSDate date]];
+    errorLog[@"timestamp"] = AITLogTimestampString([NSDate date]);
     
     // 错误基本信息
     errorLog[@"error"] = @{
@@ -759,6 +770,15 @@ void uncaughtExceptionHandler(NSException *exception) {
 #pragma mark - 文件操作
 
 - (void)writeLogToFile:(NSString *)log {
+    if (log.length == 0) {
+        return;
+    }
+
+    if (!self.logQueue || !self.fileHandle) {
+        [self appendCrashLogSynchronously:log];
+        return;
+    }
+
     dispatch_async(self.logQueue, ^{
         @try {
             NSData *data = [log dataUsingEncoding:NSUTF8StringEncoding];
@@ -798,7 +818,7 @@ void uncaughtExceptionHandler(NSException *exception) {
             // 合并最近7天的日志文件
             NSMutableString *allLogs = [NSMutableString string];
             [allLogs appendString:@"========== 应用日志导出 ==========\n"];
-            [allLogs appendFormat:@"导出时间: %@\n", [self.dateFormatter stringFromDate:[NSDate date]]];
+            [allLogs appendFormat:@"导出时间: %@\n", AITLogTimestampString([NSDate date])];
             [allLogs appendFormat:@"应用版本: %@\n", [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"]];
             [allLogs appendFormat:@"系统版本: %@\n", [[UIDevice currentDevice] systemVersion]];
             [allLogs appendFormat:@"设备型号: %@\n\n", [self getDeviceModel]];
@@ -879,6 +899,7 @@ void uncaughtExceptionHandler(NSException *exception) {
         [fileManager createFileAtPath:self.logFilePath contents:nil attributes:nil];
         self.fileHandle = [NSFileHandle fileHandleForWritingAtPath:self.logFilePath];
         [self.fileHandle seekToEndOfFile];
+        updateCrashLogFD(self.logFilePath);
     });
 }
 
@@ -974,7 +995,7 @@ void uncaughtExceptionHandler(NSException *exception) {
                             NSString *logMessage = [NSString stringWithFormat:@"已清理旧日志文件: %@ (大小: %@, 修改时间: %@)",
                                                    fileName,
                                                    [self formatFileSize:fileSize],
-                                                   [self.dateFormatter stringFromDate:fileModificationDate]];
+                                                   AITLogTimestampString(fileModificationDate)];
                             [self logInfo:logMessage];
                         }
                     }
@@ -995,6 +1016,73 @@ void uncaughtExceptionHandler(NSException *exception) {
             [self logError:[NSString stringWithFormat:@"清理旧日志时发生异常: %@", exception.reason]];
         }
     });
+}
+
+- (void)storeActiveRequestInfo:(NSDictionary *)requestInfo forRequestId:(NSString *)requestId {
+    if (requestId.length == 0 || !requestInfo) {
+        return;
+    }
+
+    dispatch_sync(self.stateQueue, ^{
+        self.activeRequests[requestId] = requestInfo;
+    });
+}
+
+- (NSString *)activeRequestIdForURL:(NSString *)url {
+    if (url.length == 0) {
+        return nil;
+    }
+
+    __block NSString *matchedRequestId = nil;
+    dispatch_sync(self.stateQueue, ^{
+        for (NSString *key in self.activeRequests.allKeys) {
+            NSDictionary *requestInfo = self.activeRequests[key];
+            if ([requestInfo[@"url"] isEqualToString:url]) {
+                matchedRequestId = key;
+                break;
+            }
+        }
+    });
+    return matchedRequestId;
+}
+
+- (void)removeActiveRequestForId:(NSString *)requestId {
+    if (requestId.length == 0) {
+        return;
+    }
+
+    dispatch_sync(self.stateQueue, ^{
+        [self.activeRequests removeObjectForKey:requestId];
+    });
+}
+
+- (void)appendCrashLogSynchronously:(NSString *)log {
+    if (log.length == 0 || self.logFilePath.length == 0) {
+        return;
+    }
+
+    NSData *data = [log dataUsingEncoding:NSUTF8StringEncoding];
+    if (data.length == 0) {
+        return;
+    }
+
+    int fd = open(self.logFilePath.UTF8String, O_WRONLY | O_CREAT | O_APPEND, 0644);
+    if (fd < 0) {
+        return;
+    }
+
+    const uint8_t *bytes = data.bytes;
+    ssize_t remaining = (ssize_t)data.length;
+    while (remaining > 0) {
+        ssize_t written = write(fd, bytes, (size_t)remaining);
+        if (written <= 0) {
+            break;
+        }
+        bytes += written;
+        remaining -= written;
+    }
+    fsync(fd);
+    close(fd);
 }
 
 

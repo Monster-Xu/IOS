@@ -196,6 +196,11 @@
 - (void)setupUI {
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     [self.createVoiceBtn addTarget:self action:@selector(createVoiceBtnClick) forControlEvents:UIControlEventTouchDown];
+    self.emptyLabel.numberOfLines = 0;
+    self.emptyLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.createVoiceBtn.titleLabel.numberOfLines = 1;
+    self.createVoiceBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.createVoiceBtn.titleLabel.minimumScaleFactor = 0.75;
     self.emptyLabel.text = LocalString(@"暂无音色，请先创建");
     [self.createVoiceBtn setTitle:LocalString(@"创建音色") forState:UIControlStateNormal];
     self.emptyView.hidden = YES;
@@ -462,9 +467,9 @@
     if (indexPath.section < self.voiceList.count) {
         VoiceModel *voice = self.voiceList[indexPath.section];
         
-        // 如果需要显示statusView，则高度增加35px
+        // 状态文案在德语等语言下更长，给 statusView 预留两行高度
         if ([VoiceManagementTableViewCell needsStatusViewForVoice:voice]) {
-            return 82 + 25; // 107px
+            return 82 + 41;
         }
     }
     

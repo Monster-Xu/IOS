@@ -9,6 +9,7 @@
 #import "AcountLoginViewController.h"
 #import "RegistViewController.h"
 #import "ATLanguageHelper.h"
+#import "AppDelegate.h"
 
 @interface LoginViewController () <UITableViewDataSource, UITableViewDelegate>
 @property (weak, nonatomic) IBOutlet UIView *bgView;
@@ -43,6 +44,20 @@
     [super viewDidLoad];
     self.hj_NavIsHidden = YES;
     self.bgImgView.image = [PublicObj createImageSize:self.bgView.size gradientColors:@[UIColorFromRGB(0x1EAAFD),UIColorFromRGB(0xD1EEFF),UIColorFromRGB(0xFFFFFF)] percentage:@[@(0),@(0.71),@(1)] gradientType:GradientFromTopToBottom];
+    self.slogoLabel.numberOfLines = 0;
+    self.slogoLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.loginBtn.titleLabel.numberOfLines = 1;
+    self.loginBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.loginBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.registerBtn.titleLabel.numberOfLines = 1;
+    self.registerBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.registerBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.languageTitleLabel.numberOfLines = 1;
+    self.languageTitleLabel.adjustsFontSizeToFitWidth = YES;
+    self.languageTitleLabel.minimumScaleFactor = 0.8;
+    self.languageValueLabel.numberOfLines = 1;
+    self.languageValueLabel.adjustsFontSizeToFitWidth = YES;
+    self.languageValueLabel.minimumScaleFactor = 0.7;
     [self.loginBtn setTitle:LocalString(@"登录") forState:0];
     [self.registerBtn setTitle:LocalString(@"注册") forState:0];
     self.slogoLabel.text = LocalString(@"专注蒙氏教育，发掘孩子独特天赋");
@@ -111,17 +126,13 @@
 }
 
 - (void)applyLanguageCode:(NSString *)languageCode displayName:(NSString *)displayName {
-    NSArray<NSString *> *languages = @[languageCode];
-    [[NSUserDefaults standardUserDefaults] setObject:languages forKey:@"AppleLanguages"];
-    [[NSUserDefaults standardUserDefaults] setObject:languageCode forKey:@"AppleLocale"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
-
+    [ATLanguageHelper applyLanguageCode:languageCode];
     self.languageValueLabel.text = displayName;
 }
 
 - (void)updateLanguageValueLabel {
     self.languageTitleLabel.text = LocalString(@"语言");
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject ?: @"en";
+    NSString *preferredLanguage = [ATLanguageHelper currentLanguageCode];
     NSString *languageCode = [preferredLanguage componentsSeparatedByString:@"-"].firstObject ?: @"en";
     NSDictionary<NSString *, NSString *> *displayNames = @{
         @"zh": LocalString(@"简体中文"),
@@ -190,7 +201,6 @@
 
 - (void)setupLanguageOptions {
     self.languageOptions = @[
-        @{@"code": @"zh-Hans", @"name": LocalString(@"简体中文"), @"flag": @"🇨🇳"},
         @{@"code": @"en", @"name": LocalString(@"英语"), @"flag": @"🇺🇸"},
         @{@"code": @"fr", @"name": LocalString(@"法语"), @"flag": @"🇫🇷"},
         @{@"code": @"de", @"name": LocalString(@"德语"), @"flag": @"🇩🇪"},
@@ -371,9 +381,11 @@
                                 content:message
                            cancelBtnStr:cancelTitle
                           confirmBtnStr:confirmTitle
-                           confirmBlock:^(BOOL isValue, id obj) {
+                          confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
-            exit(0);
+            [self applyLanguageCode:self.pendingLanguageCode displayName:self.pendingLanguageName ?: @""];
+            AppDelegate *appDelegate = (AppDelegate *)UIApplication.sharedApplication.delegate;
+            [appDelegate reloadRootViewControllerForLanguageChange];
         } else {
             [self restoreLanguageSelectionBeforeChange];
         }
@@ -413,6 +425,10 @@
 }
 
 - (void)dismissLanguageDialog {
+    [self dismissLanguageDialogWithCompletion:nil];
+}
+
+- (void)dismissLanguageDialogWithCompletion:(void (^ __nullable)(void))completion {
     [UIView animateWithDuration:0.2 animations:^{
         self.languageOverlayView.alpha = 0.0;
         self.languageCardView.transform = CGAffineTransformMakeScale(0.96, 0.96);
@@ -423,6 +439,9 @@
             [self preloadPendingLanguage];
         }
         self.isApplyingLanguageChange = NO;
+        if (completion) {
+            completion();
+        }
     }];
 }
 
@@ -431,23 +450,29 @@
         [self dismissLanguageDialog];
         return;
     }
+    NSString *currentLanguage = [ATLanguageHelper currentLanguageCode];
+    NSString *currentLanguageCode = [currentLanguage componentsSeparatedByString:@"-"].firstObject ?: @"en";
+    if ([self.pendingLanguageCode hasPrefix:currentLanguage]) {
+        [self dismissLanguageDialog];
+        return;
+    }
+    if ([self.pendingLanguageCode hasPrefix:currentLanguageCode]) {
+        [self dismissLanguageDialog];
+        return;
+    }
     self.isApplyingLanguageChange = YES;
-    [self dismissLanguageDialog];
-    self.previousLanguageCodeBeforeChange = [NSLocale preferredLanguages].firstObject ?: @"en";
-    [self applyLanguageCode:self.pendingLanguageCode displayName:self.pendingLanguageName ?: @""];
-    [self updateLanguageValueLabel];
-    [self showRestartAlertWithLanguageCode:self.previousLanguageCodeBeforeChange];
+    self.previousLanguageCodeBeforeChange = currentLanguage;
+    __weak typeof(self) weakSelf = self;
+    [self dismissLanguageDialogWithCompletion:^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        [strongSelf showRestartAlertWithLanguageCode:strongSelf.previousLanguageCodeBeforeChange];
+    }];
 }
 
 - (void)restoreLanguageSelectionBeforeChange {
-    if (self.previousLanguageCodeBeforeChange.length == 0) {
-        [self updateLanguageValueLabel];
-        return;
-    }
-    NSString *previous = self.previousLanguageCodeBeforeChange;
-    [[NSUserDefaults standardUserDefaults] setObject:@[previous] forKey:@"AppleLanguages"];
-    [[NSUserDefaults standardUserDefaults] setObject:previous forKey:@"AppleLocale"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
     [self setupLanguageOptions];
     [self preloadPendingLanguage];
     [self updateLanguageValueLabel];
@@ -455,7 +480,7 @@
 }
 
 - (void)preloadPendingLanguage {
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject ?: @"en";
+    NSString *preferredLanguage = [ATLanguageHelper currentLanguageCode];
     NSString *languageCode = [preferredLanguage componentsSeparatedByString:@"-"].firstObject ?: @"en";
     for (NSDictionary *option in self.languageOptions) {
         NSString *code = option[@"code"];
@@ -465,8 +490,8 @@
             return;
         }
     }
-    self.pendingLanguageCode = @"en";
-    self.pendingLanguageName = @"英语";
+    self.pendingLanguageCode = nil;
+    self.pendingLanguageName = nil;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {

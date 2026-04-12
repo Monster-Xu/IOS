@@ -11,6 +11,14 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    self.titleLabel.numberOfLines = 2;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.subTitleLabel.numberOfLines = 0;
+    self.subTitleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.tryBtn.titleLabel.numberOfLines = 1;
+    self.tryBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.tryBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.tryBtn.titleLabel.lineBreakMode = NSLineBreakByClipping;
     self.titleLabel.text = LocalString(@"未发现设备");
     self.subTitleLabel.text = LocalString(@"请选择「手动添加」按照指引复位设备，或者点击「重新扫描」重新搜索设备。");
     [self.tryBtn setTitle:LocalString(@"重新扫描") forState:0];

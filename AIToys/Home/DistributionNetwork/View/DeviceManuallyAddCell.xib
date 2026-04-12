@@ -22,8 +22,8 @@
                 <rect key="frame" x="0.0" y="0.0" width="406" height="72"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Oi5-Ot-jH0">
-                        <rect key="frame" x="40" y="16" width="326.33333333333331" height="14.333333333333336"/>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignCenters" adjustsFontSizeToFit="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Oi5-Ot-jH0">
+                        <rect key="frame" x="16" y="16" width="374" height="14.333333333333336"/>
                         <fontDescription key="fontDescription" name="SFProRounded-Regular" family="SF Pro Rounded" pointSize="12"/>
                         <nil key="textColor"/>
                         <nil key="highlightedColor"/>
@@ -50,8 +50,10 @@
                     <constraint firstItem="Oi5-Ot-jH0" firstAttribute="centerX" secondItem="H2p-sc-9uM" secondAttribute="centerX" id="3tc-Ep-WZ8"/>
                     <constraint firstItem="vNY-X4-Fha" firstAttribute="centerY" secondItem="Mt2-sh-agQ" secondAttribute="centerY" id="CCs-Uo-wCP"/>
                     <constraint firstItem="vNY-X4-Fha" firstAttribute="leading" secondItem="Mt2-sh-agQ" secondAttribute="trailing" constant="10" id="Xfn-UY-Ncu"/>
+                    <constraint firstAttribute="trailing" secondItem="Oi5-Ot-jH0" secondAttribute="trailing" constant="16" id="cQW-U9-d3P"/>
                     <constraint firstItem="Mt2-sh-agQ" firstAttribute="top" secondItem="Oi5-Ot-jH0" secondAttribute="bottom" constant="5" id="eT8-wx-QeF"/>
                     <constraint firstItem="Oi5-Ot-jH0" firstAttribute="top" secondItem="H2p-sc-9uM" secondAttribute="top" constant="16" id="jVe-cI-lKs"/>
+                    <constraint firstItem="Oi5-Ot-jH0" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="16" id="meX-U8-r2R"/>
                     <constraint firstItem="Mt2-sh-agQ" firstAttribute="leading" secondItem="H2p-sc-9uM" secondAttribute="leading" constant="121" id="tpz-JG-5xU"/>
                 </constraints>
             </tableViewCellContentView>

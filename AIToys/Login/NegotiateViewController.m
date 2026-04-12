@@ -13,7 +13,70 @@
 
 @implementation NegotiateViewController
 
+- (NSString *)currentAgreementLanguageCode {
+    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
+    if ([preferredLanguage hasPrefix:@"ar"]) {
+        return @"ar";
+    }
+    if ([preferredLanguage hasPrefix:@"fr"]) {
+        return @"fr";
+    }
+    if ([preferredLanguage hasPrefix:@"de"]) {
+        return @"de";
+    }
+    if ([preferredLanguage hasPrefix:@"es"]) {
+        return @"es";
+    }
+    return @"en";
+}
 
+- (NSURL *)localizedAgreementURLForType:(NSInteger)type bundle:(NSBundle *)bundle {
+    NSString *languageCode = [self currentAgreementLanguageCode];
+    NSDictionary<NSNumber *, NSDictionary<NSString *, NSString *> *> *localizedFileMap = @{
+        @0: @{
+            @"en": @"Talenpal User Privacy Policy.docx",
+            @"fr": @"Politique de Confidentialité des Utilisateurs de Talenpal.docx",
+            @"de": @"Talenpal Datenschutzrichtlinie für Nutzer.docx",
+            @"es": @"Política de Privacidad de Usuario de Talenpal.docx",
+            @"ar": @"سياسة خصوصية مستخدمي Talenpal.docx"
+        },
+        @1: @{
+            @"en": @"Talenpal Terms of Use.docx",
+            @"fr": @"Conditions d'Utilisation de Talenpal.docx",
+            @"de": @"Nutzungsbedingungen von Talenpal.docx",
+            @"es": @"Términos de Uso de Talenpal.docx",
+            @"ar": @"شروط استخدام Talenpal.docx"
+        },
+        @2: @{
+            @"en": @"Talenpal Terms of Use.docx",
+            @"fr": @"Conditions d'Utilisation de Talenpal.docx",
+            @"de": @"Nutzungsbedingungen von Talenpal.docx",
+            @"es": @"Términos de Uso de Talenpal.docx",
+            @"ar": @"شروط استخدام Talenpal.docx"
+        },
+        @3: @{
+            @"en": @"Talenpal AI Notice.docx",
+            @"fr": @"Avis d'IA de Talenpal.docx",
+            @"de": @"Talenpal KI-Hinweis.docx",
+            @"es": @"Aviso de IA de Talenpal.docx",
+            @"ar": @"إشعار الذكاء الاصطناعي Talenpal.docx"
+        }
+    };
+
+    NSDictionary<NSString *, NSString *> *fileMap = localizedFileMap[@(type)];
+    NSString *targetFileName = fileMap[languageCode] ?: fileMap[@"en"];
+    if (targetFileName.length == 0) {
+        return nil;
+    }
+
+    NSArray<NSURL *> *resourceURLs = [bundle URLsForResourcesWithExtension:@"docx" subdirectory:nil];
+    for (NSURL *resourceURL in resourceURLs) {
+        if ([[resourceURL lastPathComponent] isEqualToString:targetFileName]) {
+            return resourceURL;
+        }
+    }
+    return nil;
+}
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -25,28 +88,8 @@
     [self.view addSubview:self.webView];
     
     // 加载文档
-    NSURL * fileURL = [NSURL new];
     NSBundle *bundle = [NSBundle mainBundle];
-    switch (self.type) {
-        case 0:
-            fileURL = [bundle URLForResource:@"Talenpal_User_Privacy_Policy" withExtension:@"docx"];
-            break;
-
-        case 1:
-            fileURL = [bundle URLForResource:@"Talenpal_Terms_of_Use" withExtension:@"docx"];
-            break;
-
-        case 2:
-            fileURL = [bundle URLForResource:@"Talenpal_Childrens_Privacy_Agreement" withExtension:@"docx"];
-            break;
-
-        case 3:
-            fileURL = [bundle URLForResource:@"Talenpal_AI_Conversation_User_Agreement_EN 2" withExtension:@"docx"];
-            break;
-
-        default:
-            break;
-    }
+    NSURL *fileURL = [self localizedAgreementURLForType:self.type bundle:bundle];
 
     if (fileURL) {
         // WKWebView 需要使用 loadFileURL:allowingReadAccessToURL: 方法加载本地文件

@@ -22,6 +22,7 @@
 #import "SelectWifiVC.h"
 #import "LocationManager.h"
 #import "LogManager.h"
+#import "ATLanguageHelper.h"
 
 @interface FindDeviceViewController ()<UITableViewDelegate,UITableViewDataSource,RYFTableViewDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate>
 @property (nonatomic, strong)RYFTableView *tableView;
@@ -137,6 +138,9 @@
  
 -(void)setupUI{
     self.title = LocalString(@"添加设备");
+    if (@available(iOS 9.0, *)) {
+        self.navigationController.navigationBar.semanticContentAttribute = [ATLanguageHelper isRTLLanguage] ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    }
     self.tableView.loadState = RYFCanLoadNone;
     [self.view addSubview:self.tableView];
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -226,6 +230,9 @@
     switch (indexPath.section) {
         case 2:
             return 400;
+            break;
+        case 3:
+            return 70;
             break;
             
         default:

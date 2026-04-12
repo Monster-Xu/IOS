@@ -167,6 +167,27 @@
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     NSTextAlignment inputAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.voiceNameLabel.numberOfLines = 1;
+    self.voiceNameLabel.adjustsFontSizeToFitWidth = YES;
+    self.voiceNameLabel.minimumScaleFactor = 0.8;
+    self.voiceAvatarLabel.numberOfLines = 1;
+    self.voiceAvatarLabel.adjustsFontSizeToFitWidth = YES;
+    self.voiceAvatarLabel.minimumScaleFactor = 0.8;
+    self.voiceTitleLabel.numberOfLines = 1;
+    self.voiceTitleLabel.adjustsFontSizeToFitWidth = YES;
+    self.voiceTitleLabel.minimumScaleFactor = 0.8;
+    self.voiceSubLabel.numberOfLines = 0;
+    self.voiceSubLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.speekLabel.numberOfLines = 2;
+    self.speekLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.faildMessageLabel.numberOfLines = 0;
+    self.faildMessageLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.chooseImageBtn.titleLabel.numberOfLines = 1;
+    self.chooseImageBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.chooseImageBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.speekBtn.titleLabel.numberOfLines = 1;
+    self.speekBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.speekBtn.titleLabel.minimumScaleFactor = 0.75;
     
     // 根据模式设置标题
     if (self.isEditMode && self.editingVoice) {
@@ -1896,7 +1917,7 @@
     SFSpeechRecognizerAuthorizationStatus speechStatus = [SFSpeechRecognizer authorizationStatus];
     if (speechStatus != SFSpeechRecognizerAuthorizationStatusAuthorized) {
         NSLog(@"⚠️ 语音识别权限未授权，状态: %ld", (long)speechStatus);
-        [self showAlert:LocalString(@"请在设置中允许语音识别权限")];
+        [self showPermissionSettingsAlert:LocalString(@"请在设置中允许语音识别权限")];
         return;
     }
     
@@ -1904,7 +1925,7 @@
     AVAudioSessionRecordPermission recordPermission = [[AVAudioSession sharedInstance] recordPermission];
     if (recordPermission == AVAudioSessionRecordPermissionDenied) {
         NSLog(@"⚠️ 录音权限被拒绝");
-        [self showAlert:LocalString(@"请在设置中允许麦克风权限")];
+        [self showPermissionSettingsAlert:LocalString(@"请在设置中允许麦克风权限")];
         return;
     } else if (recordPermission == AVAudioSessionRecordPermissionUndetermined) {
         NSLog(@"⚠️ 录音权限未确定，需要请求权限");
@@ -1916,7 +1937,7 @@
                     [self beginRecordingSession];
                 } else {
                     NSLog(@"❌ 录音权限被拒绝");
-                    [self showAlert:LocalString(@"请在设置中允许麦克风权限")];
+                    [self showPermissionSettingsAlert:LocalString(@"请在设置中允许麦克风权限")];
                 }
             });
         }];
@@ -2330,6 +2351,23 @@
                           confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         // 用户点击确定，无需额外操作
+    }];
+}
+
+- (void)showPermissionSettingsAlert:(NSString *)message {
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"提示")
+                                content:message
+                           cancelBtnStr:LocalString(@"取消")
+                          confirmBtnStr:LocalString(@"去设置")
+                           confirmBlock:^(BOOL isValue, id obj) {
+        if (!isValue) {
+            return;
+        }
+        NSURL *settingsURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
+        if (!settingsURL) {
+            return;
+        }
+        [[UIApplication sharedApplication] openURL:settingsURL options:@{} completionHandler:nil];
     }];
 }
 

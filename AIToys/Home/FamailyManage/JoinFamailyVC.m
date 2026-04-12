@@ -19,6 +19,13 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.titleLabel.numberOfLines = 0;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.nameLabel.numberOfLines = 0;
+    self.nameLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.doneBtn.titleLabel.numberOfLines = 1;
+    self.doneBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.doneBtn.titleLabel.minimumScaleFactor = 0.75;
     self.title = LocalString(@"加入一个家庭");
     self.titleLabel.text = LocalString(@"请家庭拥有者为您创建邀请");
     self.nameLabel.text = LocalString(@"（家庭设置 > 邀请成员 > 生成邀请）");

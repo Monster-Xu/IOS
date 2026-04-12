@@ -19,6 +19,13 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.titleLabel.text = LocalString(@"账号验证");
+    self.titleLabel.numberOfLines = 0;
+    self.alertLabel.numberOfLines = 0;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.alertLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.surBtn.titleLabel.numberOfLines = 1;
+    self.surBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.surBtn.titleLabel.minimumScaleFactor = 0.75;
     self.alertLabel.text = [NSString stringWithFormat:@"%@%@",LocalString(@"点击获取验证码，验证码将会发送到你的邮箱："),[ThingSmartUser sharedInstance].email];
     [self.surBtn setTitle:NSLocalizedString(@"获取验证码", @"") forState:0];
     
@@ -31,7 +38,7 @@
     WS(weakSelf);
     [[ThingSmartUser sharedInstance] sendVerifyCodeWithUserName:[ThingSmartUser sharedInstance].email region:[[ThingSmartUser sharedInstance] getDefaultRegionWithCountryCode:Country_Code] countryCode:Country_Code type:3 success:^{
         sender.userInteractionEnabled = YES;
-        [SVProgressHUD showSuccessWithStatus:@"Verification Code Sent Successfully"];
+        [SVProgressHUD showSuccessWithStatus:LocalString(@"验证码发送成功")];
         CodeViewController *VC = [CodeViewController new];
         VC.numStr = [ThingSmartUser sharedInstance].email;
         VC.type = EmailType_modifyPwd;

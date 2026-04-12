@@ -11,8 +11,15 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
     self.statusLabel.text = LocalString(@"待加入");
+    self.titleLabel.numberOfLines = 1;
+    self.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.titleLabel.minimumScaleFactor = 0.75;
+    self.titleLabel.lineBreakMode = NSLineBreakByClipping;
+    self.statusLabel.numberOfLines = 1;
+    self.statusLabel.adjustsFontSizeToFitWidth = YES;
+    self.statusLabel.minimumScaleFactor = 0.8;
+    self.statusLabel.lineBreakMode = NSLineBreakByClipping;
 }
 
 - (void)setRowInSection:(NSInteger)rowInSection{

@@ -6,12 +6,15 @@
 //
 
 #import "SelectWifCell.h"
+#import "ATLanguageHelper.h"
 
 @implementation SelectWifCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.contentView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.titleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

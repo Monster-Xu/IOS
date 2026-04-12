@@ -11,7 +11,13 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
+    self.nameLabel.numberOfLines = 0;
+    self.nameLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.nameLabel.textAlignment = NSTextAlignmentCenter;
+    self.addBtn.titleLabel.numberOfLines = 2;
+    self.addBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+    self.addBtn.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.addBtn.contentEdgeInsets = UIEdgeInsetsMake(6, 14, 6, 14);
 }
 
 -(void)setType:(CellType)type{

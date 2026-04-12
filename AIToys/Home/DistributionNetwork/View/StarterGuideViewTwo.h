@@ -14,6 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UIImageView *addImageView;
 @property (weak, nonatomic) IBOutlet UIImageView *bottomImageView;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *addLeadingConstraint;
+@property (strong, nonatomic) NSLayoutConstraint *addLeftConstraint;
+@property (strong, nonatomic) NSLayoutConstraint *addRightConstraint;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *topConstraint;
 @property (weak, nonatomic) IBOutlet UIButton *skipBtn;
 @property (weak, nonatomic) IBOutlet UIButton *doneBtn;

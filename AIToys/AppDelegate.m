@@ -39,6 +39,7 @@
 //    [self refreshToken];
     // 验证SF Pro Rounded字体加载
     [FontValidationHelper validateFontsInAppDelegate];
+    [ATLanguageHelper applyStoredLanguageConfiguration];
     // RTL 全局配置
     [ATLanguageHelper applyGlobalRTLConfiguration];
     // ⭐️ 只需要这一行代码，即可开始全局自动记录 ⭐️
@@ -123,6 +124,22 @@
         self.window.rootViewController = [[MyNavigationController alloc] initWithRootViewController:[LoginViewController new]];
     }
 
+}
+
+- (void)reloadRootViewControllerForLanguageChange {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [ATLanguageHelper applyStoredLanguageConfiguration];
+        [ATLanguageHelper applyGlobalRTLConfiguration];
+        self.window.semanticContentAttribute = [ATLanguageHelper isRTLLanguage] ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+        [UIView transitionWithView:self.window
+                          duration:0.25
+                           options:UIViewAnimationOptionTransitionCrossDissolve
+                        animations:^{
+            [self setUpRootVC];
+            [self.window makeKeyAndVisible];
+            [self.window layoutIfNeeded];
+        } completion:nil];
+    });
 }
 
 #pragma mark - ----------------------- 启动广告图 -----------------------

@@ -7,6 +7,54 @@
 
 #import "CreateStoryWithVoiceTableViewCell.h"
 
+static NSString *AITLocalizedCreateNewBadgeImageName(void) {
+    NSString *preferredLanguage = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] ? [[[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] firstObject] : [NSLocale preferredLanguages].firstObject;
+    NSString *languageCode = [[preferredLanguage ?: @"en" lowercaseString] componentsSeparatedByString:@"-"].firstObject;
+
+    if ([languageCode hasPrefix:@"ar"]) {
+        return @"create_new_ar";
+    }
+    if ([languageCode hasPrefix:@"de"]) {
+        return @"create_new_de";
+    }
+    if ([languageCode hasPrefix:@"fr"]) {
+        return @"create_new_fr";
+    }
+    if ([languageCode hasPrefix:@"es"]) {
+        return @"create_new_es";
+    }
+    return @"create_new";
+}
+
+static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) {
+    imageView.image = image;
+    imageView.contentMode = UIViewContentModeScaleAspectFit;
+    if (!image) {
+        return;
+    }
+
+    CGSize imageSize = image.size;
+    for (NSLayoutConstraint *constraint in imageView.constraints) {
+        if (constraint.firstItem == imageView && constraint.firstAttribute == NSLayoutAttributeWidth) {
+            constraint.constant = imageSize.width;
+        } else if (constraint.firstItem == imageView && constraint.firstAttribute == NSLayoutAttributeHeight) {
+            constraint.constant = imageSize.height;
+        }
+    }
+
+    for (NSLayoutConstraint *constraint in imageView.superview.constraints) {
+        BOOL relatesToImageView = (constraint.firstItem == imageView || constraint.secondItem == imageView);
+        if (!relatesToImageView) {
+            continue;
+        }
+        if (constraint.firstAttribute == NSLayoutAttributeWidth || constraint.secondAttribute == NSLayoutAttributeWidth) {
+            constraint.constant = imageSize.width;
+        } else if (constraint.firstAttribute == NSLayoutAttributeHeight || constraint.secondAttribute == NSLayoutAttributeHeight) {
+            constraint.constant = imageSize.height;
+        }
+    }
+}
+
 @interface CreateStoryWithVoiceTableViewCell ()
 @property (nonatomic, strong) VoiceModel *voiceModel;
 @end
@@ -15,8 +63,7 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
-    
+    AITUpdateBadgeImageViewSize(self.voiceNewImage, [UIImage imageNamed:AITLocalizedCreateNewBadgeImageName()]);
 }
 
 - (void)setSelected:(BOOL)selected animated:(BOOL)animated {

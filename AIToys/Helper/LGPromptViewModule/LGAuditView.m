@@ -28,7 +28,7 @@
         [self addSubview:self.iconView];
         [self addSubview:self.tipLab];
         if (self.type == AuditTypeOngoing) {
-            self.tipLab.text = @"资料正在审核中";
+            self.tipLab.text = LocalString(@"资料正在审核中");
         }
     }
     return self;

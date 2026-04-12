@@ -406,13 +406,13 @@
             VC.memberModel = self.dataArr[indexPath.row];
             switch (self.dataArr[indexPath.row].role) {
                 case ThingHomeRoleType_Owner:
-                    roleStr = @"Home Owner";
+                    roleStr = LocalString(@"家庭拥有者");
                     break;
                 case ThingHomeRoleType_Member:
-                    roleStr = @"Common Member";
+                    roleStr = LocalString(@"普通成员");
                     break;
                 case ThingHomeRoleType_Admin:
-                    roleStr = @"Admin";
+                    roleStr = LocalString(@"管理员");
                     break;
                     
                 default:
@@ -423,13 +423,13 @@
             VC.inviteModel = self.inviteArr[indexPath.row];
             switch (self.inviteArr[indexPath.row].role) {
                 case ThingHomeRoleType_Owner:
-                    roleStr = @"Home Owner";
+                    roleStr = LocalString(@"家庭拥有者");
                     break;
                 case ThingHomeRoleType_Member:
-                    roleStr = @"Common Member";
+                    roleStr = LocalString(@"普通成员");
                     break;
                 case ThingHomeRoleType_Admin:
-                    roleStr = @"Admin";
+                    roleStr = LocalString(@"管理员");
                     break;
                     
                 default:

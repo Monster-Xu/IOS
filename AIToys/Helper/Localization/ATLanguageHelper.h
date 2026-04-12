@@ -11,6 +11,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface ATLanguageHelper : NSObject
 
++ (NSString *)currentLanguageCode;
++ (NSString *)normalizedLanguageCode:(NSString *)languageCode;
++ (void)applyLanguageCode:(NSString *)languageCode;
++ (void)applyStoredLanguageConfiguration;
++ (BOOL)isSupportedLanguageCode:(NSString *)languageCode;
 + (NSString *)miniAppLangType;
 + (BOOL)isRTLLanguage;
 + (void)applyGlobalRTLConfiguration;

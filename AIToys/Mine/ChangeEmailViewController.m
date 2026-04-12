@@ -7,6 +7,7 @@
 
 #import "ChangeEmailViewController.h"
 #import "RegistViewController.h"
+#import "ATLanguageHelper.h"
 
 @interface ChangeEmailViewController ()
 <UITextFieldDelegate>
@@ -31,9 +32,21 @@
 
 -(void)setUpUI{
     self.pwdTextField.delegate = self;
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.titleLabel.numberOfLines = 2;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.pwdTitleLabel.numberOfLines = 1;
+    self.pwdTitleLabel.adjustsFontSizeToFitWidth = YES;
+    self.pwdTitleLabel.minimumScaleFactor = 0.8;
+    self.alertLabel.numberOfLines = 0;
+    self.alertLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.surBtn.titleLabel.numberOfLines = 1;
+    self.surBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.surBtn.titleLabel.minimumScaleFactor = 0.75;
     self.titleLabel.text = NSLocalizedString(@"更换邮箱", @"");
     self.pwdTitleLabel.text = NSLocalizedString(@"密码", @"");
     self.pwdTextField.placeholder = LocalString(@"密码", @"");
+    self.pwdTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.alertLabel.text = [NSString stringWithFormat:@"%@%@%@",LocalString(@"The current Email  is"),[ThingSmartUser sharedInstance].email,LocalString(@"please enter your password to continue")];
     
     [self.surBtn setTitle:NSLocalizedString(@"确定", @"") forState:0];

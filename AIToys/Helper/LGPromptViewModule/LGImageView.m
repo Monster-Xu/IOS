@@ -144,12 +144,14 @@
         _tipLab.textColor = UIColorFromRGB(0x333333);
         _tipLab.font = [ATFontManager boldSystemFontOfSize:20];
         _tipLab.textAlignment = NSTextAlignmentCenter;
-        _tipLab.numberOfLines = 1;
-        _tipLab.text = @"车载版登录确认";
+        _tipLab.numberOfLines = 0;
+        _tipLab.text = LocalString(@"车载版登录确认");
         [self addSubview:_tipLab];
         [_tipLab mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.carView.mas_bottom).offset(15);
             make.centerX.equalTo(self.bgView);
+            make.left.greaterThanOrEqualTo(self.bgView).offset(20);
+            make.right.lessThanOrEqualTo(self.bgView).offset(-20);
         }];
     }
     return _tipLab;
@@ -159,7 +161,9 @@
         _loginBtn = [[UIButton alloc] init];
         [_loginBtn setTitleColor:UIColor.whiteColor forState:UIControlStateNormal];
         [_loginBtn.titleLabel setFont:[ATFontManager systemFontOfSize:18]];
-        [_loginBtn setTitle:@"登录" forState:UIControlStateNormal];
+        _loginBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+        _loginBtn.titleLabel.minimumScaleFactor = 0.7;
+        [_loginBtn setTitle:LocalString(@"登录") forState:UIControlStateNormal];
         _loginBtn.backgroundColor = UIColor.blueColor;
         _loginBtn.layer.cornerRadius = 7.5;
         [_loginBtn addTarget:self action:@selector(loginBtnAction) forControlEvents:UIControlEventTouchUpInside];
@@ -178,7 +182,9 @@
         [_cancelBtn addTarget:self action:@selector(deleteBtnAction) forControlEvents:UIControlEventTouchUpInside];
         [_cancelBtn setTitleColor:UIColorFromRGB(0x666666) forState:UIControlStateNormal];
         [_cancelBtn.titleLabel setFont:[ATFontManager systemFontOfSize:18]];
-        [_cancelBtn setTitle:@"取消登录" forState:UIControlStateNormal];
+        _cancelBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+        _cancelBtn.titleLabel.minimumScaleFactor = 0.7;
+        [_cancelBtn setTitle:LocalString(@"取消登录") forState:UIControlStateNormal];
         [_cancelBtn addTarget:self action:@selector(request) forControlEvents:UIControlEventTouchUpInside];
         [self.bgView addSubview:_cancelBtn];
         [_cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {

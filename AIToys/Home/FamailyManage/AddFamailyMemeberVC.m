@@ -24,6 +24,20 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.nameLabel.numberOfLines = 1;
+    self.nameLabel.adjustsFontSizeToFitWidth = YES;
+    self.nameLabel.minimumScaleFactor = 0.8;
+    self.accountLabel.numberOfLines = 1;
+    self.accountLabel.adjustsFontSizeToFitWidth = YES;
+    self.accountLabel.minimumScaleFactor = 0.8;
+    self.roleTitleLabel.numberOfLines = 1;
+    self.roleTitleLabel.adjustsFontSizeToFitWidth = YES;
+    self.roleTitleLabel.minimumScaleFactor = 0.8;
+    self.roleNameLabel.numberOfLines = 1;
+    self.roleNameLabel.adjustsFontSizeToFitWidth = YES;
+    self.roleNameLabel.minimumScaleFactor = 0.75;
+    self.accountAlertLab.numberOfLines = 0;
+    self.accountAlertLab.lineBreakMode = NSLineBreakByWordWrapping;
     self.title = LocalString(@"添加成员");
     self.nameLabel.text = LocalString(@"家庭成员名称");
     self.nameTextField.placeholder = LocalString(@"家庭成员名称");
@@ -44,6 +58,8 @@
     [rightButton setTitle:LocalString(@"保存") forState:UIControlStateNormal];
     [rightButton setTitleColor:mainColor forState:UIControlStateNormal];
     rightButton.titleLabel.font = [ATFontManager systemFontOfSize:15];
+    rightButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    rightButton.titleLabel.minimumScaleFactor = 0.75;
     rightButton.titleLabel.textAlignment = NSTextAlignmentCenter;
     [rightButton addTarget:self action:@selector(done) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem* rightItem = [[UIBarButtonItem alloc]initWithCustomView:rightButton];

@@ -58,10 +58,10 @@
             [self.bgView addSubview:self.titleLabel];
             [self.bgView addSubview:self.descripLabel];
             [self.bgView addSubview:self.requestBtn];
-            self.titleLabel.text = @"提示";
+            self.titleLabel.text = LocalString(@"提示");
             self.titleLabel.textColor = UIColor.blackColor;
-            self.descripLabel.text = @"您还未实名认证，请先进行实名认证\n完成实名认证后需重新登录";
-            [self.requestBtn setTitle:@"实名认证" forState:UIControlStateNormal];
+            self.descripLabel.text = LocalString(@"您还未实名认证，请先进行实名认证\n完成实名认证后需重新登录");
+            [self.requestBtn setTitle:LocalString(@"实名认证") forState:UIControlStateNormal];
         }
     }
     return self;

@@ -31,11 +31,32 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.fd_prefersNavigationBarHidden = YES;
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.titleLabel.numberOfLines = 2;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.subTitleLabel.numberOfLines = 2;
+    self.subTitleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.deviceLabel.numberOfLines = 1;
+    self.deviceLabel.adjustsFontSizeToFitWidth = YES;
+    self.deviceLabel.minimumScaleFactor = 0.75;
+    self.deviceLabel.lineBreakMode = NSLineBreakByClipping;
+    self.startUseBtn.titleLabel.numberOfLines = 1;
+    self.startUseBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.startUseBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.startUseBtn.titleLabel.lineBreakMode = NSLineBreakByClipping;
     self.titleLabel.text = LocalString(@"设备添加成功");
     self.subTitleLabel.text = LocalString(@"给你的设备起个名字吧");
     self.deviceLabel.text = LocalString(@"设备名称");
     self.deviceNameTextView.placeholder = LocalString(@"设备名称");
     [self.startUseBtn setTitle:LocalString(@"开始使用") forState:UIControlStateNormal];
+    self.subTitleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.deviceLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.deviceNameTextView.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.deviceNameTextView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    if (@available(iOS 15.0, *)) {
+        self.startUseBtn.configuration.title = LocalString(@"开始使用");
+    }
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
     [param setValue:self.wifiName forKey:@"ssid"];
     [self modifySettingWithParam:param];

@@ -9,6 +9,8 @@
 #import "SettingCell.h"
 #import "ATFontManager.h"
 #import "LogManager.h"
+#import "AppDelegate.h"
+#import "ATLanguageHelper.h"
 
 @interface SettingViewController ()<UITableViewDelegate,UITableViewDataSource,RYFTableViewDelegate>
 @property (nonatomic, strong)RYFTableView *tableView;
@@ -121,7 +123,6 @@
 
 - (void)setupLanguageOptions {
     self.languageOptions = @[
-        @{@"code": @"zh-Hans", @"name": LocalString(@"简体中文"), @"flag": @"🇨🇳"},
         @{@"code": @"en", @"name": LocalString(@"英语"), @"flag": @"🇺🇸"},
         @{@"code": @"fr", @"name": LocalString(@"法语"), @"flag": @"🇫🇷"},
         @{@"code": @"de", @"name": LocalString(@"德语"), @"flag": @"🇩🇪"},
@@ -312,8 +313,6 @@
     }
     else if ([title isEqualToString:LocalString(@"导出日志")]){
         WEAK_SELF
-        [SVProgressHUD showWithStatus:LocalString(@"上传中")];
-        
         [[LogManager sharedManager] exportLogsWithCompletion:^(NSURL * _Nullable fileURL, NSError * _Nullable error) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 [SVProgressHUD dismiss];
@@ -364,11 +363,16 @@
                         NSDictionary *params = @{
                             @"directory": result,
                         };
+                        [SVProgressHUD showWithStatus:LocalString(@"上传中")];
                         [[APIManager shared]uploadSingleFile:[APIPortConfiguration getuploadUrl] fileData:videoData fileName:[NSString stringWithFormat:@"%ld_%ld_%ld_%@",(long)year,(long)month,day,kMyUser.email] parameters:params success:^(id  _Nonnull result) {
-//                            [SVProgressHUD showWithStatus:@"日志上传成功"];
-                                                } failure:^(NSError * _Nonnull error) {
-//                                                    [SVProgressHUD showWithStatus:@"日志上传失败"];
-                                                }];
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [SVProgressHUD showSuccessWithStatus:LocalString(@"日志上传成功")];
+                            });
+                        } failure:^(NSError * _Nonnull error) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                [SVProgressHUD showErrorWithStatus:LocalString(@"日志上传失败")];
+                            });
+                        }];
                         
                         
                         
@@ -594,10 +598,7 @@
 }
 
 - (void)applyLanguageCode:(NSString *)languageCode displayName:(NSString *)displayName {
-    NSArray<NSString *> *languages = @[languageCode];
-    [[NSUserDefaults standardUserDefaults] setObject:languages forKey:@"AppleLanguages"];
-    [[NSUserDefaults standardUserDefaults] setObject:languageCode forKey:@"AppleLocale"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
+    [ATLanguageHelper applyLanguageCode:languageCode];
 }
 
 - (NSString *)localizedStringForKey:(NSString *)key languageCode:(NSString *)languageCode {
@@ -633,9 +634,11 @@
                                 content:message
                            cancelBtnStr:cancelTitle
                           confirmBtnStr:confirmTitle
-                           confirmBlock:^(BOOL isValue, id obj) {
+                          confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
-            exit(0);
+            [self applyLanguageCode:self.pendingLanguageCode displayName:self.pendingLanguageName ?: @""];
+            AppDelegate *appDelegate = (AppDelegate *)UIApplication.sharedApplication.delegate;
+            [appDelegate reloadRootViewControllerForLanguageChange];
         } else {
             [self restoreLanguageSelectionBeforeChange];
         }
@@ -651,6 +654,10 @@
 }
 
 - (void)dismissLanguageDialog {
+    [self dismissLanguageDialogWithCompletion:nil];
+}
+
+- (void)dismissLanguageDialogWithCompletion:(void (^ __nullable)(void))completion {
     [UIView animateWithDuration:0.2 animations:^{
         self.languageOverlayView.alpha = 0.0;
         self.languageCardView.transform = CGAffineTransformMakeScale(0.96, 0.96);
@@ -661,6 +668,9 @@
             [self preloadPendingLanguage];
         }
         self.isApplyingLanguageChange = NO;
+        if (completion) {
+            completion();
+        }
     }];
 }
 
@@ -669,23 +679,29 @@
         [self dismissLanguageDialog];
         return;
     }
+    NSString *currentLanguage = [ATLanguageHelper currentLanguageCode];
+    NSString *currentLanguageCode = [currentLanguage componentsSeparatedByString:@"-"].firstObject ?: @"en";
+    if ([self.pendingLanguageCode hasPrefix:currentLanguage]) {
+        [self dismissLanguageDialog];
+        return;
+    }
+    if ([self.pendingLanguageCode hasPrefix:currentLanguageCode]) {
+        [self dismissLanguageDialog];
+        return;
+    }
     self.isApplyingLanguageChange = YES;
-    [self dismissLanguageDialog];
-    self.previousLanguageCodeBeforeChange = [NSLocale preferredLanguages].firstObject ?: @"en";
-    [self applyLanguageCode:self.pendingLanguageCode displayName:self.pendingLanguageName ?: @""];
-    [self refreshLanguageSettingItem];
-    [self showRestartAlertWithLanguageCode:self.previousLanguageCodeBeforeChange];
+    self.previousLanguageCodeBeforeChange = currentLanguage;
+    __weak typeof(self) weakSelf = self;
+    [self dismissLanguageDialogWithCompletion:^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        [strongSelf showRestartAlertWithLanguageCode:strongSelf.previousLanguageCodeBeforeChange];
+    }];
 }
 
 - (void)restoreLanguageSelectionBeforeChange {
-    if (self.previousLanguageCodeBeforeChange.length == 0) {
-        [self refreshLanguageSettingItem];
-        return;
-    }
-    NSString *previous = self.previousLanguageCodeBeforeChange;
-    [[NSUserDefaults standardUserDefaults] setObject:@[previous] forKey:@"AppleLanguages"];
-    [[NSUserDefaults standardUserDefaults] setObject:previous forKey:@"AppleLocale"];
-    [[NSUserDefaults standardUserDefaults] synchronize];
     [self setupLanguageOptions];
     [self preloadPendingLanguage];
     [self refreshLanguageSettingItem];
@@ -693,7 +709,7 @@
 }
 
 - (void)preloadPendingLanguage {
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject ?: @"en";
+    NSString *preferredLanguage = [ATLanguageHelper currentLanguageCode];
     NSString *languageCode = [preferredLanguage componentsSeparatedByString:@"-"].firstObject ?: @"en";
     for (NSDictionary *option in self.languageOptions) {
         NSString *code = option[@"code"];
@@ -703,8 +719,8 @@
             return;
         }
     }
-    self.pendingLanguageCode = @"en";
-    self.pendingLanguageName = LocalString(@"英语");
+    self.pendingLanguageCode = nil;
+    self.pendingLanguageName = nil;
 }
 /*
 #pragma mark - Navigation

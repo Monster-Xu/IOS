@@ -203,7 +203,7 @@
 {
     if (self.type == ALERT_VIEW_TYPE_NORMAL_CANCEL && btn.tag == 1) {
         if (self.textView.text.length == 0) {  // 修复：使用text而不是tx
-            [MBProgressHUD showErrorMessage:@"取消原因不能为空"];
+            [MBProgressHUD showErrorMessage:LocalString(@"取消原因不能为空")];
             return;
         }
     }
@@ -511,7 +511,7 @@
                     make.height.mas_equalTo(20);
                 }];
             }
-            self.textView.placeholder = @"请输入";
+            self.textView.placeholder = LocalString(@"请输入");
             self.textView.text = _info[@"value"];
             
             // 添加安全检查
@@ -639,6 +639,9 @@
         _cancelBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         [self.bgView addSubview:_cancelBtn];
         [_cancelBtn.titleLabel setFont:[ATFontManager systemFontOfSize:16]];
+        _cancelBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+        _cancelBtn.titleLabel.minimumScaleFactor = 0.75;
+        _cancelBtn.titleLabel.lineBreakMode = NSLineBreakByClipping;
         [_cancelBtn setTitleColor:UIColorFromRGBA(000000, 0.5) forState:UIControlStateNormal];
         _cancelBtn.tag = 0;
         _cancelBtn.userInteractionEnabled = YES;
@@ -653,6 +656,9 @@
         _confirmBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         [self.bgView addSubview:_confirmBtn];
         [_confirmBtn.titleLabel setFont:[ATFontManager boldSystemFontOfSize:16]];
+        _confirmBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+        _confirmBtn.titleLabel.minimumScaleFactor = 0.75;
+        _confirmBtn.titleLabel.lineBreakMode = NSLineBreakByClipping;
         [_confirmBtn setTitleColor:UIColorFromRGBA(000000, 0.9) forState:UIControlStateNormal];
         _confirmBtn.tag = 1;
         _confirmBtn.userInteractionEnabled = YES;
@@ -733,7 +739,7 @@
         _textView.delegate = self;
         _textView.backgroundColor = UIColor.whiteColor;
         _textView.tag = 1999;
-        _textView.placeholder = @"请输入原因....";
+        _textView.placeholder = LocalString(@"请输入原因....");
         [_textView setFont:[ATFontManager systemFontOfSize:16]];
         [_textView setTextColor:UIColorFromRGBA(000000, 0.9)];
         [_textView setTintColor:mainColor];
@@ -748,7 +754,7 @@
     NSInteger length = existedLength - selectedLength + replaceLength;
     if (self.type == ALERT_VIEW_TYPE_NORMAL_CANCEL) {
         if (length > 50) {
-            [MBProgressHUD showWarnMessage:@"最多输入50字"];
+            [MBProgressHUD showWarnMessage:LocalString(@"最多输入50字")];
             return NO;
         }
     }

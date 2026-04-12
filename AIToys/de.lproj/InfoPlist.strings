@@ -1,0 +1,14 @@
+/* 
+ InfoPlist.strings
+ AIToys
+*/
+CFBundleDisplayName = "Talenpal";
+NSBluetoothAlwaysUsageDescription = "Bluetooth-Zugriff wird benötigt, um Geräte zu finden und zu verbinden";
+NSBluetoothPeripheralUsageDescription = "Bluetooth-Zugriff wird benötigt, um Geräte zu finden und zu verbinden";
+NSLocationWhenInUseUsageDescription = "Die Standortberechtigung wird für die Automatisierung von Smart-Geräten, das Erkennen von Geräten in der Nähe, WLAN-Listen und mehr verwendet. Bitte erlauben Sie der App den Zugriff.";
+NSLocationAlwaysUsageDescription = "Die Standortberechtigung wird für die Automatisierung von Smart-Geräten, das Erkennen von Geräten in der Nähe, WLAN-Listen und mehr verwendet. Bitte erlauben Sie der App den Zugriff.";
+NSCameraUsageDescription = "Kamerazugriff wird benötigt, um Geräte-QR-Codes zu scannen und Fotos aufzunehmen";
+NSMicrophoneUsageDescription = "Mikrofonzugriff wird benötigt, um Sprachinhalte aufzunehmen";
+NSSpeechRecognitionUsageDescription = "Spracherkennungszugriff wird benötigt, um Sprache in Text umzuwandeln";
+NSPhotoLibraryUsageDescription = "Zugriff auf die Fotomediathek wird benötigt, um Bilder auszuwählen";
+NSPhotoLibraryAddUsageDescription = "Zugriff auf die Fotomediathek wird benötigt, um Bilder zu speichern";

@@ -361,17 +361,40 @@
         [SFSpeechRecognizer requestAuthorization:^(SFSpeechRecognizerAuthorizationStatus authStatus) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (authStatus == SFSpeechRecognizerAuthorizationStatusAuthorized) {
-                    [self startRecording];
+                    [self checkMicrophonePermissionAndStartRecording];
                 } else {
-                    [self showPermissionDeniedAlert];
+                    [self showSpeechPermissionDeniedAlert];
                 }
             });
         }];
     } else if (status == SFSpeechRecognizerAuthorizationStatusAuthorized) {
-        [self startRecording];
+        [self checkMicrophonePermissionAndStartRecording];
     } else {
-        [self showPermissionDeniedAlert];
+        [self showSpeechPermissionDeniedAlert];
     }
+}
+
+- (void)checkMicrophonePermissionAndStartRecording {
+    AVAudioSessionRecordPermission recordPermission = [[AVAudioSession sharedInstance] recordPermission];
+    if (recordPermission == AVAudioSessionRecordPermissionDenied) {
+        [self showMicrophonePermissionDeniedAlert];
+        return;
+    }
+    
+    if (recordPermission == AVAudioSessionRecordPermissionUndetermined) {
+        [[AVAudioSession sharedInstance] requestRecordPermission:^(BOOL granted) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (granted) {
+                    [self startRecording];
+                } else {
+                    [self showMicrophonePermissionDeniedAlert];
+                }
+            });
+        }];
+        return;
+    }
+    
+    [self startRecording];
 }
 
 - (void)startRecording {
@@ -515,8 +538,12 @@
 
 #pragma mark - 提示框
 
-- (void)showPermissionDeniedAlert {
-    [self showAlert:LocalString(@"需要麦克风权限。\n请在“设置-隐私”中允许本应用访问麦克风。")];
+- (void)showSpeechPermissionDeniedAlert {
+    [self showSettingsAlert:LocalString(@"请在设置中允许语音识别权限")];
+}
+
+- (void)showMicrophonePermissionDeniedAlert {
+    [self showSettingsAlert:LocalString(@"需要麦克风权限。\n请在“设置-隐私”中允许本应用访问麦克风。")];
 }
 
 - (void)showAlert:(NSString *)message {
@@ -527,6 +554,31 @@
     [alert addAction:[UIAlertAction actionWithTitle:LocalString(@"确定")
                                               style:UIAlertActionStyleDefault
                                             handler:^(UIAlertAction * _Nonnull action) {
+        [self dismiss];
+    }]];
+    
+    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
+    [rootVC presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)showSettingsAlert:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:LocalString(@"提示")
+                                                                   message:message
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:LocalString(@"取消")
+                                              style:UIAlertActionStyleCancel
+                                            handler:^(UIAlertAction * _Nonnull action) {
+        [self dismiss];
+    }]];
+    
+    [alert addAction:[UIAlertAction actionWithTitle:LocalString(@"去设置")
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction * _Nonnull action) {
+        NSURL *settingsURL = [NSURL URLWithString:UIApplicationOpenSettingsURLString];
+        if (settingsURL) {
+            [[UIApplication sharedApplication] openURL:settingsURL options:@{} completionHandler:nil];
+        }
         [self dismiss];
     }]];
     

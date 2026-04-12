@@ -24,6 +24,8 @@
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     [self.listTableView registerNib:[UINib nibWithNibName:@"WiFiListTableViewCell" bundle:nil] forCellReuseIdentifier:@"WiFiListTableViewCell"];
     self.dataArr = [NSMutableArray new];
+    self.emptyStateLabel.numberOfLines = 0;
+    self.emptyStateLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.emptyStateLabel.text = LocalString(@"暂无WiFi记录，快去添加设备吧！");
     [SVProgressHUD showWithStatus:LocalString(@"加载中...")];
     [self loadDate];

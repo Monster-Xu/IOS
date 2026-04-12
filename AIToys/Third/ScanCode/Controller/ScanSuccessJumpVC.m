@@ -31,7 +31,7 @@
 
 - (void)setupNavigationItem {
     UIButton *left_Button = [[UIButton alloc] init];
-    [left_Button setTitle:@"返回" forState:UIControlStateNormal];
+    [left_Button setTitle:NSLocalizedString(@"返回", nil) forState:UIControlStateNormal];
     [left_Button setTitleColor:[UIColor colorWithRed: 21/ 255.0f green: 126/ 255.0f blue: 251/ 255.0f alpha:1.0] forState:(UIControlStateNormal)];
     [left_Button sizeToFit];
     [left_Button addTarget:self action:@selector(left_BarButtonItemAction) forControlEvents:UIControlEventTouchUpInside];
@@ -60,7 +60,7 @@
     // 提示文字
     UILabel *prompt_message = [[UILabel alloc] init];
     prompt_message.frame = CGRectMake(0, 200, self.view.frame.size.width, 30);
-    prompt_message.text = @"您扫描的条形码结果如下： ";
+    prompt_message.text = NSLocalizedString(@"您扫描的条形码结果如下： ", nil);
     prompt_message.textColor = [UIColor redColor];
     prompt_message.textAlignment = NSTextAlignmentCenter;
     [self.view addSubview:prompt_message];
@@ -96,4 +96,3 @@
 
 
 @end
-

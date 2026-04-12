@@ -88,7 +88,7 @@
         _titleLabel.font = [ATFontManager systemFontOfSize:18];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
         [self.bgView addSubview:_titleLabel];
-        _titleLabel.text = @"用户协议及隐私政策";
+        _titleLabel.text = LocalString(@"用户协议及隐私政策");
         [_titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.bgView.mas_top).offset(15);
             make.centerX.equalTo(self.bgView);
@@ -106,7 +106,7 @@
         _textView.selectable = NO;
         _textView.font = [ATFontManager systemFontOfSize:14];
         _textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
-        _textView.text = @"为更好的保障您的合法权益，请您\n阅读并同意以下协议";
+        _textView.text = LocalString(@"为更好的保障您的合法权益，请您\n阅读并同意以下协议");
         [self.bgView addSubview:_textView];
         [_textView mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.titleLabel.mas_bottom).offset(15);
@@ -122,7 +122,7 @@
         _seeBtn = [[UIButton alloc]init];
         _seeBtn.tag = Agreement_Type_See;
         [_seeBtn addTarget:self action:@selector(btnAction:) forControlEvents:UIControlEventTouchUpInside];
-        [_seeBtn setTitle:@"《用户协议》《隐私协议》" forState:UIControlStateNormal];
+        [_seeBtn setTitle:LocalString(@"《用户协议》《隐私协议》") forState:UIControlStateNormal];
         [_seeBtn setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
         [self.bgView addSubview:_seeBtn];
         [_seeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -139,7 +139,7 @@
         _nextBtn.backgroundColor = UIColorFromRGB(0x4A71D5);
         _nextBtn.layer.cornerRadius = 22;
         [_nextBtn addTarget:self action:@selector(btnAction:) forControlEvents:UIControlEventTouchUpInside];
-        [_nextBtn setTitle:@"同意并继续" forState:UIControlStateNormal];
+        [_nextBtn setTitle:LocalString(@"同意并继续") forState:UIControlStateNormal];
         [_nextBtn setTitleColor:UIColorFromRGB(0xFFFFFF) forState:UIControlStateNormal];
         [_nextBtn.titleLabel setFont:[ATFontManager systemFontOfSize:15]];
         [self.bgView addSubview:_nextBtn];
@@ -159,7 +159,7 @@
         _exitBtn.tag = Agreement_Type_Exit;
         _exitBtn.backgroundColor = [UIColor clearColor];
         [_exitBtn addTarget:self action:@selector(btnAction:) forControlEvents:UIControlEventTouchUpInside];
-        [_exitBtn setTitle:@"不同意并退出APP" forState:UIControlStateNormal];
+        [_exitBtn setTitle:LocalString(@"不同意并退出APP") forState:UIControlStateNormal];
         [_exitBtn setTitleColor:UIColorFromRGB(0x606060) forState:UIControlStateNormal];
         [_exitBtn.titleLabel setFont:[ATFontManager systemFontOfSize:15]];
         [self.bgView addSubview:_exitBtn];

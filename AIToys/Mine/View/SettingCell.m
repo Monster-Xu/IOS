@@ -17,6 +17,11 @@
         arrowImage = [arrowImage imageFlippedForRightToLeftLayoutDirection];
     }
     self.rightImgView.image = arrowImage;
+    self.titleLabel.numberOfLines = 2;
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.subTitleLabel.numberOfLines = 1;
+    self.subTitleLabel.adjustsFontSizeToFitWidth = YES;
+    self.subTitleLabel.minimumScaleFactor = 0.75;
 }
 
 -(void)layoutSubviews{
@@ -42,6 +47,7 @@
 -(void)setModel:(MineItemModel *)model{
     _model = model;
     self.titleLabel.text = model.title;
+    self.titleLabel.preferredMaxLayoutWidth = kScreenWidth - 85.0;
     BOOL hideSubtitle = [PublicObj isEmptyObject:model.value];
     self.subTitleLabel.hidden = hideSubtitle;
     self.subTitleLabel.text = hideSubtitle ? @"" : model.value;

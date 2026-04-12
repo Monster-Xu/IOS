@@ -49,6 +49,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @interface HomeViewController ()<SDCycleScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,JHCustomMenuDelegate,ThingSmartHomeManagerDelegate,JXPageListViewDelegate,ThingSmartHomeDelegate,ThingSmartBLEManagerDelegate,ThingSmartBLEWifiActivatorDelegate,AudioPlayerViewDelegate,ThingMiniAppWidgetProtocol>
 @property (weak, nonatomic) IBOutlet UIView *topView;
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *moreImageView;
 @property (weak, nonatomic) IBOutlet UIView *containerView;
 
 @property (nonatomic, strong) SDCycleScrollView *cycleScrollView;
@@ -72,6 +73,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 // 🔒 新增：用于线程安全的串行队列
 @property (nonatomic, strong) dispatch_queue_t dataQueue;
+@property (nonatomic, strong) NSMutableArray *pendingHomeDataSuccessBlocks;
+@property (nonatomic, strong) NSMutableArray *pendingHomeDataFailureBlocks;
 @property (nonatomic, copy) NSString *lastHardwareCode;//最新一次toyID
 @property (nonatomic, copy) NSString *homeDisplayMode; // 首页显示模式控制，从propValue获取
 @property (nonatomic, copy) NSString *homeGuideMode; // 首页显示模式控制，从propValue获取
@@ -80,6 +83,10 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @property (nonatomic, assign) BOOL hasInitialDataLoaded; // 标记是否已经完成初始数据加载
 @property (nonatomic, assign) BOOL isDataLoading; // 标记是否正在加载数据
 @property (nonatomic, assign) BOOL isAnimationActive; // 标记骨架屏动画是否激活
+@property (nonatomic, assign) BOOL isRefreshingCurrentHomeData;
+@property (nonatomic, assign) long long activeHomeDataRequestHomeId;
+@property (nonatomic, assign) NSUInteger activeHomeDataRequestToken;
+@property (nonatomic, assign) BOOL isDeviceReloadScheduled;
 
 //播放器
 @property (nonatomic, strong) AudioPlayerView *currentAudioPlayer;
@@ -94,6 +101,36 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @end
 
 @implementation HomeViewController
+
+- (void)resetCurrentHomeDataRequestStateLocked {
+    [self.pendingHomeDataSuccessBlocks removeAllObjects];
+    [self.pendingHomeDataFailureBlocks removeAllObjects];
+    self.isRefreshingCurrentHomeData = NO;
+    self.activeHomeDataRequestHomeId = 0;
+    self.activeHomeDataRequestToken += 1;
+}
+
+- (void)setCurrentHome:(ThingSmartHome *)currentHome {
+    if (_currentHome == currentHome) {
+        _currentHome.delegate = self;
+        return;
+    }
+
+    if (_currentHome) {
+        _currentHome.delegate = nil;
+    }
+
+    _currentHome = currentHome;
+    _currentHome.delegate = self;
+
+    if (self.dataQueue) {
+        dispatch_sync(self.dataQueue, ^{
+            [self resetCurrentHomeDataRequestStateLocked];
+        });
+    } else {
+        [self resetCurrentHomeDataRequestStateLocked];
+    }
+}
 
 // 添加数组安全访问方法
 - (id)safeObjectAtIndex:(NSUInteger)index fromArray:(NSArray *)array {
@@ -311,6 +348,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"auditionNotification" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"DeletToysSuccess" object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:AVAudioSessionInterruptionNotification object:nil];
+    self.homeManager.delegate = nil;
+    self.currentHome = nil;
     
     // 清理音频播放器
     if (self.currentAudioPlayer) {
@@ -334,6 +373,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.view.backgroundColor = tableBgColor;
     self.topView.hidden = YES;
     self.titleLabel.text = LocalString(@"小朋友，你好！");
+    NSString *homeLanguageCode = [[ATLanguageHelper miniAppLangType] lowercaseString] ?: @"en";
+    BOOL isArabicLanguage = [homeLanguageCode hasPrefix:@"ar"];
+    self.moreImageView.image = [UIImage imageNamed:@"home_nav_more_ar"];
 //    [[ThingSmartBLEManager sharedInstance] startListening:YES];
     // 初始化音频会话状态
     self.isAudioSessionActive = NO;
@@ -373,6 +415,153 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 - (void)setupDataCache {
     // 先从缓存加载数据，提供即时显示（仅首次加载时）
     [self loadCachedDataIfNeeded];
+}
+
+- (void)requestCurrentHomeDataWithSuccess:(void (^)(ThingSmartHomeModel *homeModel))success
+                                  failure:(void (^)(NSError *error))failure {
+    ThingSmartHome *home = self.currentHome;
+    if (!home) {
+        if (failure) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                failure(nil);
+            });
+        }
+        return;
+    }
+
+    __block BOOL shouldStartRequest = NO;
+    __block long long requestHomeId = home.homeId;
+    __block NSUInteger requestToken = 0;
+    void (^updateState)(void) = ^{
+        if (!self.pendingHomeDataSuccessBlocks) {
+            self.pendingHomeDataSuccessBlocks = [NSMutableArray array];
+        }
+        if (!self.pendingHomeDataFailureBlocks) {
+            self.pendingHomeDataFailureBlocks = [NSMutableArray array];
+        }
+
+        // 当前家庭已切换时，旧请求的回调不能再复用当前状态。
+        if (self.isRefreshingCurrentHomeData && self.activeHomeDataRequestHomeId != requestHomeId) {
+            [self resetCurrentHomeDataRequestStateLocked];
+        }
+
+        if (success) {
+            [self.pendingHomeDataSuccessBlocks addObject:[success copy]];
+        }
+        if (failure) {
+            [self.pendingHomeDataFailureBlocks addObject:[failure copy]];
+        }
+        if (self.isRefreshingCurrentHomeData && self.activeHomeDataRequestHomeId == requestHomeId) {
+            requestToken = self.activeHomeDataRequestToken;
+            return;
+        }
+
+        self.isRefreshingCurrentHomeData = YES;
+        self.activeHomeDataRequestHomeId = requestHomeId;
+        self.activeHomeDataRequestToken += 1;
+        requestToken = self.activeHomeDataRequestToken;
+        shouldStartRequest = YES;
+    };
+    if (self.dataQueue) {
+        dispatch_sync(self.dataQueue, updateState);
+    } else {
+        updateState();
+    }
+
+    if (!shouldStartRequest) {
+        return;
+    }
+
+    __weak typeof(self) weakSelf = self;
+    [home getHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        __block NSArray *successBlocks = nil;
+        void (^resetState)(void) = ^{
+            if (strongSelf.activeHomeDataRequestToken != requestToken ||
+                strongSelf.activeHomeDataRequestHomeId != requestHomeId ||
+                !strongSelf.isRefreshingCurrentHomeData) {
+                return;
+            }
+            successBlocks = [strongSelf.pendingHomeDataSuccessBlocks copy];
+            [strongSelf resetCurrentHomeDataRequestStateLocked];
+        };
+        if (strongSelf.dataQueue) {
+            dispatch_sync(strongSelf.dataQueue, resetState);
+        } else {
+            resetState();
+        }
+
+        if (successBlocks.count == 0) {
+            return;
+        }
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            for (id blockObj in successBlocks) {
+                void (^block)(ThingSmartHomeModel *homeModel) = blockObj;
+                if (block) {
+                    block(homeModel);
+                }
+            }
+        });
+    } failure:^(NSError *error) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+
+        __block NSArray *failureBlocks = nil;
+        void (^resetState)(void) = ^{
+            if (strongSelf.activeHomeDataRequestToken != requestToken ||
+                strongSelf.activeHomeDataRequestHomeId != requestHomeId ||
+                !strongSelf.isRefreshingCurrentHomeData) {
+                return;
+            }
+            failureBlocks = [strongSelf.pendingHomeDataFailureBlocks copy];
+            [strongSelf resetCurrentHomeDataRequestStateLocked];
+        };
+        if (strongSelf.dataQueue) {
+            dispatch_sync(strongSelf.dataQueue, resetState);
+        } else {
+            resetState();
+        }
+
+        if (failureBlocks.count == 0) {
+            return;
+        }
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            for (id blockObj in failureBlocks) {
+                void (^block)(NSError *error) = blockObj;
+                if (block) {
+                    block(error);
+                }
+            }
+        });
+    }];
+}
+
+- (void)scheduleDeviceDataReload {
+    if (self.isDeviceReloadScheduled) {
+        return;
+    }
+
+    self.isDeviceReloadScheduled = YES;
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
+        strongSelf.isDeviceReloadScheduled = NO;
+        if (!strongSelf.currentHome || !kMyUser.accessToken) {
+            return;
+        }
+        [strongSelf reloadDeviceData:NO];
+    });
 }
 
 //更新ThingFamilyProtocol 协议
@@ -453,10 +642,12 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     CGFloat cycleScrollH = (kScreenWidth-30) *151/343.0;
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, cycleScrollH + 30)];
     self.cycleScrollView = [SDCycleScrollView cycleScrollViewWithFrame:CGRectMake(15, 15, kScreenWidth-30, cycleScrollH) delegate:self placeholderImage:nil];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.cycleScrollView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     [headerView addSubview:self.cycleScrollView];
 //    self.cycleScrollView.localizationImageNamesGroup = @[@"home_banner", @"home_banner", @"home_banner", @"home_banner"];
     self.cycleScrollView.bannerImageViewContentMode = UIViewContentModeScaleToFill;
-    self.cycleScrollView.autoScrollTimeInterval = 3;
+    self.cycleScrollView.autoScrollTimeInterval = 5;
     self.cycleScrollView.layer.cornerRadius = 20;
     self.cycleScrollView.layer.masksToBounds = YES;
     self.cycleScrollView.backgroundColor = UIColor.whiteColor;
@@ -630,8 +821,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }
     
     WEAK_SELF
-    [self.currentHome getHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
-        if(weakSelf.currentHome){
+    [self requestCurrentHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
+        if (weakSelf.currentHome.homeId == homeModel.homeId) {
             NSArray *newDeviceArr = [weakSelf.currentHome.deviceList sortedArrayUsingComparator:^NSComparisonResult(ThingSmartDeviceModel *obj1, ThingSmartDeviceModel *obj2) {
                 return obj1.homeDisplayOrder - obj2.homeDisplayOrder;
             }];
@@ -771,8 +962,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     // 检查设备数据是否需要更新
     if (self.currentHome) {
-        [self.currentHome getHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
-            if(weakSelf.currentHome){
+        [self requestCurrentHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
+            if (weakSelf.currentHome.homeId == homeModel.homeId) {
                 NSArray *newDeviceArr = [weakSelf.currentHome.deviceList sortedArrayUsingComparator:^NSComparisonResult(ThingSmartDeviceModel *obj1, ThingSmartDeviceModel *obj2) {
                     return obj1.homeDisplayOrder - obj2.homeDisplayOrder;
                 }];
@@ -1154,9 +1345,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                     return;
                 }
             }
-            [weakSelf.currentHome getHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
+            [weakSelf requestCurrentHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
                 NSLog(@"家庭设备数据请求成功");
-                if(weakSelf.currentHome){
+                if (weakSelf.currentHome.homeId == homeModel.homeId) {
                     weakSelf.deviceArr = [weakSelf.currentHome.deviceList sortedArrayUsingComparator:^NSComparisonResult(ThingSmartDeviceModel *obj1, ThingSmartDeviceModel *obj2) {
                         return obj1.homeDisplayOrder - obj2.homeDisplayOrder;
                     }];
@@ -1425,11 +1616,11 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     if(showHud){
         [self showHud];
     }
-    [self.currentHome getHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
+    [self requestCurrentHomeDataWithSuccess:^(ThingSmartHomeModel *homeModel) {
         if(showHud){
             [weakSelf hiddenHud];
         }
-        if(weakSelf.currentHome){
+        if (weakSelf.currentHome.homeId == homeModel.homeId) {
 //            weakSelf.deviceArr = weakSelf.currentHome.deviceList;
             weakSelf.deviceArr = [weakSelf.currentHome.deviceList sortedArrayUsingComparator:^NSComparisonResult(ThingSmartDeviceModel *obj1, ThingSmartDeviceModel *obj2) {
                 return obj1.homeDisplayOrder - obj2.homeDisplayOrder; // 或者使用 [obj1.age compare:obj2.age] 如果你想要更复杂的比较逻辑（比如字符串比较）
@@ -1475,45 +1666,16 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 //导航栏右侧按钮
 - (IBAction)operationBtnClick:(id)sender {
-    WEAK_SELF
-    NSString *preferredLanguage = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
-    if ([preferredLanguage hasPrefix:@"ar"]) {
-        if(self.homeList.count == 0){
-            [SVProgressHUD showErrorWithStatus:LocalString(@"请先创建家庭")];
-            return;
-        }
-        FindDeviceViewController *VC = [FindDeviceViewController new];
-        VC.homeId = self.currentHome.homeId;
-        [self.navigationController pushViewController:VC animated:YES];
-        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"isHomefun"];
-        [[AnalyticsManager sharedManager]reportEventWithName:@"home_function_button_tap_add_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"从功能按钮点击添加设备时" properties:@{} completion:^(BOOL success, NSString * _Nullable message) {
-        }];
+    if(self.homeList.count == 0){
+        [SVProgressHUD showErrorWithStatus:LocalString(@"请先创建家庭")];
         return;
     }
-    if (!self.menu) {
-        UIButton *operationButton = [sender isKindOfClass:[UIButton class]] ? (UIButton *)sender : nil;
-        CGRect buttonFrame = operationButton ? [operationButton.superview convertRect:operationButton.frame toView:self.view] : CGRectMake(kScreenWidth - 60, StatusBar_Height + 15, 60, 34);
-        CGFloat menuWidth = 134;
-        CGFloat menuX = CGRectGetMaxX(buttonFrame) - menuWidth;
-        menuX = MAX(10, MIN(menuX, kScreenWidth - menuWidth - 10));
-        CGFloat menuY = CGRectGetMaxY(buttonFrame) + 8;
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            if (weakSelf.menu) {
-                return;
-            }
-            weakSelf.menu = [[JHCustomMenu alloc] initWithDataArr:@[LocalString(@"添加设备") , LocalString(@"切换家庭")] origin:CGPointMake(menuX, menuY) width:menuWidth rowHeight:45];
-            weakSelf.menu.delegate = weakSelf;
-            weakSelf.menu.dismiss = ^() {
-                weakSelf.menu = nil;
-            };
-//        _menu.arrImgName = @[@"share_pop.png", @"complain_pop.png"];
-            [weakSelf.view addSubview:weakSelf.menu];
-        });
-    } else {
-        [_menu dismissWithCompletion:^(JHCustomMenu *object) {
-            weakSelf.menu = nil;
-        }];
-    }
+    FindDeviceViewController *VC = [FindDeviceViewController new];
+    VC.homeId = self.currentHome.homeId;
+    [self.navigationController pushViewController:VC animated:YES];
+    [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"isHomefun"];
+    [[AnalyticsManager sharedManager]reportEventWithName:@"home_function_button_tap_add_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"从功能按钮点击添加设备时" properties:@{} completion:^(BOOL success, NSString * _Nullable message) {
+    }];
     
     //埋点：点击功能按钮
         [[AnalyticsManager sharedManager]reportEventWithName:@"home_tap_function_button" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击功能按钮时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
@@ -1751,9 +1913,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     if (indexPath.section == 0) {
-        return self.deviceArr.count > 0 ? 150 :270;
+        return self.deviceArr.count > 0 ? 150 : 300;
     }else if (indexPath.section == 1){
-        return self.diyDollList.count > 0 ? 150 :270;
+        return self.diyDollList.count > 0 ? 150 : 300;
     }else{
         //Tips:最后一个section（即listContainerCell所在的section）返回listContainerCell的高度
 //        return [self.pageListView listContainerCellHeight];
@@ -2057,17 +2219,17 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 // 添加设备
 - (void)home:(ThingSmartHome *)home didAddDeivice:(ThingSmartDeviceModel *)device {
-    [self reloadDeviceData:NO];
+    [self scheduleDeviceDataReload];
 }
 
 // 删除设备
 - (void)home:(ThingSmartHome *)home didRemoveDeivice:(NSString *)devId {
-    [self reloadDeviceData:NO];
+    [self scheduleDeviceDataReload];
 }
 
 // 设备信息更新，例如设备 name 变化，在线状态变化
 - (void)home:(ThingSmartHome *)home deviceInfoUpdate:(ThingSmartDeviceModel *)device {
-    [self reloadDeviceData:NO];
+    [self scheduleDeviceDataReload];
 }
 
 // 家庭下设备的 dps 变化代理回调
@@ -2079,7 +2241,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         //dp 4:充电状态 103：添加公仔
         if([[dps allKeys] containsObject:@"4"]){
             //刷新设备列表
-            [self reloadDeviceData:NO];
+            [self scheduleDeviceDataReload];
         }
         NSString *hardwareCode = dps[@"103"];
         if(![PublicObj isEmptyObject:hardwareCode] && ![hardwareCode isEqualToString:self.lastHardwareCode] && [dps allKeys].count == 1){
@@ -2186,8 +2348,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 break;
             }
             case AVAuthorizationStatusDenied: {
-                UIAlertController *alertC = [UIAlertController alertControllerWithTitle:@"温馨提示" message:@"请去-> [设置 - 隐私 - 相机 - SGQRCodeExample] 打开访问开关" preferredStyle:(UIAlertControllerStyleAlert)];
-                UIAlertAction *alertA = [UIAlertAction actionWithTitle:@"确定" style:(UIAlertActionStyleDefault) handler:^(UIAlertAction * _Nonnull action) {
+                UIAlertController *alertC = [UIAlertController alertControllerWithTitle:LocalString(@"温馨提示") message:LocalString(@"请去-> [设置 - 隐私 - 相机 - SGQRCodeExample] 打开访问开关") preferredStyle:(UIAlertControllerStyleAlert)];
+                UIAlertAction *alertA = [UIAlertAction actionWithTitle:LocalString(@"确定") style:(UIAlertActionStyleDefault) handler:^(UIAlertAction * _Nonnull action) {
 
                 }];
 
@@ -2206,8 +2368,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         return;
     }
 
-    UIAlertController *alertC = [UIAlertController alertControllerWithTitle:@"温馨提示" message:@"未检测到您的摄像头" preferredStyle:(UIAlertControllerStyleAlert)];
-    UIAlertAction *alertA = [UIAlertAction actionWithTitle:@"确定" style:(UIAlertActionStyleDefault) handler:^(UIAlertAction * _Nonnull action) {
+    UIAlertController *alertC = [UIAlertController alertControllerWithTitle:LocalString(@"温馨提示") message:LocalString(@"未检测到您的摄像头") preferredStyle:(UIAlertControllerStyleAlert)];
+    UIAlertAction *alertA = [UIAlertAction actionWithTitle:LocalString(@"确定") style:(UIAlertActionStyleDefault) handler:^(UIAlertAction * _Nonnull action) {
 
     }];
 

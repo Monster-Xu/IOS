@@ -1055,7 +1055,9 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     NSString *encodedURL = [urlStr stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]];
     
     // 显示上传提示
-    [SVProgressHUD showWithStatus:@"UpLoading..."];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [SVProgressHUD showWithStatus:LocalString(@"上传中")];
+    });
     
     // 创建上传任务
     NSURLSessionDataTask *uploadTask = [manager POST:encodedURL
@@ -1090,7 +1092,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         
         // 主线程回调
         dispatch_async(dispatch_get_main_queue(), ^{
-            [SVProgressHUD showSuccessWithStatus:@"upLoad Success"];
+            [SVProgressHUD showSuccessWithStatus:LocalString(@"日志上传成功")];
             
             if (success) {
                 success(responseObject);

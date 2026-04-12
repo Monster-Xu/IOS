@@ -50,12 +50,13 @@
         self.dateView.hidden = YES;
         self.btnTop.constant = 70;
         self.alertTop.constant = 8;
-        if (self.type == EmailType_regist){
+        if (self.type == EmailType_forgetPwd){
             self.titleLabel.text =  LocalString(@"忘记密码");
         }else{
             self.titleLabel.text =  LocalString(@"更换邮箱");
         }
     }
+    self.titleLabel.numberOfLines = 0;
     self.acountTitleLabel.text = LocalString(@"账号");
     self.textField.placeholder = LocalString(@"账号");
     self.dateTitleLabel.text = LocalString(@"出生日期");
@@ -64,6 +65,10 @@
     [self.sendCodeBtn setTitle:LocalString(@"获取验证码") forState:0];
     self.textField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.dateTextfield.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.textField.adjustsFontSizeToFitWidth = YES;
+    self.textField.minimumFontSize = 12.0;
+    self.dateTextfield.adjustsFontSizeToFitWidth = YES;
+    self.dateTextfield.minimumFontSize = 12.0;
     [PublicObj makeButtonUnEnable:self.sendCodeBtn];
     if(self.numStr.length>0){
         self.textField.text = self.numStr;

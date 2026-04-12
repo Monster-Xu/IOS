@@ -67,7 +67,7 @@
     [LGNoDataView removeAllPromptView:view];
     LGNoDataView *noView = [[LGNoDataView alloc]initWithViewNoHeader:view];
     [view addSubview:noView];
-    noView.textLabel.text = @"暂无数据";
+    noView.textLabel.text = LocalString(@"暂无数据");
     UIImage *img = QD_IMG(@"no_data");
     noView.imageView.image = img;
     noView.imageView.frame = CGRectMake((noView.bounds.size.width - img.size.width) * 0.5, noView.bounds.size.height * 0.5 - img.size.height, img.size.width, img.size.height);
@@ -83,7 +83,7 @@
     noView.imageView.image = img;
     noView.imageView.frame = CGRectMake((noView.bounds.size.width - img.size.width) * 0.5, 10, img.size.width, img.size.height);
     noView.textLabel.frame = CGRectMake(15,CGRectGetMaxY(noView.imageView.frame) + 10, frame.size.width - 30, 20);
-    noView.textLabel.text = @"暂无数据";
+    noView.textLabel.text = LocalString(@"暂无数据");
     UIButton *btn = [UIButton new];
     [btn addTarget:noView action:@selector(btnAction) forControlEvents:UIControlEventTouchUpInside];
     btn.frame = CGRectMake(0, 0, noView.bounds.size.width, noView.bounds.size.height);
@@ -101,7 +101,7 @@
     noView.imageView.image = img;
     noView.imageView.frame = CGRectMake((noView.bounds.size.width - img.size.width) * 0.5, 10, img.size.width, img.size.height);
     noView.textLabel.frame = CGRectMake(15,CGRectGetMaxY(noView.imageView.frame) + 10, frame.size.width - 30, 20);
-    noView.textLabel.text = title.length > 0 ? title : @"暂无数据";
+    noView.textLabel.text = title.length > 0 ? title : LocalString(@"暂无数据");
     UIButton *btn = [UIButton new];
     [btn addTarget:noView action:@selector(btnAction) forControlEvents:UIControlEventTouchUpInside];
     btn.frame = CGRectMake(0, 0, noView.bounds.size.width, noView.bounds.size.height);
@@ -118,7 +118,7 @@
     [LGNoDataView removeAllPromptView:view];
     LGNoDataView *noView = [[LGNoDataView alloc]initWithViewNoHeader:view];
     [view addSubview:noView];
-    noView.textLabel.text = text.length > 0 ? text : @"暂无数据";
+    noView.textLabel.text = text.length > 0 ? text : LocalString(@"暂无数据");
     UIImage *img = QD_IMG(@"no_data");
     noView.imageView.image = img;
     noView.imageView.frame = CGRectMake((noView.bounds.size.width - img.size.width) * 0.5, 10, img.size.width, img.size.height);

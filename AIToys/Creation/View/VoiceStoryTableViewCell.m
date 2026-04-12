@@ -9,7 +9,50 @@
 #import "VoiceStoryModel.h"
 #import "AudioPlayerView.h"
 
+static NSString *AITLocalizedCreateNewBadgeImageName(void) {
+    NSString *preferredLanguage = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] ? [[[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] firstObject] : [NSLocale preferredLanguages].firstObject;
+    NSString *languageCode = [[preferredLanguage ?: @"en" lowercaseString] componentsSeparatedByString:@"-"].firstObject;
+
+    if ([languageCode hasPrefix:@"ar"]) {
+        return @"create_new_ar";
+    }
+    if ([languageCode hasPrefix:@"de"]) {
+        return @"create_new_de";
+    }
+    if ([languageCode hasPrefix:@"fr"]) {
+        return @"create_new_fr";
+    }
+    if ([languageCode hasPrefix:@"es"]) {
+        return @"create_new_es";
+    }
+    return @"create_new";
+}
+
+static UIImage *AITLocalizedCreateNewBadgeImage(void) {
+    return [UIImage imageNamed:AITLocalizedCreateNewBadgeImageName()];
+}
+
 @implementation VoiceStoryTableViewCell
+
+- (NSString *)localizedStatusText {
+    NSString *desc = self.model.statusDesc;
+    if (desc.length > 0) {
+        return LocalString(desc);
+    }
+
+    switch (self.model.storyStatus) {
+        case StoryStatusGenerating:
+            return LocalString(@"故事生成中");
+        case StoryStatusGenerateFailed:
+            return LocalString(@"故事生成失败");
+        case StoryStatusAudioGenerating:
+            return LocalString(@"音频生成中");
+        case StoryStatusAudioFailed:
+            return LocalString(@"音频生成失败");
+        default:
+            return @"";
+    }
+}
 
 - (void)awakeFromNib {
     [super awakeFromNib];
@@ -61,7 +104,8 @@
     
     // New标签
     self.badgeImageView = [[UIImageView alloc] init];
-    self.badgeImageView.image = [UIImage imageNamed:@"create_new"];
+    self.badgeImageView.image = AITLocalizedCreateNewBadgeImage();
+    self.badgeImageView.contentMode = UIViewContentModeScaleAspectFit;
     self.badgeImageView.hidden = YES;
     [cardContainerView addSubview:self.badgeImageView];
     
@@ -168,8 +212,8 @@
     [self.badgeImageView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.leading.equalTo(self.coverImageView).offset(0);
         make.top.equalTo(self.coverImageView).offset(0);
-        make.width.mas_equalTo(40);
-        make.height.mas_equalTo(20);
+        make.width.mas_equalTo(self.badgeImageView.image.size.width);
+        make.height.mas_equalTo(self.badgeImageView.image.size.height);
     }];
     
     // 播放按钮 - 最右侧居中（先布局，因为标题需要参考它）
@@ -334,7 +378,7 @@
     // 更新statusLabel约束（不显示失败图标）
     [self updateStatusLabelConstraints:NO];
     
-    self.statusLabel.text = self.model.statusDesc;
+    self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
     
     // 确保显示副标题
@@ -375,7 +419,7 @@
     // 更新statusLabel约束（不显示失败图标）
     [self updateStatusLabelConstraints:NO];
     
-    self.statusLabel.text = self.model.statusDesc;
+    self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
     
     // 设置声音信息 - 确保显示音色名称
@@ -447,7 +491,7 @@
     // 更新statusLabel约束以适应失败图标
     [self updateStatusLabelConstraints:YES];
     
-    self.statusLabel.text = self.model.statusDesc;
+    self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor systemRedColor];
     
     // 确保显示副标题
@@ -526,7 +570,7 @@
     // 更新statusLabel约束以适应失败图标
     [self updateStatusLabelConstraints:YES];
     
-    self.statusLabel.text = self.model.statusDesc;
+    self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor systemRedColor];
     self.subtitleLabel.hidden = NO;
     

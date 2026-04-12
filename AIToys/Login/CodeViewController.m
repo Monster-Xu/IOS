@@ -42,7 +42,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.titleLabel.text = LocalString(@"输入验证码");
+    self.titleLabel.numberOfLines = 0;
     self.alertLabel.text = LocalString(@"验证码有误");
+    self.subTitleLabel.numberOfLines = 0;
     self.textView = [[QSTextCodeView alloc] initWithFrame:CGRectMake(0, 0, self.codeView.width, 45)];
     self.textView.fieldCount = 6;
     WS(weakSelf);

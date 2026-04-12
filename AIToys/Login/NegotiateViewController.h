@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface NegotiateViewController : BaseViewController<WKNavigationDelegate>
 @property (strong, nonatomic) WKWebView *webView;
-@property (assign,nonatomic)NSInteger type;//0:隐私政策 1:用户协议 2:儿童协议 3:创作协议
+@property (assign,nonatomic)NSInteger type;//0:隐私政策 1:用户协议 2:合并后的用户协议 3:AI协议
 
 
 @end

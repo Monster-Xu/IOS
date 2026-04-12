@@ -1,0 +1,14 @@
+/* 
+ InfoPlist.strings
+ AIToys
+*/
+CFBundleDisplayName = "Talenpal";
+NSBluetoothAlwaysUsageDescription = "يلزم الوصول إلى البلوتوث للعثور على الأجهزة والاتصال بها";
+NSBluetoothPeripheralUsageDescription = "يلزم الوصول إلى البلوتوث للعثور على الأجهزة والاتصال بها";
+NSLocationWhenInUseUsageDescription = "سيتم استخدام إذن الموقع لأتمتة الأجهزة الذكية واكتشاف الأجهزة القريبة وقوائم Wi‑Fi وغير ذلك. يُرجى منح التطبيق هذا الإذن.";
+NSLocationAlwaysUsageDescription = "سيتم استخدام إذن الموقع لأتمتة الأجهزة الذكية واكتشاف الأجهزة القريبة وقوائم Wi‑Fi وغير ذلك. يُرجى منح التطبيق هذا الإذن.";
+NSCameraUsageDescription = "يلزم الوصول إلى الكاميرا لمسح رموز QR الخاصة بالأجهزة والتقاط الصور";
+NSMicrophoneUsageDescription = "يلزم الوصول إلى الميكروفون لتسجيل المحتوى الصوتي";
+NSSpeechRecognitionUsageDescription = "يلزم الوصول إلى التعرف على الكلام لتحويل الصوت إلى نص";
+NSPhotoLibraryUsageDescription = "يلزم الوصول إلى مكتبة الصور لاختيار الصور";
+NSPhotoLibraryAddUsageDescription = "يلزم الوصول إلى مكتبة الصور لحفظ الصور";

@@ -9,6 +9,54 @@
 #import "VoiceModel.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 
+static NSString *AITLocalizedCreateNewBadgeImageName(void) {
+    NSString *preferredLanguage = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] ? [[[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] firstObject] : [NSLocale preferredLanguages].firstObject;
+    NSString *languageCode = [[preferredLanguage ?: @"en" lowercaseString] componentsSeparatedByString:@"-"].firstObject;
+
+    if ([languageCode hasPrefix:@"ar"]) {
+        return @"create_new_ar";
+    }
+    if ([languageCode hasPrefix:@"de"]) {
+        return @"create_new_de";
+    }
+    if ([languageCode hasPrefix:@"fr"]) {
+        return @"create_new_fr";
+    }
+    if ([languageCode hasPrefix:@"es"]) {
+        return @"create_new_es";
+    }
+    return @"create_new";
+}
+
+static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) {
+    imageView.image = image;
+    imageView.contentMode = UIViewContentModeScaleAspectFit;
+    if (!image) {
+        return;
+    }
+
+    CGSize imageSize = image.size;
+    for (NSLayoutConstraint *constraint in imageView.constraints) {
+        if (constraint.firstItem == imageView && constraint.firstAttribute == NSLayoutAttributeWidth) {
+            constraint.constant = imageSize.width;
+        } else if (constraint.firstItem == imageView && constraint.firstAttribute == NSLayoutAttributeHeight) {
+            constraint.constant = imageSize.height;
+        }
+    }
+
+    for (NSLayoutConstraint *constraint in imageView.superview.constraints) {
+        BOOL relatesToImageView = (constraint.firstItem == imageView || constraint.secondItem == imageView);
+        if (!relatesToImageView) {
+            continue;
+        }
+        if (constraint.firstAttribute == NSLayoutAttributeWidth || constraint.secondAttribute == NSLayoutAttributeWidth) {
+            constraint.constant = imageSize.width;
+        } else if (constraint.firstAttribute == NSLayoutAttributeHeight || constraint.secondAttribute == NSLayoutAttributeHeight) {
+            constraint.constant = imageSize.height;
+        }
+    }
+}
+
 @interface VoiceManagementTableViewCell ()
 
 // 数据
@@ -48,6 +96,7 @@
 - (void)setupUI {
     // 设置背景颜色
     self.contentView.backgroundColor = [UIColor whiteColor];
+    AITUpdateBadgeImageViewSize(self.createNewImageView, [UIImage imageNamed:AITLocalizedCreateNewBadgeImageName()]);
     
     // 设置按钮交互
     if (self.editButton) {
@@ -186,8 +235,8 @@
     // ✅ 重置statusLabel的文本显示属性到默认状态
     if (self.statusLabel) {
         self.statusLabel.text = @"";
-        self.statusLabel.numberOfLines = 1;
-        self.statusLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+        self.statusLabel.numberOfLines = 0;
+        self.statusLabel.lineBreakMode = NSLineBreakByWordWrapping;
         self.statusLabel.adjustsFontSizeToFitWidth = NO;
     }
     
@@ -230,8 +279,8 @@
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:1.0]; // 红色文字
     
     // ✅ 设置label的文本显示属性，防止与图标重合
-    self.statusLabel.numberOfLines = 1; // 确保只显示一行
-    self.statusLabel.lineBreakMode = NSLineBreakByTruncatingTail; // 尾部截断，显示省略号
+    self.statusLabel.numberOfLines = 0;
+    self.statusLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.statusLabel.adjustsFontSizeToFitWidth = NO; // 不自动调整字体大小
     
     // ✅ 失败状态：设置statusLabel相对于失败图标的约束
@@ -267,8 +316,8 @@
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.8 blue:0.0 alpha:1.0]; // 黄色文字
     
     // ✅ 设置label的文本显示属性
-    self.statusLabel.numberOfLines = 1; // 确保只显示一行
-    self.statusLabel.lineBreakMode = NSLineBreakByTruncatingTail; // 尾部截断，显示省略号
+    self.statusLabel.numberOfLines = 0;
+    self.statusLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.statusLabel.adjustsFontSizeToFitWidth = NO; // 不自动调整字体大小
     
     // ✅ 克隆中状态：statusLabel左边距应该直接到statusView的边距（约16px）

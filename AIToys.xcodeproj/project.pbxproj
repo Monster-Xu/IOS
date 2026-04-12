@@ -17,14 +17,11 @@
 		1804064B2F22625F00C4438D /* StarterGuideViewTwo.m in Sources */ = {isa = PBXBuildFile; fileRef = 1804064A2F22625F00C4438D /* StarterGuideViewTwo.m */; };
 		1804064D2F22627A00C4438D /* StartGuideViewTwo.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1804064C2F22627A00C4438D /* StartGuideViewTwo.xib */; };
 		180406E02F25011200C4438D /* StarteBLEListening.m in Sources */ = {isa = PBXBuildFile; fileRef = 180406DF2F25011200C4438D /* StarteBLEListening.m */; };
-		180407742F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx in Resources */ = {isa = PBXBuildFile; fileRef = 180407732F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx */; };
+		184915072F76E714000B4A67 /* HomeAudioPlaybackContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 184915062F76E714000B4A67 /* HomeAudioPlaybackContext.m */; };
+		1849150B2F76E80B000B4A67 /* HomeAudioPlaybackCoordinator.m in Sources */ = {isa = PBXBuildFile; fileRef = 1849150A2F76E80B000B4A67 /* HomeAudioPlaybackCoordinator.m */; };
 		1861562D2F042F3F00E9BBA8 /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */; };
 		187647D52E86B1F20025E3A2 /* NegotiateViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 187647D32E86B1F20025E3A2 /* NegotiateViewController.m */; };
 		187647D62E86B1F20025E3A2 /* NegotiateViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 187647D42E86B1F20025E3A2 /* NegotiateViewController.xib */; };
-		187647DB2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647DA2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx */; };
-		187647DC2E86B3940025E3A2 /* Talenpal_Childrens_Privacy_Agreement.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647D72E86B3940025E3A2 /* Talenpal_Childrens_Privacy_Agreement.docx */; };
-		187647DE2E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647D92E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx */; };
-		187647E02E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx in Resources */ = {isa = PBXBuildFile; fileRef = 187647DF2E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx */; };
 		188C18572E8D30570095B6BC /* LogManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 188C18562E8D30570095B6BC /* LogManager.m */; };
 		1896661A2EB3976C00D7C9EA /* WiFiListViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 189666192EB3976C00D7C9EA /* WiFiListViewController.xib */; };
 		1896661B2EB3976C00D7C9EA /* WiFiListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 189666182EB3976C00D7C9EA /* WiFiListViewController.m */; };
@@ -32,6 +29,21 @@
 		189666202EB397DB00D7C9EA /* WiFiListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1896661D2EB397DB00D7C9EA /* WiFiListTableViewCell.m */; };
 		18AF94042F6C4C9D002F73FB /* ATLanguageHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */; };
 		18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */; };
+		18DF40952F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408C2F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx */; };
+		18DF40962F7C105300ACB5B1 /* إشعار الذكاء الاصطناعي Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40932F7C105300ACB5B1 /* إشعار الذكاء الاصطناعي Talenpal.docx */; };
+		18DF40972F7C105300ACB5B1 /* شروط استخدام Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408D2F7C105300ACB5B1 /* شروط استخدام Talenpal.docx */; };
+		18DF40982F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408A2F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx */; };
+		18DF40992F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40862F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx */; };
+		18DF409A2F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40872F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx */; };
+		18DF409B2F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40852F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx */; };
+		18DF409C2F7C105300ACB5B1 /* Aviso de IA de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40902F7C105300ACB5B1 /* Aviso de IA de Talenpal.docx */; };
+		18DF409D2F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40892F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx */; };
+		18DF409E2F7C105300ACB5B1 /* Política de Privacidad de Usuario de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40832F7C105300ACB5B1 /* Política de Privacidad de Usuario de Talenpal.docx */; };
+		18DF409F2F7C105300ACB5B1 /* Talenpal KI-Hinweis.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40922F7C105300ACB5B1 /* Talenpal KI-Hinweis.docx */; };
+		18DF40A02F7C105300ACB5B1 /* Politique de Confidentialité des Utilisateurs de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40842F7C105300ACB5B1 /* Politique de Confidentialité des Utilisateurs de Talenpal.docx */; };
+		18DF40A12F7C105300ACB5B1 /* Talenpal Terms of Use.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408B2F7C105300ACB5B1 /* Talenpal Terms of Use.docx */; };
+		18DF40A22F7C105300ACB5B1 /* Talenpal AI Notice.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40912F7C105300ACB5B1 /* Talenpal AI Notice.docx */; };
+		18DF40A32F7C105300ACB5B1 /* Avis d'IA de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408F2F7C105300ACB5B1 /* Avis d'IA de Talenpal.docx */; };
 		18E8C74F2EE71E4700366022 /* getOTAInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 18E8C74E2EE71E4700366022 /* getOTAInfo.m */; };
 		18EE7F4E2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 18EE7F4C2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.m */; };
 		18EE7F4F2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 18EE7F4D2E8AD92B00E9E078 /* ThirdPartySDKInfoViewController.xib */; };
@@ -433,15 +445,14 @@
 		1804064C2F22627A00C4438D /* StartGuideViewTwo.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = StartGuideViewTwo.xib; sourceTree = "<group>"; };
 		180406DE2F25011200C4438D /* StarteBLEListening.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StarteBLEListening.h; sourceTree = "<group>"; };
 		180406DF2F25011200C4438D /* StarteBLEListening.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = StarteBLEListening.m; sourceTree = "<group>"; };
-		180407732F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal_AI_Conversation_User_Agreement_EN 2.docx"; sourceTree = "<group>"; };
+		184915062F76E714000B4A67 /* HomeAudioPlaybackContext.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomeAudioPlaybackContext.m; sourceTree = "<group>"; };
+		184915082F76E714000B4A67 /* HomeAudioPlaybackContext.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HomeAudioPlaybackContext.h; sourceTree = "<group>"; };
+		184915092F76E80B000B4A67 /* HomeAudioPlaybackCoordinator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HomeAudioPlaybackCoordinator.h; sourceTree = "<group>"; };
+		1849150A2F76E80B000B4A67 /* HomeAudioPlaybackCoordinator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HomeAudioPlaybackCoordinator.m; sourceTree = "<group>"; };
 		1861562C2F042F3F00E9BBA8 /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
 		187647D22E86B1F20025E3A2 /* NegotiateViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NegotiateViewController.h; sourceTree = "<group>"; };
 		187647D32E86B1F20025E3A2 /* NegotiateViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NegotiateViewController.m; sourceTree = "<group>"; };
 		187647D42E86B1F20025E3A2 /* NegotiateViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NegotiateViewController.xib; sourceTree = "<group>"; };
-		187647D72E86B3940025E3A2 /* Talenpal_Childrens_Privacy_Agreement.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Talenpal_Childrens_Privacy_Agreement.docx; sourceTree = "<group>"; };
-		187647D92E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Talenpal_Content_Creation_User_Agreement_EN.docx; sourceTree = "<group>"; };
-		187647DA2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Talenpal_Terms_of_Use.docx; sourceTree = "<group>"; };
-		187647DF2E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Talenpal_User_Privacy_Policy.docx; sourceTree = "<group>"; };
 		188C18552E8D30570095B6BC /* LogManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LogManager.h; sourceTree = "<group>"; };
 		188C18562E8D30570095B6BC /* LogManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LogManager.m; sourceTree = "<group>"; };
 		189666172EB3976C00D7C9EA /* WiFiListViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WiFiListViewController.h; sourceTree = "<group>"; };
@@ -454,10 +465,29 @@
 		18AF936E2F6B026C002F73FB /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		18AF936F2F6B0275002F73FB /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/Localizable.strings; sourceTree = "<group>"; };
 		18AF93702F6B027C002F73FB /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		18AF93712F6B028D002F73FB /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		18AF93722F6B0296002F73FB /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		18AF93732F6B029D002F73FB /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		18AF93742F6B02A3002F73FB /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		18AF94022F6C4C95002F73FB /* ATLanguageHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ATLanguageHelper.h; sourceTree = "<group>"; };
 		18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ATLanguageHelper.m; sourceTree = "<group>"; };
 		18CF0EF22E92626900F9E19E /* AFStoryAPIManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AFStoryAPIManager.h; sourceTree = "<group>"; };
 		18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AFStoryAPIManager.m; sourceTree = "<group>"; };
+		18DF40832F7C105300ACB5B1 /* Política de Privacidad de Usuario de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Política de Privacidad de Usuario de Talenpal.docx"; sourceTree = "<group>"; };
+		18DF40842F7C105300ACB5B1 /* Politique de Confidentialité des Utilisateurs de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Politique de Confidentialité des Utilisateurs de Talenpal.docx"; sourceTree = "<group>"; };
+		18DF40852F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal Datenschutzrichtlinie für Nutzer.docx"; sourceTree = "<group>"; };
+		18DF40862F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal User Privacy Policy.docx"; sourceTree = "<group>"; };
+		18DF40872F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "سياسة خصوصية مستخدمي Talenpal.docx"; sourceTree = "<group>"; };
+		18DF40892F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Conditions d'Utilisation de Talenpal.docx"; sourceTree = "<group>"; };
+		18DF408A2F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nutzungsbedingungen von Talenpal.docx"; sourceTree = "<group>"; };
+		18DF408B2F7C105300ACB5B1 /* Talenpal Terms of Use.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal Terms of Use.docx"; sourceTree = "<group>"; };
+		18DF408C2F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Términos de Uso de Talenpal.docx"; sourceTree = "<group>"; };
+		18DF408D2F7C105300ACB5B1 /* شروط استخدام Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "شروط استخدام Talenpal.docx"; sourceTree = "<group>"; };
+		18DF408F2F7C105300ACB5B1 /* Avis d'IA de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Avis d'IA de Talenpal.docx"; sourceTree = "<group>"; };
+		18DF40902F7C105300ACB5B1 /* Aviso de IA de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Aviso de IA de Talenpal.docx"; sourceTree = "<group>"; };
+		18DF40912F7C105300ACB5B1 /* Talenpal AI Notice.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal AI Notice.docx"; sourceTree = "<group>"; };
+		18DF40922F7C105300ACB5B1 /* Talenpal KI-Hinweis.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal KI-Hinweis.docx"; sourceTree = "<group>"; };
+		18DF40932F7C105300ACB5B1 /* إشعار الذكاء الاصطناعي Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "إشعار الذكاء الاصطناعي Talenpal.docx"; sourceTree = "<group>"; };
 		18E8C74D2EE71E4700366022 /* getOTAInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = getOTAInfo.h; sourceTree = "<group>"; };
 		18E8C74E2EE71E4700366022 /* getOTAInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = getOTAInfo.m; sourceTree = "<group>"; };
 		18EE7F4A2E882F7C00E9E078 /* ModernScreenAdapter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ModernScreenAdapter.h; sourceTree = "<group>"; };
@@ -1171,6 +1201,42 @@
 				18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */,
 			);
 			path = Localization;
+			sourceTree = "<group>";
+		};
+		18DF40882F7C105300ACB5B1 /* 隐私政策 */ = {
+			isa = PBXGroup;
+			children = (
+				18DF40832F7C105300ACB5B1 /* Política de Privacidad de Usuario de Talenpal.docx */,
+				18DF40842F7C105300ACB5B1 /* Politique de Confidentialité des Utilisateurs de Talenpal.docx */,
+				18DF40852F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx */,
+				18DF40862F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx */,
+				18DF40872F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx */,
+			);
+			path = "隐私政策";
+			sourceTree = "<group>";
+		};
+		18DF408E2F7C105300ACB5B1 /* 用户协议 */ = {
+			isa = PBXGroup;
+			children = (
+				18DF40892F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx */,
+				18DF408A2F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx */,
+				18DF408B2F7C105300ACB5B1 /* Talenpal Terms of Use.docx */,
+				18DF408C2F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx */,
+				18DF408D2F7C105300ACB5B1 /* شروط استخدام Talenpal.docx */,
+			);
+			path = "用户协议";
+			sourceTree = "<group>";
+		};
+		18DF40942F7C105300ACB5B1 /* AI协议 */ = {
+			isa = PBXGroup;
+			children = (
+				18DF408F2F7C105300ACB5B1 /* Avis d'IA de Talenpal.docx */,
+				18DF40902F7C105300ACB5B1 /* Aviso de IA de Talenpal.docx */,
+				18DF40912F7C105300ACB5B1 /* Talenpal AI Notice.docx */,
+				18DF40922F7C105300ACB5B1 /* Talenpal KI-Hinweis.docx */,
+				18DF40932F7C105300ACB5B1 /* إشعار الذكاء الاصطناعي Talenpal.docx */,
+			);
+			path = "AI协议";
 			sourceTree = "<group>";
 		};
 		68A0715CB115E9CAA61B5483 /* Pods */ = {
@@ -2305,11 +2371,9 @@
 		E49272BB2E01C9A800DB6A2A /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				187647D72E86B3940025E3A2 /* Talenpal_Childrens_Privacy_Agreement.docx */,
-				187647D92E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx */,
-				187647DF2E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx */,
-				187647DA2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx */,
-				180407732F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx */,
+				18DF40882F7C105300ACB5B1 /* 隐私政策 */,
+				18DF408E2F7C105300ACB5B1 /* 用户协议 */,
+				18DF40942F7C105300ACB5B1 /* AI协议 */,
 				DC4876FD2E60909000967B2D /* configList.json */,
 				DC4876FE2E60909000967B2D /* deviceDetailConfig.json */,
 				DC4876FF2E60909000967B2D /* thing_custom_config.json */,
@@ -2356,6 +2420,10 @@
 				DCD5A2652E55B00300531779 /* SwitchConfigViewController.h */,
 				DCD5A2662E55B00300531779 /* SwitchConfigViewController.m */,
 				DCD5A2672E55B00300531779 /* SwitchConfigViewController.xib */,
+				184915062F76E714000B4A67 /* HomeAudioPlaybackContext.m */,
+				184915082F76E714000B4A67 /* HomeAudioPlaybackContext.h */,
+				184915092F76E80B000B4A67 /* HomeAudioPlaybackCoordinator.h */,
+				1849150A2F76E80B000B4A67 /* HomeAudioPlaybackCoordinator.m */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -2590,6 +2658,10 @@
 				de,
 				ar,
 				es,
+				"fr 3",
+				"de 3",
+				"es 3",
+				"ar 3",
 			);
 			mainGroup = E49272022E01BD2F00DB6A2A;
 			productRefGroup = E492720C2E01BD2F00DB6A2A /* Products */;
@@ -2620,9 +2692,6 @@
 				DCA5A1A82E290E8500096913 /* PrivateSettingCell.xib in Resources */,
 				DC862AEE2E095C2E001A4793 /* JoinFamailyVC.xib in Resources */,
 				DCEA00F22E1267CC00170D8C /* ExitView.xib in Resources */,
-				187647DB2E86B3940025E3A2 /* Talenpal_Terms_of_Use.docx in Resources */,
-				187647DC2E86B3940025E3A2 /* Talenpal_Childrens_Privacy_Agreement.docx in Resources */,
-				187647DE2E86B3940025E3A2 /* Talenpal_Content_Creation_User_Agreement_EN.docx in Resources */,
 				E45B01D22E27F05A00CC3A5A /* ChangeEmailViewController.xib in Resources */,
 				E4B5C6E22E236A7A00950B7D /* SettingCell.xib in Resources */,
 				E8FC13AD2E50CAA0008A2621 /* SFProRoundedHeavy.otf in Resources */,
@@ -2630,6 +2699,21 @@
 				E8FC13AE2E50CAA0008A2621 /* SFProRoundedMedium.ttf in Resources */,
 				E8FC13AF2E50CAA0008A2621 /* SFProRoundedBold.ttf in Resources */,
 				E8FC13B02E50CAA0008A2621 /* SFProRoundedRegular.otf in Resources */,
+				18DF40952F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx in Resources */,
+				18DF40962F7C105300ACB5B1 /* إشعار الذكاء الاصطناعي Talenpal.docx in Resources */,
+				18DF40972F7C105300ACB5B1 /* شروط استخدام Talenpal.docx in Resources */,
+				18DF40982F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx in Resources */,
+				18DF40992F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx in Resources */,
+				18DF409A2F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx in Resources */,
+				18DF409B2F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx in Resources */,
+				18DF409C2F7C105300ACB5B1 /* Aviso de IA de Talenpal.docx in Resources */,
+				18DF409D2F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx in Resources */,
+				18DF409E2F7C105300ACB5B1 /* Política de Privacidad de Usuario de Talenpal.docx in Resources */,
+				18DF409F2F7C105300ACB5B1 /* Talenpal KI-Hinweis.docx in Resources */,
+				18DF40A02F7C105300ACB5B1 /* Politique de Confidentialité des Utilisateurs de Talenpal.docx in Resources */,
+				18DF40A12F7C105300ACB5B1 /* Talenpal Terms of Use.docx in Resources */,
+				18DF40A22F7C105300ACB5B1 /* Talenpal AI Notice.docx in Resources */,
+				18DF40A32F7C105300ACB5B1 /* Avis d'IA de Talenpal.docx in Resources */,
 				E8FC13B12E50CAA0008A2621 /* SFProRoundedSemibold.ttf in Resources */,
 				DC862AC02E093370001A4793 /* FamailyManageCell.xib in Resources */,
 				1861562D2F042F3F00E9BBA8 /* Launch Screen.storyboard in Resources */,
@@ -2654,7 +2738,6 @@
 				E46F39722E0FDE900039CE33 /* DeviceUnfindCell.xib in Resources */,
 				DCA5A1A32E29085A00096913 /* RevokePrivacyPolicyVC.xib in Resources */,
 				E46A38D52E0C354B00C930D3 /* my_gif.gif in Resources */,
-				180407742F2A5F2900C4438D /* Talenpal_AI_Conversation_User_Agreement_EN 2.docx in Resources */,
 				E49272AC2E01C70A00DB6A2A /* Localizable.strings in Resources */,
 				E42A8A202E0678A400AD0BD9 /* HomeNoDeviceCell.xib in Resources */,
 				DC4877002E60909000967B2D /* configList.json in Resources */,
@@ -2698,7 +2781,6 @@
 				DC674C242E41ED0000BF438E /* QATabAnimationTwoCell.xib in Resources */,
 				DC5667722E0CDFC700379234 /* SwitchFamailyCell.xib in Resources */,
 				E4B5C6F32E2496F600950B7D /* SelctAvatarCell.xib in Resources */,
-				187647E02E86CE580025E3A2 /* Talenpal_User_Privacy_Policy.docx in Resources */,
 				187647D62E86B1F20025E3A2 /* NegotiateViewController.xib in Resources */,
 				E48284FB2E11550300F1CFF8 /* SetupDeviceVC.xib in Resources */,
 				DCF8024E2E122A5800C72B4D /* DeviceAddCell.xib in Resources */,
@@ -2834,6 +2916,7 @@
 				E42F14DC2E225C1A00376855 /* JXCategoryDotCell.m in Sources */,
 				E42F14DF2E225C1A00376855 /* JXCategoryBaseView.m in Sources */,
 				DC862AE82E095B42001A4793 /* CreateFamailyVC.m in Sources */,
+				1849150B2F76E80B000B4A67 /* HomeAudioPlaybackCoordinator.m in Sources */,
 				E42F14F82E225C1A00376855 /* JXCategoryIndicatorComponentView.m in Sources */,
 				180404D72F15300100C4438D /* startFirmwareUpgrade.m in Sources */,
 				DCD5A26F2E55CDF200531779 /* NSDictionary+KeySortJoin.m in Sources */,
@@ -2945,6 +3028,7 @@
 				E49272162E01BD2F00DB6A2A /* ViewController.m in Sources */,
 				E49272932E01C1C300DB6A2A /* UIColor+Extension.m in Sources */,
 				E45B01D12E27F05A00CC3A5A /* ChangeEmailViewController.m in Sources */,
+				184915072F76E714000B4A67 /* HomeAudioPlaybackContext.m in Sources */,
 				DCA5A1AC2E2912B400096913 /* AccessPermissionsSettingCell.m in Sources */,
 				E42A8A132E0665C400AD0BD9 /* RYFGifHeader.m in Sources */,
 				E4B5C6F22E2496F600950B7D /* SelctAvatarCell.m in Sources */,
@@ -3149,6 +3233,10 @@
 			children = (
 				E49272B82E01C80700DB6A2A /* en */,
 				E49272BA2E01C80900DB6A2A /* zh-Hans */,
+				18AF93712F6B028D002F73FB /* fr */,
+				18AF93722F6B0296002F73FB /* de */,
+				18AF93732F6B029D002F73FB /* ar */,
+				18AF93742F6B02A3002F73FB /* es */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";

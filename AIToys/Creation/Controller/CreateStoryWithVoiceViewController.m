@@ -29,6 +29,8 @@
 @property (weak, nonatomic) IBOutlet UIButton *deletHeaderBtn;
 @property (weak, nonatomic) IBOutlet UIView *emptyView;
 @property (weak, nonatomic) IBOutlet UILabel *emptyVoiceLabel;
+@property (weak, nonatomic) IBOutlet UILabel *voiceAvatarLabel;
+@property (weak, nonatomic) IBOutlet UILabel *cloneFailedLabel;
 @property (weak, nonatomic) IBOutlet UIView *storyThemeView;
 @property (weak, nonatomic) IBOutlet UIView *voiceHeaderView;
 @property (weak, nonatomic) IBOutlet UIView *storyView;
@@ -68,7 +70,14 @@
 @property (nonatomic, strong) UILabel *loadingLabel;
 @property (weak, nonatomic) IBOutlet UIView *failedView;
 @property (weak, nonatomic) IBOutlet NSLayoutConstraint *storyNameTop;
+@property (nonatomic, assign) NSInteger layoutTaskToken;
+@property (nonatomic, assign) BOOL pendingContentSizeUpdate;
+@property (nonatomic, assign) CGFloat pendingExtraContentHeight;
+@property (nonatomic, assign) CGFloat lastLayoutWidth;
 
+- (CGFloat)calculatedFailedBannerHeight;
+- (NSLayoutConstraint *)failedViewHeightConstraint;
+- (void)updateFailedViewLayoutIfNeeded;
 
 @end
 
@@ -89,10 +98,35 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.layoutTaskToken = 0;
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     NSTextAlignment inputAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     NSTextAlignment labelAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.storyStautsLabel.numberOfLines = 2;
+    self.storyStautsLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.storyNameLabel.numberOfLines = 1;
+    self.storyNameLabel.adjustsFontSizeToFitWidth = YES;
+    self.storyNameLabel.minimumScaleFactor = 0.8;
+    self.chooseVoiceLabel.numberOfLines = 1;
+    self.chooseVoiceLabel.adjustsFontSizeToFitWidth = YES;
+    self.chooseVoiceLabel.minimumScaleFactor = 0.8;
+    self.emptyVoiceLabel.numberOfLines = 0;
+    self.emptyVoiceLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.voiceAvatarLabel.numberOfLines = 1;
+    self.voiceAvatarLabel.adjustsFontSizeToFitWidth = YES;
+    self.voiceAvatarLabel.minimumScaleFactor = 0.8;
+    self.cloneFailedLabel.numberOfLines = 0;
+    self.cloneFailedLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.addNewVoiceBtn.titleLabel.numberOfLines = 2;
+    self.addNewVoiceBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+    self.addNewVoiceBtn.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.saveStoryBtn.titleLabel.numberOfLines = 1;
+    self.saveStoryBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.saveStoryBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.deletBtn.titleLabel.numberOfLines = 1;
+    self.deletBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.deletBtn.titleLabel.minimumScaleFactor = 0.75;
     
     // ✅ 调试 isEditMode 的设置状态
     NSLog(@"🔧 viewDidLoad: isEditMode = %@", self.isEditMode ? @"YES" : @"NO");
@@ -111,10 +145,13 @@
     [self.saveStoryBtn setTitle:LocalString(@"保存故事") forState:UIControlStateNormal];
     [self.deletBtn setTitle:LocalString(@"删除故事") forState:UIControlStateNormal];
     self.emptyVoiceLabel.text = LocalString(@"暂无音色，请先创建");
+    self.voiceAvatarLabel.text = LocalString(@"音色头像");
+    self.cloneFailedLabel.text = LocalString(@"音色克隆失败，请重新录制");
     self.storyStautsLabel.textAlignment = labelAlignment;
     self.storyNameLabel.textAlignment = labelAlignment;
     self.chooseVoiceLabel.textAlignment = labelAlignment;
     self.emptyVoiceLabel.textAlignment = labelAlignment;
+    self.cloneFailedLabel.textAlignment = labelAlignment;
     self.stroryThemeTextView.placeholder = LocalString(@"请输入故事名称");
     self.stroryThemeTextView.textAlignment = inputAlignment;
     self.storyTextField.textAlignment = inputAlignment;
@@ -159,22 +196,39 @@
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
+    self.layoutTaskToken += 1;
     
     // ✅ 离开页面时停止音频播放
     if (self.audioPlayerView && self.audioPlayerView.isPlaying) {
         [self.audioPlayerView stop];
         NSLog(@"⏸️ 离开页面，暂停音频播放");
     }
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSize) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSizeWithExtraHeight:) object:nil];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(adjustStoryViewHeightOptimized) object:nil];
     // ❌ 删除这行错误代码: self.isEditMode = NO;
 }
 
 - (void)viewDidAppear:(BOOL)animated {
     [super viewDidAppear:animated];
-    
-    // ✅ 页面显示完成后再次更新滚动视图内容大小
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    self.layoutTaskToken += 1;
+    [self scheduleScrollViewContentSizeUpdate];
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    if (!self.mainScrollView || !self.contentView) {
+        return;
+    }
+    CGFloat layoutWidth = CGRectGetWidth(self.mainScrollView.bounds);
+    if (fabs(layoutWidth - self.lastLayoutWidth) > 0.5) {
+        self.lastLayoutWidth = layoutWidth;
+        CGRect contentFrame = self.contentView.frame;
+        contentFrame.size.width = layoutWidth;
+        self.contentView.frame = contentFrame;
+        [self updateFailedViewLayoutIfNeeded];
         [self scheduleScrollViewContentSizeUpdate];
-    });
+    }
 }
 
 /// ✅ 页面即将显示时刷新数据（从其他页面返回时）
@@ -234,7 +288,6 @@
     self.voiceHeaderView.hidden = YES;  // ✅ 保持插画头部视图隐藏，不参与高度计算
     self.storyView.hidden = NO;
     self.chooseVoiceView.hidden = NO;
-    
     
     // ✅ 第二步：强制布局，确保所有frame计算完成
 //    [self.contentView layoutIfNeeded];
@@ -303,9 +356,9 @@
             // ✅ 根据故事状态控制failedView显示和storyNameTop约束
             [strongSelf configureViewsForStoryStatus:story.storyStatus];
             
-            // ✅ 故事内容加载完成后，动态调整高度
+            // ✅ 故事内容加载完成后，统一刷新布局高度
             dispatch_async(dispatch_get_main_queue(), ^{
-                [strongSelf adjustStoryViewHeightOptimized];
+                [strongSelf updateScrollViewContentSizeWithVoiceHeightRecalc:NO];
             });
             
             // ✅ 编辑模式下设置文本变化监听
@@ -442,11 +495,18 @@
         }
         
         // 延迟一点时间，让用户感受加载完成
+        NSInteger currentToken = strongSelf.layoutTaskToken;
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            if (!strongSelf || currentToken != strongSelf.layoutTaskToken || !strongSelf.view.window) {
+                return;
+            }
             [strongSelf showAllContentViewsWithAnimation];
             
             // ✅ 在动画完成后验证并修复音色选中状态
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                if (!strongSelf || currentToken != strongSelf.layoutTaskToken || !strongSelf.view.window) {
+                    return;
+                }
                 [strongSelf validateAndFixVoiceSelectionState];
                 
                 // ✅ 再次确保选中状态显示
@@ -708,64 +768,32 @@
 
 /// ✅ 内容显示完成后滚动到底部（带动画）
 - (void)scrollToBottomAfterContentVisible {
-    NSLog(@"📱 内容显示完成，准备滚动到底部");
-    
-    if (!self.mainScrollView) {
-        NSLog(@"⚠️ 主滚动视图未初始化，无法滚动");
-        // 即使不能滚动，也要隐藏loading
-        [self hideCustomLoadingView];
-        return;
-    }
-    
-    // ✅ 稍微延迟一下，让渲染完成
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        // 再次确保布局和contentSize是最新的
-//        [self.contentView layoutIfNeeded];
-//        [self updateMainScrollViewContentSize];
-        
-        CGSize contentSize = self.mainScrollView.contentSize;
-        CGSize boundsSize = self.mainScrollView.bounds.size;
-        
-        // 如果内容高度大于可视区域高度，才需要滚动
-        if (contentSize.height > boundsSize.height) {
-            // 计算底部偏移量
-            CGFloat bottomOffset = contentSize.height - boundsSize.height;
-            CGPoint bottomPoint = CGPointMake(0, bottomOffset);
-            
-            NSLog(@"📱 开始滚动到底部：内容高度=%.1f, 可视高度=%.1f, 偏移量=%.1f",
-                  contentSize.height, boundsSize.height, bottomOffset);
-            
-            // ✅ 带动画滚动到底部，让用户看到滚动过程
-//            [self.mainScrollView setContentOffset:bottomPoint animated:YES];
-            
-            // ✅ 第六步：等待滚动动画完成后（约0.3秒），最后隐藏loading
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.4 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-                [self hideCustomLoadingView];
-                NSLog(@"✅ 所有动作完成，loading已隐藏");
-                self.saveStoryBtn.hidden = NO;
-                self.deletBtn.hidden = NO;
-                self.saveStoryBtn.alpha = 1.0;
-                self.deletBtn.alpha = 1.0;
-            });
-        } else {
-            NSLog(@"📱 内容未超出可视区域，无需滚动");
-            // ✅ 不需要滚动时，也要隐藏loading
-            [self hideCustomLoadingView];
-            self.saveStoryBtn.hidden = NO;
-            self.deletBtn.hidden = NO;
-            self.saveStoryBtn.alpha = 1.0;
-            self.deletBtn.alpha = 1.0;
-            NSLog(@"✅ 所有动作完成，loading已隐藏");
+    NSLog(@"📱 内容显示完成，准备展示底部操作");
+    NSInteger currentToken = self.layoutTaskToken;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (currentToken != self.layoutTaskToken || !self.view.window) {
+            return;
         }
+        [self hideCustomLoadingView];
+        [self showBottomActionButtons];
+        NSLog(@"✅ 内容展示完成，底部按钮已加入布局");
     });
+}
+
+- (void)showBottomActionButtons {
+    self.saveStoryBtn.hidden = NO;
+    self.deletBtn.hidden = NO;
+    [self.contentView layoutIfNeeded];
+    [self.view layoutIfNeeded];
+    [self scheduleScrollViewContentSizeUpdate];
+    [UIView animateWithDuration:0.2 animations:^{
+        self.saveStoryBtn.alpha = 1.0;
+        self.deletBtn.alpha = 1.0;
+    }];
 }
 
 /// ✅ 设置主滚动视图 - 将整个view包装到ScrollView中
 - (void)setupScrollView {
-    // 获取当前view的父视图
-    UIView *parentView = self.view.superview;
-    
-    // 创建主滚动视图
     self.mainScrollView = [[UIScrollView alloc] init];
     self.mainScrollView.frame = self.view.frame;
     self.mainScrollView.backgroundColor = self.view.backgroundColor;
@@ -773,34 +801,22 @@
     self.mainScrollView.showsHorizontalScrollIndicator = NO;
     self.mainScrollView.bounces = YES;
     self.mainScrollView.alwaysBounceVertical = YES;
-    self.mainScrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag; // 拖动时隐藏键盘
+    self.mainScrollView.keyboardDismissMode = UIScrollViewKeyboardDismissModeOnDrag;
     
-    // 保存原有view作为内容视图
     self.contentView = self.view;
     
-    // 创建新的根视图
     UIView *newRootView = [[UIView alloc] initWithFrame:self.view.frame];
     newRootView.backgroundColor = self.view.backgroundColor;
-    
-    // 将ScrollView添加到新的根视图中
     [newRootView addSubview:self.mainScrollView];
-    
-    // 将原有的view添加到ScrollView中
     [self.mainScrollView addSubview:self.contentView];
-    
-    // 替换视图控制器的view
     self.view = newRootView;
     
-    // 设置ScrollView的frame填满新的根视图
     self.mainScrollView.frame = newRootView.bounds;
     self.mainScrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    self.lastLayoutWidth = CGRectGetWidth(self.mainScrollView.bounds);
+    [self scheduleScrollViewContentSizeUpdate];
     
-    // ✅ 延迟计算内容大小，让布局完成后再设置
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self scheduleScrollViewContentSizeUpdate];
-    });
-    
-    NSLog(@"✅ 滚动视图设置完成 - 保持原有XIB约束");
+    NSLog(@"✅ 滚动视图设置完成 - 底部按钮随内容滚动");
 }
 
 
@@ -810,26 +826,20 @@
 
 /// ✅ 更新滚动视图内容大小 - 控制是否重新计算音色区域高度
 - (void)updateScrollViewContentSizeWithVoiceHeightRecalc:(BOOL)shouldRecalcVoiceHeight {
+    [self refreshContentLayoutRecalculatingVoiceHeight:shouldRecalcVoiceHeight extraHeight:0];
+}
+
+- (void)refreshContentLayoutRecalculatingVoiceHeight:(BOOL)shouldRecalcVoiceHeight extraHeight:(CGFloat)extraHeight {
     if (!self.contentView) {
         return;
     }
-    
-    // 强制布局更新
     [self.contentView layoutIfNeeded];
-    
-    // ✅ 优化的动态调整故事内容区域的高度
     [self adjustStoryViewHeightOptimized];
-    
-    // ✅ 只有在必要时才重新计算音色选择区域的高度
     if (shouldRecalcVoiceHeight) {
         [self adjustVoiceSelectionViewHeight];
     }
-    
-    // 再次强制布局更新，确保约束变化生效
     [self.contentView layoutIfNeeded];
-    
-    // 延迟更新主滚动视图内容大小，避免重复计算
-    [self scheduleScrollViewContentSizeUpdate];
+    [self scheduleScrollViewContentSizeUpdateWithExtraHeight:extraHeight];
 }
 
 /// ✅ 优化的动态调整故事内容区域的高度 - 使用约束
@@ -843,11 +853,9 @@
     NSString *storyContent = self.storyTextField.text ?: @"";
     if (storyContent.length == 0) {
         NSLog(@"📖 故事内容为空，使用默认高度");
-        // 设置最小高度并更新滚动视图
         CGFloat minHeight = 120.0;
-        if (self.storyViewHeight.constant != minHeight) {
+        if (fabs(self.storyViewHeight.constant - minHeight) > 1.0) {
             self.storyViewHeight.constant = minHeight;
-            [self scheduleScrollViewContentSizeUpdate];
         }
         return;
     }
@@ -879,21 +887,9 @@
     
     CGFloat newHeight = MAX(minHeight, MIN(totalTextHeight, maxHeight));
     
-    // ✅ 只有在高度真的变化时才更新约束和滚动视图
-    if (fabs(self.storyViewHeight.constant - newHeight) > 1.0) { // 允许1pt的误差
+    if (fabs(self.storyViewHeight.constant - newHeight) > 1.0) {
         CGFloat oldHeight = self.storyViewHeight.constant;
         self.storyViewHeight.constant = newHeight;
-        
-        // 动画更新布局
-        [UIView animateWithDuration:0.3 animations:^{
-            [self.contentView layoutIfNeeded];
-        } completion:^(BOOL finished) {
-            if (finished) {
-                // ✅ 布局完成后再更新滚动视图内容大小
-                [self scheduleScrollViewContentSizeUpdate];
-            }
-        }];
-        
         NSLog(@"📖 动态调整故事内容区域完成:");
         NSLog(@"   故事内容长度: %ld", (long)storyContent.length);
         NSLog(@"   计算文本高度: %.1f", requiredTextHeight);
@@ -905,39 +901,39 @@
 
 /// ✅ 添加延迟调整方法，避免频繁调用 - 优化版
 - (void)scheduleOptimizedStoryHeightAdjustment {
-    // 取消之前的调用
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(adjustStoryViewHeightOptimized) object:nil];
-    
-    // 延迟调用，避免频繁更新
-    [self performSelector:@selector(adjustStoryViewHeightOptimized) withObject:nil afterDelay:0.2];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self refreshContentLayoutRecalculatingVoiceHeight:NO extraHeight:0];
+    });
 }
 
-/// ✅ 延迟更新滚动视图内容大小 - 只在必要时计算
+/// ✅ 合并调度滚动视图内容大小更新，避免多次延迟任务互相覆盖
 - (void)scheduleScrollViewContentSizeUpdate {
-    // 取消之前的调用
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSize) object:nil];
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSizeWithExtraHeight) object:nil];
-    
-    // 延迟调用，避免频繁更新
-    [self performSelector:@selector(updateMainScrollViewContentSize) withObject:nil afterDelay:0.1];
+    [self scheduleScrollViewContentSizeUpdateWithExtraHeight:0];
 }
 
-/// ✅ 延迟更新滚动视图内容大小（带额外高度）- 用于失败状态
+/// ✅ 合并调度滚动视图内容大小更新（带额外高度）
 - (void)scheduleScrollViewContentSizeUpdateWithExtraHeight:(CGFloat)extraHeight {
-    // 取消之前的调用
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSize) object:nil];
-    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSizeWithExtraHeight) object:nil];
-    
-    // 保存额外高度到实例变量（如果需要的话）
-    NSNumber *extraHeightNumber = @(extraHeight);
-    
-    // 延迟调用，避免频繁更新
-    [self performSelector:@selector(updateMainScrollViewContentSizeWithExtraHeight:) withObject:extraHeightNumber afterDelay:0.1];
+    self.pendingExtraContentHeight = MAX(self.pendingExtraContentHeight, extraHeight);
+    if (self.pendingContentSizeUpdate) {
+        return;
+    }
+    self.pendingContentSizeUpdate = YES;
+    NSInteger currentToken = self.layoutTaskToken;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self.pendingContentSizeUpdate = NO;
+        if (currentToken != self.layoutTaskToken || !self.contentView || !self.mainScrollView) {
+            self.pendingExtraContentHeight = 0;
+            return;
+        }
+        CGFloat mergedExtraHeight = self.pendingExtraContentHeight;
+        self.pendingExtraContentHeight = 0;
+        [self updateMainScrollViewContentSizeWithExtraHeight:@(mergedExtraHeight)];
+    });
 }
 
 /// ✅ 优化的主滚动视图内容大小更新 - 避免重复计算
 - (void)updateMainScrollViewContentSize {
-    [self updateMainScrollViewContentSizeWithExtraHeight:@(20)];
+    [self updateMainScrollViewContentSizeWithExtraHeight:@(0)];
 }
 
 /// ✅ 优化的主滚动视图内容大小更新（带额外高度）- 避免重复计算
@@ -947,11 +943,17 @@
     }
     
     CGFloat extraHeight = extraHeightNumber.floatValue;
+    CGRect contentFrame = self.contentView.frame;
+    CGFloat targetWidth = CGRectGetWidth(self.mainScrollView.bounds);
+    if (fabs(CGRectGetWidth(contentFrame) - targetWidth) > 0.5) {
+        contentFrame.size.width = targetWidth;
+        self.contentView.frame = contentFrame;
+    }
     
     // 强制布局更新，确保所有约束变化都已生效
     [self.contentView layoutIfNeeded];
     
-    // 计算所有可见子视图的最大底部位置
+    // 计算内容区域的最大底部位置，当前底部按钮属于内容流，需参与高度计算
     CGFloat maxY = 0;
     for (UIView *subview in self.contentView.subviews) {
         if (!subview.hidden && subview.alpha > 0) {
@@ -962,8 +964,9 @@
         }
     }
     
-    // 添加适量底部边距，确保有足够的滚动空间
-    maxY += 100;  // ✅ 底部边距统一设置为100pt
+    CGFloat safeAreaBottom = self.view.safeAreaInsets.bottom;
+    CGFloat bottomPadding = safeAreaBottom + 10.0;
+    maxY += bottomPadding;
     
     // ✅ 为失败状态添加额外高度
     if (extraHeight > 0) {
@@ -971,7 +974,7 @@
         NSLog(@"📏 为失败状态添加额外高度: %.1f", extraHeight);
     }
     
-    // ✅ 内容高度就是实际内容的高度，不强制增加到屏幕高度
+    // 内容高度取实际内容高度，避免额外放大
     CGFloat contentHeight = maxY;
     
     // ✅ 只有在内容高度真的变化时才更新
@@ -985,8 +988,8 @@
         // 设置ScrollView的内容大小
         self.mainScrollView.contentSize = CGSizeMake(self.contentView.frame.size.width, contentHeight);
         
-        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (最大Y: %.1f, 额外高度: %.1f)",
-              currentContentHeight, contentHeight, maxY - extraHeight - 100, extraHeight);
+        NSLog(@"📏 优化滚动视图内容大小更新: %.1f → %.1f (内容最大Y: %.1f, 底部留白: %.1f, 额外高度: %.1f)",
+              currentContentHeight, contentHeight, maxY - extraHeight - bottomPadding, bottomPadding, extraHeight);
     } else {
         NSLog(@"📏 滚动视图内容大小无需更新 (当前: %.1f, 计算: %.1f)", currentContentHeight, contentHeight);
     }
@@ -1005,32 +1008,21 @@
     CGFloat newHeight = 0;
     
     if (cellCount > 0) {
-        // 有数据时按cell数量计算高度
         newHeight = cellCount * cellHeight;
-        
-        // 设置一个最大高度限制，避免TableView过高
-        CGFloat maxHeight = 5 * cellHeight; // 最多显示5个cell的高度
+        CGFloat maxHeight = 5 * cellHeight;
         newHeight = MIN(newHeight, maxHeight);
-        
-        // 添加一些内边距
-        newHeight += 60.0; // 顶部和底部各20pt的边距
-        
+        newHeight += 68.0;
         self.emptyView.hidden = YES;
         NSLog(@"📊 有音色数据，计算高度: %.1f", newHeight);
     } else {
-        // 没有数据时显示空视图，设置最小高度
-        newHeight = 250.0; // 空状态的最小高度
+        newHeight = 280.0;
         self.emptyView.hidden = NO;
         NSLog(@"📊 无音色数据，显示空视图，设置高度: %.1f", newHeight);
     }
     
-    // 更新约束常量
-    self.voiceListViewHeight.constant = newHeight;
-    
-    // 动画更新布局
-    [UIView animateWithDuration:0.3 animations:^{
-        [self.contentView layoutIfNeeded];
-    }];
+    if (fabs(self.voiceListViewHeight.constant - newHeight) > 1.0) {
+        self.voiceListViewHeight.constant = newHeight;
+    }
     
     NSLog(@"📊 动态调整音色选择区域完成:");
     NSLog(@"   Cell数量: %ld", (long)cellCount);
@@ -1372,7 +1364,7 @@
 
 - (IBAction)addNewVoice:(id)sender {
     if (self.voiceCount>=3) {
-        [SVProgressHUD showErrorWithStatus:@"3 voices have been created, please delete before creating new ones"];
+        [SVProgressHUD showErrorWithStatus:LocalString(@"已创建3个音色，请先删除后再新建")];
     }else{
         CreateVoiceViewController * vc = [[CreateVoiceViewController alloc]init];
         [self.navigationController pushViewController:vc animated:YES];
@@ -2296,7 +2288,7 @@
             
         case StoryStatusAudioFailed: // 状态为6，音频生成失败
             NSLog(@"❌ 故事音频生成失败，显示错误视图");
-            [self showFailedViewWithStoryNameTopConstraint:52.0];
+            [self showFailedView];
         
             break;
             
@@ -2337,14 +2329,65 @@
 
 
 
-/// ✅ 显示失败视图并调整约束
-/// @param topConstraintValue storyNameTop约束值
-- (void)showFailedViewWithStoryNameTopConstraint:(CGFloat)topConstraintValue {
+/// 根据当前失败文案计算横幅高度
+- (CGFloat)calculatedFailedBannerHeight {
+    CGFloat availableWidth = CGRectGetWidth(self.failedView.bounds);
+    if (availableWidth <= 0.0) {
+        availableWidth = CGRectGetWidth(self.view.bounds) - 32.0;
+    }
+    CGFloat labelWidth = MAX(0.0, availableWidth - 16.0 - 24.0 - 10.0 - 16.0);
+    CGSize maxSize = CGSizeMake(labelWidth, CGFLOAT_MAX);
+    UIFont *font = self.cloneFailedLabel.font ?: [UIFont systemFontOfSize:13.0];
+    NSString *failedText = self.cloneFailedLabel.text ?: @"";
+    CGRect textRect = [failedText boundingRectWithSize:maxSize
+                                                               options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+                                                            attributes:@{NSFontAttributeName: font}
+                                                               context:nil];
+    CGFloat textHeight = ceil(textRect.size.height);
+    return MAX(40.0, textHeight + 16.0);
+}
+
+- (NSLayoutConstraint *)failedViewHeightConstraint {
+    for (NSLayoutConstraint *constraint in self.failedView.constraints) {
+        if (constraint.firstAttribute == NSLayoutAttributeHeight &&
+            constraint.firstItem == self.failedView) {
+            return constraint;
+        }
+    }
+    return nil;
+}
+
+/// 根据当前失败文案和宽度刷新横幅高度及下方间距
+- (void)updateFailedViewLayoutIfNeeded {
+    if (self.failedView.hidden) {
+        return;
+    }
+
+    CGFloat availableWidth = CGRectGetWidth(self.failedView.bounds);
+    if (availableWidth <= 0.0) {
+        availableWidth = CGRectGetWidth(self.view.bounds) - 32.0;
+    }
+    CGFloat labelWidth = MAX(0.0, availableWidth - 16.0 - 24.0 - 10.0 - 16.0);
+    self.cloneFailedLabel.preferredMaxLayoutWidth = labelWidth;
+
+    CGFloat failedHeight = [self calculatedFailedBannerHeight];
+    NSLayoutConstraint *heightConstraint = [self failedViewHeightConstraint];
+    if (heightConstraint && fabs(heightConstraint.constant - failedHeight) > 0.5) {
+        heightConstraint.constant = failedHeight;
+    }
+
+    CGFloat targetTop = failedHeight + 20.0;
+    if (fabs(self.storyNameTop.constant - targetTop) > 0.5) {
+        self.storyNameTop.constant = targetTop;
+    }
+}
+
+/// ✅ 显示失败视图并根据文案动态调整高度与间距
+- (void)showFailedView {
     // 显示失败视图
     self.failedView.hidden = NO;
-    
-    // 调整storyNameTop约束
-    self.storyNameTop.constant = topConstraintValue;
+    [self.view layoutIfNeeded];
+    [self updateFailedViewLayoutIfNeeded];
     
     // 添加渐显动画
     self.failedView.alpha = 0.0;
@@ -2358,7 +2401,7 @@
         }
     }];
     
-    NSLog(@"📊 显示失败视图，storyNameTop约束设置为: %.1f", topConstraintValue);
+    NSLog(@"📊 显示失败视图，height: %.1f, storyNameTop: %.1f", [self calculatedFailedBannerHeight], self.storyNameTop.constant);
 }
 
 /// ✅ 隐藏失败视图并调整约束

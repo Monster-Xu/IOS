@@ -103,12 +103,18 @@
 // 故事类型和时长数据
 @property (nonatomic, strong) NSArray<NSString *> *storyTypes;
 @property (nonatomic, strong) NSArray<NSString *> *storyLengths;
+@property (nonatomic, copy) NSString *storyTypesLanguageCode;
+@property (nonatomic, copy) NSString *storyLengthsLanguageCode;
 
 // 故事类型的code映射（用于与服务器数据匹配）
 @property (nonatomic, strong) NSArray<NSNumber *> *storyTypeCodes;
 
 // 故事长度的seconds映射（用于与服务器数据匹配）
 @property (nonatomic, strong) NSArray<NSNumber *> *storyLengthSeconds;
+
+- (void)applyRTLAlignmentIfNeeded;
+- (void)configureTextViewAlignment:(UITextView *)textView;
+- (void)configureTextFieldAlignment:(UITextField *)textField;
 
 @end
 
@@ -135,6 +141,7 @@
     // 添加键盘通知
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+    [self applyRTLAlignmentIfNeeded];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -225,6 +232,150 @@
         self.activityIndicator = nil;
         self.loadingLabel = nil;
     }
+}
+
+- (void)applyRTLAlignmentIfNeeded {
+    [self configureTextViewAlignment:self.themeTextView];
+    [self configureTextViewAlignment:self.contentTextView];
+    [self configureTextFieldAlignment:self.protagonistTextField];
+
+    NSTextAlignment alignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.themePlaceholderLabel.textAlignment = alignment;
+    self.contentPlaceholderLabel.textAlignment = alignment;
+}
+
+- (void)configureTextViewAlignment:(UITextView *)textView {
+    if (!textView) {
+        return;
+    }
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    textView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    textView.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.alignment = textView.textAlignment;
+    paragraphStyle.baseWritingDirection = isRTL ? NSWritingDirectionRightToLeft : NSWritingDirectionLeftToRight;
+    textView.typingAttributes = @{
+        NSParagraphStyleAttributeName: paragraphStyle,
+        NSFontAttributeName: textView.font ?: [UIFont systemFontOfSize:15],
+        NSForegroundColorAttributeName: textView.textColor ?: UIColor.blackColor
+    };
+
+    UITextPosition *beginning = textView.beginningOfDocument;
+    UITextPosition *end = textView.endOfDocument;
+    if (beginning && end) {
+        UITextRange *textRange = [textView textRangeFromPosition:beginning toPosition:end];
+        [textView setBaseWritingDirection:(isRTL ? UITextWritingDirectionRightToLeft : UITextWritingDirectionLeftToRight)
+                                 forRange:textRange];
+    }
+}
+
+- (void)configureTextFieldAlignment:(UITextField *)textField {
+    if (!textField) {
+        return;
+    }
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    textField.semanticContentAttribute = UISemanticContentAttributeUnspecified;
+    textField.contentHorizontalAlignment = isRTL ? UIControlContentHorizontalAlignmentRight : UIControlContentHorizontalAlignmentLeft;
+    textField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+
+    NSString *placeholder = textField.placeholder;
+    if (placeholder.length > 0) {
+        NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+        paragraphStyle.alignment = textField.textAlignment;
+        paragraphStyle.baseWritingDirection = isRTL ? NSWritingDirectionRightToLeft : NSWritingDirectionLeftToRight;
+        textField.attributedPlaceholder = [[NSAttributedString alloc] initWithString:placeholder attributes:@{
+            NSParagraphStyleAttributeName: paragraphStyle,
+            NSForegroundColorAttributeName: [UIColor colorWithWhite:0.7 alpha:1],
+            NSFontAttributeName: textField.font ?: [UIFont systemFontOfSize:15]
+        }];
+    }
+
+    UITextPosition *beginning = textField.beginningOfDocument;
+    UITextPosition *end = textField.endOfDocument;
+    if (beginning && end) {
+        UITextRange *textRange = [textField textRangeFromPosition:beginning toPosition:end];
+        [textField setBaseWritingDirection:(isRTL ? UITextWritingDirectionRightToLeft : UITextWritingDirectionLeftToRight)
+                                  forRange:textRange];
+    }
+}
+
+- (NSString *)storyOptionDisplayTextFromItem:(NSDictionary *)item defaultLanguageCode:(NSString *)languageCode {
+    if (![item isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+
+    NSArray<NSString *> *preferredKeys = @[];
+    if ([languageCode hasPrefix:@"zh"]) {
+        preferredKeys = @[@"desc", @"storyTypeDesc", @"durationDesc", @"cnDesc", @"zhDesc", @"name", @"title", @"enDesc"];
+    } else {
+        preferredKeys = @[@"desc", @"storyTypeDesc", @"enDesc", @"name", @"title", @"durationDesc", @"cnDesc"];
+    }
+
+    for (NSString *key in preferredKeys) {
+        NSString *value = item[key];
+        if ([value isKindOfClass:[NSString class]] && value.length > 0) {
+            return value;
+        }
+    }
+
+    return nil;
+}
+
+- (NSString *)storyOptionLanguageCodeFromResponseItem:(NSDictionary *)item {
+    if (![item isKindOfClass:[NSDictionary class]]) {
+        return [ATLanguageHelper miniAppLangType].lowercaseString ?: @"en";
+    }
+
+    NSArray<NSString *> *languageKeys = @[@"language", @"lang", @"languageCode", @"langType"];
+    for (NSString *key in languageKeys) {
+        NSString *value = item[key];
+        if ([value isKindOfClass:[NSString class]] && value.length > 0) {
+            return value.lowercaseString;
+        }
+    }
+
+    return [ATLanguageHelper miniAppLangType].lowercaseString ?: @"en";
+}
+
+- (NSString *)pickerTitleForTypeLanguageCode:(NSString *)languageCode {
+    NSString *normalizedLanguageCode = languageCode.lowercaseString ?: @"en";
+    if ([normalizedLanguageCode hasPrefix:@"zh"]) {
+        return @"选择故事类型";
+    }
+    if ([normalizedLanguageCode hasPrefix:@"ar"]) {
+        return @"اختر نوع القصة";
+    }
+    if ([normalizedLanguageCode hasPrefix:@"fr"]) {
+        return @"Choisir le type d’histoire";
+    }
+    if ([normalizedLanguageCode hasPrefix:@"de"]) {
+        return @"Storytyp auswählen";
+    }
+    if ([normalizedLanguageCode hasPrefix:@"es"]) {
+        return @"Elegir tipo de historia";
+    }
+    return @"Choose Story Type";
+}
+
+- (NSString *)pickerTitleForLengthLanguageCode:(NSString *)languageCode {
+    NSString *normalizedLanguageCode = languageCode.lowercaseString ?: @"en";
+    if ([normalizedLanguageCode hasPrefix:@"zh"]) {
+        return @"请选择故事时长";
+    }
+    if ([normalizedLanguageCode hasPrefix:@"ar"]) {
+        return @"اختر مدة القصة";
+    }
+    if ([normalizedLanguageCode hasPrefix:@"fr"]) {
+        return @"Choisir la durée de l’histoire";
+    }
+    if ([normalizedLanguageCode hasPrefix:@"de"]) {
+        return @"Storylänge auswählen";
+    }
+    if ([normalizedLanguageCode hasPrefix:@"es"]) {
+        return @"Elegir duración de la historia";
+    }
+    return @"Choose Story Length";
 }
 
 /// 更新加载文字
@@ -389,19 +540,11 @@
                 NSMutableArray *types = [NSMutableArray array];
                 NSMutableArray *typeCodes = [NSMutableArray array];
                 
-                NSString *currentLanguage = [[NSLocale preferredLanguages] firstObject];
-                BOOL isChineseEnvironment = [currentLanguage hasPrefix:@"zh"];
-                
                 for (NSDictionary *item in dataArray) {
                     if ([item isKindOfClass:[NSDictionary class]]) {
-                        NSString *desc = nil;
                         NSNumber *code = item[@"code"];
-                        
-                        if (isChineseEnvironment) {
-                            desc = item[@"cnDesc"];
-                        } else {
-                            desc = item[@"enDesc"];
-                        }
+                        NSString *languageCode = [self storyOptionLanguageCodeFromResponseItem:item];
+                        NSString *desc = [self storyOptionDisplayTextFromItem:item defaultLanguageCode:languageCode];
                         
                         if (desc && desc.length > 0 && code) {
                             [types addObject:desc];
@@ -413,7 +556,8 @@
                 if (types.count > 0) {
                     self.storyTypes = [types copy];
                     self.storyTypeCodes = [typeCodes copy];
-                    NSLog(@"✅ 从API获取故事类型成功 (%@): %@", isChineseEnvironment ? @"中文" : @"英文", self.storyTypes);
+                    self.storyTypesLanguageCode = [self storyOptionLanguageCodeFromResponseItem:dataArray.firstObject];
+                    NSLog(@"✅ 从API获取故事类型成功: %@", self.storyTypes);
                 }
             }
         }
@@ -433,17 +577,12 @@
                 NSMutableArray *lengths = [NSMutableArray array];
                 NSMutableArray *lengthSeconds = [NSMutableArray array];
                 
-                NSString *currentLanguage = [[NSLocale preferredLanguages] firstObject];
-                BOOL isChineseEnvironment = [currentLanguage hasPrefix:@"zh"];
-                
                 for (NSDictionary *item in dataArray) {
                     if ([item isKindOfClass:[NSDictionary class]]) {
-                        NSString *desc = nil;
                         NSNumber *seconds = item[@"seconds"];
-                        
-                        if (isChineseEnvironment) {
-                            desc = item[@"durationDesc"];
-                        } else {
+                        NSString *languageCode = [self storyOptionLanguageCodeFromResponseItem:item];
+                        NSString *desc = [self storyOptionDisplayTextFromItem:item defaultLanguageCode:languageCode];
+                        if (desc.length == 0) {
                             NSInteger secondsValue = [seconds integerValue];
                             if (secondsValue > 0) {
                                 if (secondsValue < 60) {
@@ -468,7 +607,8 @@
                 if (lengths.count > 0) {
                     self.storyLengths = [lengths copy];
                     self.storyLengthSeconds = [lengthSeconds copy];
-                    NSLog(@"✅ 从API获取故事长度成功 (%@): %@", isChineseEnvironment ? @"中文" : @"英文", self.storyLengths);
+                    self.storyLengthsLanguageCode = [self storyOptionLanguageCodeFromResponseItem:dataArray.firstObject];
+                    NSLog(@"✅ 从API获取故事长度成功: %@", self.storyLengths);
                 }
             }
         }
@@ -539,6 +679,7 @@
     
     // 默认的故事类型代码（按照API返回的code顺序：1-7）
     self.storyTypeCodes = @[@1, @2, @3, @4, @5, @6, @7];
+    self.storyTypesLanguageCode = [ATLanguageHelper miniAppLangType];
     
     NSLog(@"📝 使用默认故事类型: %@", self.storyTypes);
 }
@@ -553,6 +694,7 @@
     
     // 默认的故事长度秒数（按照API返回的seconds）
     self.storyLengthSeconds = @[@60, @120, @180];
+    self.storyLengthsLanguageCode = [ATLanguageHelper miniAppLangType];
     
     NSLog(@"📝 使用默认故事长度: %@", self.storyLengths);
 }
@@ -682,6 +824,7 @@
     self.themeTextView.font = [UIFont systemFontOfSize:15];
     self.themeTextView.textColor = [UIColor blackColor];
     self.themeTextView.backgroundColor = [UIColor clearColor];
+    self.themeTextView.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.themeTextView.textContainerInset = UIEdgeInsetsMake(8, 12, 16, 12);
     self.themeTextView.delegate = self;
     self.themeTextView.scrollEnabled = NO;
@@ -699,12 +842,14 @@
     self.themePlaceholderLabel.text = LocalString(@"最多120个字符");
     self.themePlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.themePlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
+    self.themePlaceholderLabel.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.themePlaceholderLabel.userInteractionEnabled = NO;
     [self.themeCardView addSubview:self.themePlaceholderLabel];
     
     [self.themePlaceholderLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.equalTo(self.themeTextView).offset(16);
         make.top.equalTo(self.themeTextView).offset(8);
+        make.leading.equalTo(self.themeTextView).offset(16);
+        make.trailing.equalTo(self.themeTextView).offset(-16);
     }];
 }
 
@@ -847,6 +992,7 @@
     self.contentTextView.font = [UIFont systemFontOfSize:15];
     self.contentTextView.textColor = [UIColor blackColor];
     self.contentTextView.backgroundColor = [UIColor clearColor];
+    self.contentTextView.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.contentTextView.textContainerInset = UIEdgeInsetsMake(8, 12, 40, 12);
     self.contentTextView.delegate = self;
     [self.contentCardView addSubview:self.contentTextView];
@@ -863,12 +1009,16 @@
     self.contentPlaceholderLabel.text = LocalString(@"请简要输入故事主线");
     self.contentPlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.contentPlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
+    self.contentPlaceholderLabel.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.contentPlaceholderLabel.userInteractionEnabled = NO;
+    self.contentPlaceholderLabel.numberOfLines = 0;
+    self.contentPlaceholderLabel.lineBreakMode = NSLineBreakByWordWrapping;
     [self.contentCardView addSubview:self.contentPlaceholderLabel];
     
     [self.contentPlaceholderLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.leading.equalTo(self.contentTextView).offset(16);
         make.top.equalTo(self.contentTextView).offset(8);
+        make.leading.equalTo(self.contentTextView).offset(16);
+        make.trailing.equalTo(self.contentTextView).offset(-16);
     }];
     
     // 字数统计
@@ -961,7 +1111,12 @@
     self.typeValueLabel.font = [UIFont systemFontOfSize:15];
     self.typeValueLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.typeValueLabel.textAlignment = NSTextAlignmentNatural;
+    self.typeValueLabel.numberOfLines = 1;
+    self.typeValueLabel.adjustsFontSizeToFitWidth = YES;
+    self.typeValueLabel.minimumScaleFactor = 0.7;
+    self.typeValueLabel.lineBreakMode = NSLineBreakByClipping;
     self.typeValueLabel.userInteractionEnabled = NO;
+    [self.typeValueLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
     [self.typeCardView addSubview:self.typeValueLabel];
     
     [self.typeValueLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -1002,16 +1157,19 @@
     self.protagonistTextField = [[UITextField alloc] init];
     self.protagonistTextField.font = [UIFont systemFontOfSize:15];
     self.protagonistTextField.textColor = [UIColor blackColor];
-    self.protagonistTextField.textAlignment = NSTextAlignmentNatural;
+    self.protagonistTextField.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.protagonistTextField.placeholder = LocalString(@"请输入");
+    self.protagonistTextField.adjustsFontSizeToFitWidth = YES;
+    self.protagonistTextField.minimumFontSize = 11.0;
     self.protagonistTextField.delegate = self;
+    [self configureTextFieldAlignment:self.protagonistTextField];
     [self.protagonistCardView addSubview:self.protagonistTextField];
     
     [self.protagonistTextField mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.trailing.equalTo(self.protagonistCardView).offset(-16);
         make.centerY.equalTo(self.protagonistCardView);
-        make.leading.greaterThanOrEqualTo(self.protagonistLabel.mas_trailing).offset(16);
         make.width.mas_greaterThanOrEqualTo(100); // 确保输入框有最小宽度
+        make.trailing.equalTo(self.protagonistCardView).offset(-16);
+        make.leading.greaterThanOrEqualTo(self.protagonistLabel.mas_trailing).offset(16);
     }];
 }
 
@@ -1075,7 +1233,12 @@
     self.lengthValueLabel.font = [UIFont systemFontOfSize:15];
     self.lengthValueLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.lengthValueLabel.textAlignment = NSTextAlignmentNatural;
+    self.lengthValueLabel.numberOfLines = 1;
+    self.lengthValueLabel.adjustsFontSizeToFitWidth = YES;
+    self.lengthValueLabel.minimumScaleFactor = 0.7;
+    self.lengthValueLabel.lineBreakMode = NSLineBreakByClipping;
     self.lengthValueLabel.userInteractionEnabled = NO;
+    [self.lengthValueLabel setContentCompressionResistancePriority:UILayoutPriorityDefaultLow forAxis:UILayoutConstraintAxisHorizontal];
     [self.lengthCardView addSubview:self.lengthValueLabel];
     
     [self.lengthValueLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -1205,23 +1368,17 @@
 }
 
 - (void)showVoicePermissionDeniedAlert {
-    // 由于这个弹窗有3个按钮且逻辑比较特殊，我们需要使用更灵活的方式
-    // 这里暂时保持原有的UIAlertController，或者可以考虑用LGBaseAlertView的自定义类型
-    NSDictionary *info = @{
-        @"title": LocalString(@"允许应用录音？"),
-        @"content": LocalString(@"请前往权限设置开启录音权限")
-    };
-    
-    [LGBaseAlertView showAlertInfo:info
-                          withType:ALERT_VIEW_TYPE_NORMAL
-                      confirmBlock:^(BOOL isValue, id obj) {
-        if (isValue) {
-            // 确定按钮：跳转到设置
-            [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
-                                               options:@{}
-                                     completionHandler:nil];
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"提示")
+                                content:LocalString(@"请前往设置开启语音识别权限")
+                           cancelBtnStr:LocalString(@"取消")
+                          confirmBtnStr:LocalString(@"去设置")
+                           confirmBlock:^(BOOL isValue, id obj) {
+        if (!isValue) {
+            return;
         }
-        // 取消按钮：不做任何操作
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]
+                                           options:@{}
+                                 completionHandler:nil];
     }];
 }
 
@@ -1288,7 +1445,8 @@
         return;
     }
     
-    BottomPickerView *picker = [[BottomPickerView alloc] initWithTitle:LocalString(@"选择故事类型")
+    NSString *typeLanguageCode = self.storyTypesLanguageCode.length > 0 ? self.storyTypesLanguageCode : [ATLanguageHelper miniAppLangType];
+    BottomPickerView *picker = [[BottomPickerView alloc] initWithTitle:[self pickerTitleForTypeLanguageCode:typeLanguageCode]
                                                                 options:self.storyTypes
                                                           selectedIndex:self.selectedTypeIndex
                                                             selectBlock:^(NSInteger selectedIndex, NSString *selectedValue) {
@@ -1301,6 +1459,7 @@
                     
             }];
     }];
+//    picker.displayLanguageCode = typeLanguageCode;
     
     [picker show];
 }
@@ -1314,7 +1473,8 @@
         return;
     }
     
-    BottomPickerView *picker = [[BottomPickerView alloc] initWithTitle:LocalString(@"请选择故事时长")
+    NSString *lengthLanguageCode = self.storyLengthsLanguageCode.length > 0 ? self.storyLengthsLanguageCode : [ATLanguageHelper miniAppLangType];
+    BottomPickerView *picker = [[BottomPickerView alloc] initWithTitle:[self pickerTitleForLengthLanguageCode:lengthLanguageCode]
                                                                 options:self.storyLengths
                                                           selectedIndex:self.selectedLengthIndex
                                                             selectBlock:^(NSInteger selectedIndex, NSString *selectedValue) {
@@ -1327,6 +1487,7 @@
                     
             }];
     }];
+//    picker.displayLanguageCode = lengthLanguageCode;
     
     [picker show];
 }
@@ -1766,7 +1927,12 @@
 
 #pragma mark - UITextViewDelegate
 
+- (void)textViewDidBeginEditing:(UITextView *)textView {
+    [self configureTextViewAlignment:textView];
+}
+
 - (void)textViewDidChange:(UITextView *)textView {
+    [self configureTextViewAlignment:textView];
     if (textView == self.themeTextView) {
         // 更新placeholder
         self.themePlaceholderLabel.hidden = textView.text.length > 0;
@@ -1791,7 +1957,12 @@
 
 #pragma mark - UITextFieldDelegate
 
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    [self configureTextFieldAlignment:textField];
+}
+
 - (BOOL)textField:(UITextField *)textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string {
+    [self configureTextFieldAlignment:textField];
     if (textField == self.protagonistTextField) {
         NSString *newText = [textField.text stringByReplacingCharactersInRange:range withString:string];
         return newText.length <= 30;

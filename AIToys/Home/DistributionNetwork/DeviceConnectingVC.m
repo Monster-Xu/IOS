@@ -9,6 +9,7 @@
 #import "ExitView.h"
 #import "DeviceConnectSuccessViewController.h"
 #import "DeviceConnectFailedViewController.h"
+#import "ATLanguageHelper.h"
 
 @interface DeviceConnectingVC ()<ThingSmartBLEWifiActivatorDelegate,ThingSmartHomeDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -31,8 +32,12 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view from its nib.
     self.fd_prefersNavigationBarHidden = YES;
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     self.titleLabel.text = LocalString(@"正在连接设备");
     self.subTitleLabel.text = LocalString(@"请保持设备通电");
+    self.titleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.subTitleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     [self getToken];
     
 

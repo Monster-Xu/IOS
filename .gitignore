@@ -1,3 +1,35 @@
 Pods/
 Podfile.lock
 *.xcworkspace
+.derivedData/
+.derivedData-sim/
+# Xcode
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcodeproj/project.xcworkspace/
+*.xcworkspace/*
+!*.xcworkspace/contents.xcworkspacedata
+
+# Build products
+build/
+DerivedData/
+*.app
+*.ipa
+
+# CocoaPods
+Pods/
+
+# Logs
+*.log
+
+# User-specific
+xcuserdata/
+*.xcuserstate
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store

@@ -20,6 +20,16 @@
     if (self) {
         self = [[[NSBundle mainBundle]loadNibNamed:@"ExitView" owner:nil options:nil]objectAtIndex:0];
         self.frame = frame;
+        self.titleLabel.numberOfLines = 0;
+        self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        self.exitBtn.titleLabel.numberOfLines = 1;
+        self.exitBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+        self.exitBtn.titleLabel.minimumScaleFactor = 0.75;
+        self.exitBtn.titleLabel.lineBreakMode = NSLineBreakByClipping;
+        self.continueBtn.titleLabel.numberOfLines = 1;
+        self.continueBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+        self.continueBtn.titleLabel.minimumScaleFactor = 0.75;
+        self.continueBtn.titleLabel.lineBreakMode = NSLineBreakByClipping;
         self.titleLabel.text = LocalString(@"还有设备待添加，是否退出?");
         [self.exitBtn setTitle:LocalString(@"仍然退出") forState:0];
         [self.continueBtn setTitle:LocalString(@"继续添加") forState:0];

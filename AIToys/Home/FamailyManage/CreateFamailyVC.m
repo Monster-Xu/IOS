@@ -38,6 +38,17 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.fd_prefersNavigationBarHidden =  YES;
+    self.titleLab.numberOfLines = 2;
+    self.titleLab.lineBreakMode = NSLineBreakByWordWrapping;
+    self.leftnameLabel.numberOfLines = 1;
+    self.leftnameLabel.adjustsFontSizeToFitWidth = YES;
+    self.leftnameLabel.minimumScaleFactor = 0.8;
+    self.cancelBtn.titleLabel.numberOfLines = 1;
+    self.cancelBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.cancelBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.saveBtn.titleLabel.numberOfLines = 1;
+    self.saveBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.saveBtn.titleLabel.minimumScaleFactor = 0.75;
     self.titleLab.text = LocalString(@"创建家庭");
     self.leftnameLabel.text = LocalString(@"家庭名称");
     self.textField.placeholder = LocalString(@"请输入名称");
