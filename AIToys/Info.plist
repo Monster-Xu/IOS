@@ -23,17 +23,5 @@
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>需要蓝牙权限以搜索并连接设备</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>需要蓝牙权限以搜索并连接设备</string>
-	<key>NSCameraUsageDescription</key>
-	<string>需要相机权限以扫码和拍摄图片</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>需要麦克风权限以录制语音内容</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>需要相册权限以选择图片</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>需要相册权限以保存图片</string>
 </dict>
 </plist>

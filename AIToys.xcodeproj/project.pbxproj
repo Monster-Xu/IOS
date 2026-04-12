@@ -3379,13 +3379,14 @@
 				INFOPLIST_FILE = AIToys/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Talenpal;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
-				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "需要蓝牙权限以搜索并连接设备";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "需要蓝牙权限以搜索并连接设备";
+				INFOPLIST_KEY_NSCameraUsageDescription = "需要相机权限以扫码和拍摄图片";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "允许定位以访问你附近的设备";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "允许定位以访问你附近的设备";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "通话需要使用麦克风";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "授予相册权限以开启截图录像功能";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "授予相册权限以开启截图录像功能";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要麦克风权限以录制语音内容";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "需要相册权限以保存图片";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "需要相册权限以选择图片";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "允许使用语音识别功能以完成声音转换";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
@@ -3398,7 +3399,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.4.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -3428,13 +3429,14 @@
 				INFOPLIST_FILE = AIToys/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Talenpal;
 				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "允许使用蓝牙以访问你附近的设备";
-				INFOPLIST_KEY_NSCameraUsageDescription = "允许使用相机以扫描设备二维码";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "需要蓝牙权限以搜索并连接设备";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "需要蓝牙权限以搜索并连接设备";
+				INFOPLIST_KEY_NSCameraUsageDescription = "需要相机权限以扫码和拍摄图片";
 				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "允许定位以访问你附近的设备";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "允许定位以访问你附近的设备";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "通话需要使用麦克风";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "授予相册权限以开启截图录像功能";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "授予相册权限以开启截图录像功能";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "需要麦克风权限以录制语音内容";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "需要相册权限以保存图片";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "需要相册权限以选择图片";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "允许使用语音识别功能以完成声音转换";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen.storyboard";
@@ -3447,7 +3449,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.4.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalappdev;
+				PRODUCT_BUNDLE_IDENTIFIER = com.talenpal.talenpalapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
