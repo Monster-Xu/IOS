@@ -9,6 +9,7 @@
 #import "ADImageView.h"
 #import "Masonry.h"
 #import "ATFontManager.h"
+#import "ATLanguageHelper.h"
 
 //默认倒计时
 #define secondCount 3
@@ -62,10 +63,16 @@
     [self.pushButton setTitleColor:[UIColor clearColor] forState:UIControlStateHighlighted];
     [self.pushButton addTarget:self action:@selector(jumpOver) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:self.pushButton];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     [self.pushButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.mas_equalTo(self.mas_right).offset(-10);
         make.top.mas_equalTo(self.mas_top).offset(StatusBar_Height + 5);
-        make.left.greaterThanOrEqualTo(self.mas_left).offset(10);
+        if (isRTL) {
+            make.left.mas_equalTo(self.mas_left).offset(10);
+            make.right.lessThanOrEqualTo(self.mas_right).offset(-10);
+        } else {
+            make.right.mas_equalTo(self.mas_right).offset(-10);
+            make.left.greaterThanOrEqualTo(self.mas_left).offset(10);
+        }
         make.width.greaterThanOrEqualTo(@(80));
         make.height.mas_equalTo(@(30));
     }];

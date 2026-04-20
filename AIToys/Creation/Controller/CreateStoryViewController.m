@@ -339,43 +339,11 @@
 }
 
 - (NSString *)pickerTitleForTypeLanguageCode:(NSString *)languageCode {
-    NSString *normalizedLanguageCode = languageCode.lowercaseString ?: @"en";
-    if ([normalizedLanguageCode hasPrefix:@"zh"]) {
-        return @"选择故事类型";
-    }
-    if ([normalizedLanguageCode hasPrefix:@"ar"]) {
-        return @"اختر نوع القصة";
-    }
-    if ([normalizedLanguageCode hasPrefix:@"fr"]) {
-        return @"Choisir le type d’histoire";
-    }
-    if ([normalizedLanguageCode hasPrefix:@"de"]) {
-        return @"Storytyp auswählen";
-    }
-    if ([normalizedLanguageCode hasPrefix:@"es"]) {
-        return @"Elegir tipo de historia";
-    }
-    return @"Choose Story Type";
+    return LocalString(@"故事类型");
 }
 
 - (NSString *)pickerTitleForLengthLanguageCode:(NSString *)languageCode {
-    NSString *normalizedLanguageCode = languageCode.lowercaseString ?: @"en";
-    if ([normalizedLanguageCode hasPrefix:@"zh"]) {
-        return @"请选择故事时长";
-    }
-    if ([normalizedLanguageCode hasPrefix:@"ar"]) {
-        return @"اختر مدة القصة";
-    }
-    if ([normalizedLanguageCode hasPrefix:@"fr"]) {
-        return @"Choisir la durée de l’histoire";
-    }
-    if ([normalizedLanguageCode hasPrefix:@"de"]) {
-        return @"Storylänge auswählen";
-    }
-    if ([normalizedLanguageCode hasPrefix:@"es"]) {
-        return @"Elegir duración de la historia";
-    }
-    return @"Choose Story Length";
+    return LocalString(@"故事时长");
 }
 
 /// 更新加载文字
@@ -1006,7 +974,7 @@
     
     // Placeholder
     self.contentPlaceholderLabel = [[UILabel alloc] init];
-    self.contentPlaceholderLabel.text = LocalString(@"请简要输入故事主线");
+    self.contentPlaceholderLabel.text = LocalString(@"请简要输入这个故事的主要情节");
     self.contentPlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.contentPlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.contentPlaceholderLabel.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;

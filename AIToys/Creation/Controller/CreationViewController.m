@@ -260,7 +260,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.emptyStateView addSubview:emptyLabel];
     
     UIButton *guideButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    NSString *guideTitle = LocalString(@"查看指南");
+    NSString *guideTitle = LocalString(@"查看教程");
     [guideButton setTitle:guideTitle forState:UIControlStateNormal];
     // 链接样式：更小的字体，下划线效果
     guideButton.titleLabel.font = [UIFont systemFontOfSize:14];
@@ -291,11 +291,14 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.emptyStateView addSubview:guideButton];
     
     UIButton *emptyMyVoiceButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [emptyMyVoiceButton setTitle:LocalString(@"我的声音") forState:UIControlStateNormal];
+    NSString *myVoiceTitle = LocalString(@"我的声音");
+    [emptyMyVoiceButton setTitle:myVoiceTitle forState:UIControlStateNormal];
     [emptyMyVoiceButton setTitleColor:[UIColor systemBlueColor] forState:UIControlStateNormal];
     emptyMyVoiceButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
-    emptyMyVoiceButton.titleLabel.numberOfLines = 2;
+    emptyMyVoiceButton.titleLabel.numberOfLines = 1;
     emptyMyVoiceButton.titleLabel.textAlignment = NSTextAlignmentCenter;
+    emptyMyVoiceButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    emptyMyVoiceButton.titleLabel.minimumScaleFactor = 0.75;
     emptyMyVoiceButton.layer.borderColor = [UIColor systemBlueColor].CGColor;
     emptyMyVoiceButton.layer.borderWidth = 1.5;
     emptyMyVoiceButton.layer.cornerRadius = 18;
@@ -304,15 +307,26 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.emptyStateView addSubview:emptyMyVoiceButton];
     
     UIButton *emptyCreateButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    [emptyCreateButton setTitle:LocalString(@"创建故事") forState:UIControlStateNormal];
+    NSString *createStoryTitle = LocalString(@"创建故事");
+    [emptyCreateButton setTitle:createStoryTitle forState:UIControlStateNormal];
     [emptyCreateButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     emptyCreateButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
-    emptyCreateButton.titleLabel.numberOfLines = 2;
+    emptyCreateButton.titleLabel.numberOfLines = 1;
     emptyCreateButton.titleLabel.textAlignment = NSTextAlignmentCenter;
+    emptyCreateButton.titleLabel.adjustsFontSizeToFitWidth = YES;
+    emptyCreateButton.titleLabel.minimumScaleFactor = 0.75;
     emptyCreateButton.backgroundColor = [UIColor systemBlueColor];
     emptyCreateButton.layer.cornerRadius = 18;
     [emptyCreateButton addTarget:self action:@selector(createButtonTapped) forControlEvents:UIControlEventTouchUpInside];
     [self.emptyStateView addSubview:emptyCreateButton];
+
+    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
+    UIFont *myVoiceFont = emptyMyVoiceButton.titleLabel.font ?: [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
+    UIFont *createStoryFont = emptyCreateButton.titleLabel.font ?: [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];
+    CGFloat myVoiceTitleWidth = ceil([myVoiceTitle sizeWithAttributes:@{NSFontAttributeName : myVoiceFont}].width);
+    CGFloat createStoryTitleWidth = ceil([createStoryTitle sizeWithAttributes:@{NSFontAttributeName : createStoryFont}].width);
+    CGFloat maxButtonWidth = floor((screenWidth - 16.0 * 2.0 - 12.0) * 0.5);
+    CGFloat sharedButtonWidth = MIN(MAX(MAX(myVoiceTitleWidth, createStoryTitleWidth) + 28.0, 88.0), maxButtonWidth);
     
     [self.emptyStateView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.customNavBarView.mas_bottom);
@@ -339,26 +353,16 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     }];
     
     [emptyMyVoiceButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        BOOL isRTL = [ATLanguageHelper isRTLLanguage];
-        CGFloat myVoiceMultiplier = isRTL ? 1.3 : 0.7;
-        make.centerX.equalTo(self.emptyStateView).multipliedBy(myVoiceMultiplier);
         make.top.equalTo(guideButton.mas_bottom).offset(32);
-        
-        CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
-        CGFloat myVoiceWidth = screenWidth <= 320 ? 70 : (screenWidth <= 375 ? 80 : (screenWidth <= 390 ? 85 : (screenWidth <= 414 ? 88 : 90)));
-        make.width.mas_equalTo(myVoiceWidth);
+        make.trailing.equalTo(self.emptyStateView.mas_centerX).offset(-6);
+        make.width.mas_equalTo(sharedButtonWidth);
         make.height.mas_equalTo(44);
     }];
     
     [emptyCreateButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        BOOL isRTL = [ATLanguageHelper isRTLLanguage];
-        CGFloat createMultiplier = isRTL ? 0.7 : 1.3;
-        make.centerX.equalTo(self.emptyStateView).multipliedBy(createMultiplier);
         make.top.equalTo(guideButton.mas_bottom).offset(32);
-        
-        CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
-        CGFloat createStoryWidth = screenWidth <= 320 ? 100 : (screenWidth <= 375 ? 110 : (screenWidth <= 390 ? 115 : (screenWidth <= 414 ? 120 : 122)));
-        make.width.mas_equalTo(createStoryWidth);
+        make.leading.equalTo(self.emptyStateView.mas_centerX).offset(6);
+        make.width.mas_equalTo(sharedButtonWidth);
         make.height.mas_equalTo(44);
     }];
 }

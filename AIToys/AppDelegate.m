@@ -28,10 +28,17 @@
 
 @interface AppDelegate ()<UNUserNotificationCenterDelegate>
 
+@property (nonatomic, strong) ADImageView *launchAdView;
+
+- (void)scheduleDeferredStartupTasksForApplication:(UIApplication *)application;
+- (void)performDeferredStartupTasksForApplication:(UIApplication *)application;
+- (void)configureAudioSession;
+- (void)showCachedLaunchAdIfNeeded;
+- (BannerModel *)cachedLaunchAdModelForImagePath:(NSString * __autoreleasing *)filePath;
+
 @end
 
 @implementation AppDelegate
-
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     
@@ -42,19 +49,11 @@
     [ATLanguageHelper applyStoredLanguageConfiguration];
     // RTL 全局配置
     [ATLanguageHelper applyGlobalRTLConfiguration];
-    // ⭐️ 只需要这一行代码，即可开始全局自动记录 ⭐️
-    [LogManager startAutoLogging];
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
     BOOL isReleaseBundle = [bundleId isEqualToString:@"com.talenpal.talenpalapp"];
     NSString *appKey = isReleaseBundle ? Smart_APPID : Smart_APPIDDEV;
     NSString *appSecret = isReleaseBundle ? Smart_AppSecret : Smart_AppSecretDEV;
     [[ThingSmartSDK sharedInstance] startWithAppKey:appKey secretKey:appSecret];
-    // App 启动时初始化涂鸦小程序
-    [[ThingMiniAppClient initialClient] initialize];
-    // 开启 vConsole 调试开关
-    // [[ThingMiniAppClient debugClient] vConsoleDebugEnable:YES];
-    // 注册自定义 API
-    [self registerCustomMiniAppAPIs];
 #ifdef DEBUG
     [[ThingSmartSDK sharedInstance] setDebugMode:YES];
 #else
@@ -62,38 +61,58 @@
     [SVProgressHUD setSuccessImage:QD_IMG(@"hud_success")];
     [SVProgressHUD setErrorImage:QD_IMG(@"hud_error")];
     [SVProgressHUD setDefaultStyle:SVProgressHUDStyleDark];
-    //蓝牙监听
-    [GlobalBluetoothManager sharedManager];
-    
-    // 骨架屏加载
-    [[TABAnimated sharedAnimated] initWithOnlySkeleton];
-    [TABAnimated sharedAnimated].openLog = YES;
-    
-    //tuya消息推送
-    [self setupPushNotification:application];
     
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     self.window.backgroundColor = [UIColor whiteColor];
     self.window.semanticContentAttribute = [ATLanguageHelper isRTLLanguage] ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     [self setUpRootVC];
+    [self showCachedLaunchAdIfNeeded];
     [self.window makeKeyAndVisible];
-    // 配置音频会话（应用启动时设置一次）
-    NSError *audioError = nil;
-    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&audioError];
-    if (audioError) {
-        NSLog(@"AppDelegate: 音频会话设置失败: %@", audioError.localizedDescription);
+    if (self.launchAdView.superview == self.window) {
+        [self.window bringSubviewToFront:self.launchAdView];
     }
     
 //    //友盟相关
 //    [UMConfigure initWithAppkey:@"6908c3d08560e34872dd8dcf" channel:@"App Store"];
 //    [UMConfigure setLogEnabled:YES];
 //    [UMCommonLogManager setUpUMCommonLogManager];
-    
-    //启动广告图
-    [self loadAD];
-    
-    return [[ThingModuleManager sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
 
+    BOOL moduleLaunchResult = [[ThingModuleManager sharedInstance] application:application didFinishLaunchingWithOptions:launchOptions];
+    if (self.launchAdView.superview == self.window) {
+        [self.window bringSubviewToFront:self.launchAdView];
+    }
+    [self scheduleDeferredStartupTasksForApplication:application];
+    return moduleLaunchResult;
+
+}
+
+- (void)scheduleDeferredStartupTasksForApplication:(UIApplication *)application {
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.35 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [self performDeferredStartupTasksForApplication:application];
+    });
+}
+
+- (void)performDeferredStartupTasksForApplication:(UIApplication *)application {
+    // 非首屏必需的初始化统一后置，优先保证首页尽快出首帧。
+    [LogManager startAutoLogging];
+    [[ThingMiniAppClient initialClient] initialize];
+    [self registerCustomMiniAppAPIs];
+    [GlobalBluetoothManager sharedManager];
+
+    [[TABAnimated sharedAnimated] initWithOnlySkeleton];
+    [TABAnimated sharedAnimated].openLog = NO;
+
+    [self setupPushNotification:application];
+    [self configureAudioSession];
+    [self asyncInit];
+}
+
+- (void)configureAudioSession {
+    NSError *audioError = nil;
+    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error:&audioError];
+    if (audioError) {
+        NSLog(@"AppDelegate: 音频会话设置失败: %@", audioError.localizedDescription);
+    }
 }
 
 //涂鸦消息推送
@@ -143,16 +162,15 @@
 }
 
 #pragma mark - ----------------------- 启动广告图 -----------------------
-#pragma mark 加载远程广告
-- (void)loadAD {
-
+#pragma mark 加载本地缓存广告图
+- (BannerModel *)cachedLaunchAdModelForImagePath:(NSString * __autoreleasing *)filePath {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
-    NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"loading.png"]];
+    NSString *imagePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"loading.png"]];
     NSString *modelPath = [[paths objectAtIndex:0] stringByAppendingPathComponent:[NSString stringWithFormat:@"adModel"]];
 
     NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL isDir = FALSE;
-    BOOL isExit = [fileManager fileExistsAtPath:filePath isDirectory:&isDir];
+    BOOL isExit = [fileManager fileExistsAtPath:imagePath isDirectory:&isDir];
     
     // 安全地反序列化模型数据
     BannerModel *adModel = nil;
@@ -165,9 +183,18 @@
         // 清除损坏的缓存文件
         [fileManager removeItemAtPath:modelPath error:nil];
     }
-    
-    //url是否已被缓存
-    if (isExit && adModel){
+
+    if (filePath != NULL) {
+        *filePath = imagePath;
+    }
+
+    return isExit ? adModel : nil;
+}
+
+- (void)showCachedLaunchAdIfNeeded {
+    NSString *filePath = nil;
+    BannerModel *adModel = [self cachedLaunchAdModelForImagePath:&filePath];
+    if (filePath.length > 0 && adModel) {
         WEAK_SELF
         //自定义广告ImageView
         ADImageView *launch = [[ADImageView alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
@@ -177,9 +204,10 @@
             [weakSelf jumpToAdView:adModel];
         };
         //设置window层级
+        self.launchAdView = launch;
         [weakSelf.window addSubview:launch];
+        [weakSelf.window bringSubviewToFront:launch];
     }
-    [self asyncInit];
 }
 
 //获取网络数据
