@@ -8,6 +8,7 @@
 #import "VoiceStoryTableViewCell.h"
 #import "VoiceStoryModel.h"
 #import "AudioPlayerView.h"
+#import <Masonry/Masonry.h>
 
 static NSString *AITLocalizedCreateNewBadgeImageName(void) {
     NSString *preferredLanguage = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] ? [[[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"] firstObject] : [NSLocale preferredLanguages].firstObject;
@@ -32,26 +33,51 @@ static UIImage *AITLocalizedCreateNewBadgeImage(void) {
     return [UIImage imageNamed:AITLocalizedCreateNewBadgeImageName()];
 }
 
+static CGFloat const kAITVoiceStoryBaseRowHeight = 88.0;
+static CGFloat const kAITVoiceStoryDefaultStatusHeight = 28.0;
+
+@interface VoiceStoryTableViewCell ()
+@property (nonatomic, strong) MASConstraint *statusViewHeightConstraint;
+@end
+
 @implementation VoiceStoryTableViewCell
+
++ (CGFloat)statusViewHeightForStory:(VoiceStoryModel *)story tableWidth:(CGFloat)tableWidth {
+    BOOL showStatusView = (story.storyStatus == StoryStatusGenerating ||
+                           story.storyStatus == StoryStatusGenerateFailed ||
+                           story.storyStatus == StoryStatusAudioGenerating ||
+                           story.storyStatus == StoryStatusAudioFailed);
+    if (!showStatusView) {
+        return 0;
+    }
+    NSString *desc = story.statusDesc;
+    if (desc.length == 0) {
+        return kAITVoiceStoryDefaultStatusHeight;
+    }
+
+    BOOL showFailureIcon = (story.storyStatus == StoryStatusGenerateFailed ||
+                            story.storyStatus == StoryStatusAudioFailed);
+    CGFloat labelWidth = tableWidth - (showFailureIcon ? 104.0 : 64.0);
+    labelWidth = MAX(labelWidth, 60.0);
+    CGRect textRect = [LocalString(desc) boundingRectWithSize:CGSizeMake(labelWidth, CGFLOAT_MAX)
+                                                      options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+                                                   attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14]}
+                                                      context:nil];
+    CGFloat contentHeight = ceil(CGRectGetHeight(textRect)) + 6.0;
+    return MAX(kAITVoiceStoryDefaultStatusHeight, contentHeight);
+}
+
++ (CGFloat)rowHeightForStory:(VoiceStoryModel *)story tableWidth:(CGFloat)tableWidth {
+    CGFloat statusHeight = [self statusViewHeightForStory:story tableWidth:tableWidth];
+    if (statusHeight <= 0) {
+        return kAITVoiceStoryBaseRowHeight;
+    }
+    return 94.0 + statusHeight;
+}
 
 - (NSString *)localizedStatusText {
     NSString *desc = self.model.statusDesc;
-    if (desc.length > 0) {
-        return LocalString(desc);
-    }
-
-    switch (self.model.storyStatus) {
-        case StoryStatusGenerating:
-            return LocalString(@"故事生成中");
-        case StoryStatusGenerateFailed:
-            return LocalString(@"故事生成失败");
-        case StoryStatusAudioGenerating:
-            return LocalString(@"音频生成中");
-        case StoryStatusAudioFailed:
-            return LocalString(@"音频生成失败");
-        default:
-            return @"";
-    }
+    return desc.length > 0 ? LocalString(desc) : @"";
 }
 
 - (void)awakeFromNib {
@@ -269,7 +295,7 @@ static UIImage *AITLocalizedCreateNewBadgeImage(void) {
         make.leading.equalTo(cardContainer).offset(12);
         make.trailing.equalTo(cardContainer).offset(-12);
         make.bottom.equalTo(cardContainer).offset(-12);
-        make.height.mas_equalTo(28);
+        self.statusViewHeightConstraint = make.height.mas_equalTo(kAITVoiceStoryDefaultStatusHeight);
     }];
 }
 
@@ -291,6 +317,18 @@ static UIImage *AITLocalizedCreateNewBadgeImage(void) {
             make.leading.equalTo(self.statusView).offset(4);
         }
     }];
+}
+
+- (void)updateStatusViewHeightForCurrentModel {
+    CGFloat tableWidth = CGRectGetWidth(self.contentView.bounds);
+    if (tableWidth <= 0) {
+        tableWidth = [UIScreen mainScreen].bounds.size.width;
+    }
+    CGFloat height = [[self class] statusViewHeightForStory:self.model tableWidth:tableWidth];
+    if (height <= 0) {
+        height = kAITVoiceStoryDefaultStatusHeight;
+    }
+    [self.statusViewHeightConstraint setOffset:height];
 }
 
 - (void)setModel:(VoiceStoryModel *)model {
@@ -377,6 +415,7 @@ static UIImage *AITLocalizedCreateNewBadgeImage(void) {
     
     // 更新statusLabel约束（不显示失败图标）
     [self updateStatusLabelConstraints:NO];
+    [self updateStatusViewHeightForCurrentModel];
     
     self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
@@ -418,6 +457,7 @@ static UIImage *AITLocalizedCreateNewBadgeImage(void) {
     
     // 更新statusLabel约束（不显示失败图标）
     [self updateStatusLabelConstraints:NO];
+    [self updateStatusViewHeightForCurrentModel];
     
     self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.6 blue:0.0 alpha:1.0]; // 橙色文字
@@ -490,6 +530,7 @@ static UIImage *AITLocalizedCreateNewBadgeImage(void) {
     
     // 更新statusLabel约束以适应失败图标
     [self updateStatusLabelConstraints:YES];
+    [self updateStatusViewHeightForCurrentModel];
     
     self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor systemRedColor];
@@ -569,6 +610,7 @@ static UIImage *AITLocalizedCreateNewBadgeImage(void) {
     
     // 更新statusLabel约束以适应失败图标
     [self updateStatusLabelConstraints:YES];
+    [self updateStatusViewHeightForCurrentModel];
     
     self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor systemRedColor];

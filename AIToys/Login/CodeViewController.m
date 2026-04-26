@@ -13,6 +13,7 @@
 #import "UILabel+RichText.h"
 #import "AccountSecurityVC.h"
 #import "UnReceiveCodeView.h"
+#import "APIManager.h"
 
 @interface CodeViewController ()
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -23,24 +24,35 @@
 
 @property (nonatomic, strong) QSTextCodeView *textView;
 @property (nonatomic, copy) NSString *codeStr;
+@property (nonatomic, assign) BOOL previousKeyboardManagerEnabled;
+@property (nonatomic, assign) BOOL hasStableViewFrame;
+@property (nonatomic, assign) CGRect stableViewFrame;
 @end
 
 @implementation CodeViewController
 
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    self.stableViewFrame = self.view.frame;
+    self.hasStableViewFrame = YES;
+}
+
 - (void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
-//    [IQKeyboardManager sharedManager].enable = YES;
+    [IQKeyboardManager sharedManager].enable = self.previousKeyboardManagerEnabled;
 }
 
 - (void)viewWillAppear:(BOOL)animated{
     
     [super viewWillAppear:animated];
-//    [IQKeyboardManager sharedManager].enable = NO;
+    self.previousKeyboardManagerEnabled = [IQKeyboardManager sharedManager].enable;
+    [IQKeyboardManager sharedManager].enable = NO;
 
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
     self.titleLabel.text = LocalString(@"输入验证码");
     self.titleLabel.numberOfLines = 0;
     self.alertLabel.text = LocalString(@"验证码有误");
@@ -78,6 +90,7 @@
 //                    }];
                     
                     if (result) {
+                        [weakSelf.view endEditing:YES];
                         if(weakSelf.type == EmailType_forgetPwd || weakSelf.type == EmailType_modifyPwd){
                             SetNewPasswordViewController *VC = [SetNewPasswordViewController new];
                             VC.numStr = weakSelf.numStr;
@@ -108,9 +121,9 @@
                                     }
                                 }
                             } failure:^(NSError *error) {
-                                weakSelf.alertLabel.text = error.description;
+                                weakSelf.alertLabel.text = [APIManager localizedMessageForError:error];
                                 weakSelf.alertLabel.hidden = NO;
-                                [SVProgressHUD showErrorWithStatus:error.description];
+                                [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
                             }];
                         }
                     } else {
@@ -119,7 +132,7 @@
 //                        [SVProgressHUD showErrorWithStatus:LocalString(@"验证码有误")];
                     }
                 } failure:^(NSError *error) {
-                    [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                    [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
                     
                 }];
             }
@@ -133,6 +146,22 @@
     NSString *str = [NSString stringWithFormat:@"%@：%@",LocalString(@"验证码已发送到您的邮箱"),self.numStr];
     NSMutableAttributedString *attStr=[[NSMutableAttributedString alloc]initWithString:str];
     self.subTitleLabel.attributedText = attStr;
+}
+
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+- (void)keyboardWillHide:(NSNotification *)notification {
+    NSTimeInterval duration = [notification.userInfo[UIKeyboardAnimationDurationUserInfoKey] doubleValue];
+    UIViewAnimationOptions options = ([notification.userInfo[UIKeyboardAnimationCurveUserInfoKey] integerValue] << 16);
+    [UIView animateWithDuration:duration delay:0 options:options animations:^{
+        self.view.transform = CGAffineTransformIdentity;
+        if (self.hasStableViewFrame) {
+            self.view.frame = self.stableViewFrame;
+        }
+        [self.view layoutIfNeeded];
+    } completion:nil];
 }
 
 //验证码倒计时
@@ -189,7 +218,7 @@
     } failure:^(NSError *error) {
         // 确保label可以响应手势
         weakSelf.subTitleLabel.enabledClickEffect = YES;
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
 }
 

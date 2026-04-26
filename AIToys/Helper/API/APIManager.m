@@ -13,6 +13,7 @@
 #import "NSDictionary+KeySortJoin.h"
 #import "SVProgressHUD.h"
 #import "LogManager.h"
+#import "ATLanguageHelper.h"
 
 // 添加缺少的宏定义
 #ifndef WEAK_SELF
@@ -53,6 +54,43 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
 @end
 
 @implementation APIManager
+
++ (NSString *)localizedMessageForError:(NSError *)error {
+    if (!error) {
+        return LocalString(@"网络请求失败，请稍后重试");
+    }
+    return [self localizedMessageForString:error.localizedDescription];
+}
+
++ (NSString *)localizedMessageForString:(NSString *)message {
+    if (message.length == 0) {
+        return LocalString(@"网络请求失败，请稍后重试");
+    }
+    NSString *trimmedMessage = [message stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSString *lowercaseMessage = trimmedMessage.lowercaseString;
+    if ([lowercaseMessage containsString:@"request timed out"] ||
+        [lowercaseMessage containsString:@"timed out"] ||
+        [lowercaseMessage containsString:@"timeout"]) {
+        return LocalString(@"加载超时，请重试");
+    }
+    if ([lowercaseMessage containsString:@"too frequent"] ||
+        [lowercaseMessage containsString:@"too many requests"] ||
+        [lowercaseMessage containsString:@"too often"]) {
+        return LocalString(@"请稍后重试");
+    }
+    if ([lowercaseMessage containsString:@"server connection failed"] ||
+        [lowercaseMessage containsString:@"cannot connect to host"] ||
+        [lowercaseMessage containsString:@"cannot find host"]) {
+        return LocalString(@"服务器繁忙，请稍后重试");
+    }
+    if ([lowercaseMessage containsString:@"network abnormality"] ||
+        [lowercaseMessage containsString:@"network connection"] ||
+        [lowercaseMessage containsString:@"internet appears to be offline"] ||
+        [lowercaseMessage containsString:@"not connected to internet"]) {
+        return LocalString(@"网络请求失败，请稍后重试");
+    }
+    return trimmedMessage;
+}
 
 #pragma mark -- 上传图片
 - (void)uploadImg:(UIImage *)img
@@ -321,15 +359,15 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
 - (NSString *)errorMessageFromError:(NSError *)error {
     switch (error.code) {
         case NSURLErrorTimedOut:
-            return @"Request Timed Out";
+            return LocalString(@"加载超时，请重试");
         case NSURLErrorNotConnectedToInternet:
         case NSURLErrorNetworkConnectionLost:
-            return netErrorMsg;
+            return LocalString(@"网络请求失败，请稍后重试");
         case NSURLErrorCannotFindHost:
         case NSURLErrorCannotConnectToHost:
-            return @"Server Connection Failed";
+            return LocalString(@"服务器繁忙，请稍后重试");
         default:
-            return error.localizedDescription ?: netErrorMsg;
+            return [APIManager localizedMessageForError:error];
     }
 }
 
@@ -589,8 +627,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     [request setValue:contentType forHTTPHeaderField:@"Content-Type"];
     
     // 设置语言
-    NSLocale *currentLocale = [NSLocale currentLocale];
-    NSString *languageCode = [currentLocale objectForKey:NSLocaleLanguageCode];
+    NSString *languageCode = [ATLanguageHelper miniAppLangType];
     [request setValue:languageCode forHTTPHeaderField:@"Accept-Language"];
     
     // 设置认证头

@@ -135,7 +135,6 @@
     NSString *preferredLanguage = [ATLanguageHelper currentLanguageCode];
     NSString *languageCode = [preferredLanguage componentsSeparatedByString:@"-"].firstObject ?: @"en";
     NSDictionary<NSString *, NSString *> *displayNames = @{
-        @"zh": LocalString(@"简体中文"),
         @"en": LocalString(@"英语"),
         @"de": LocalString(@"德语"),
         @"fr": LocalString(@"法语"),
@@ -178,9 +177,6 @@
 }
 
 - (NSString *)languageFlagEmojiForCode:(NSString *)languageCode {
-    if ([languageCode hasPrefix:@"zh"]) {
-        return @"🇨🇳";
-    }
     if ([languageCode hasPrefix:@"en"]) {
         return @"🇺🇸";
     }
@@ -394,9 +390,7 @@
 
 - (NSString *)localizedStringForKey:(NSString *)key languageCode:(NSString *)languageCode {
     NSString *normalized = languageCode ?: @"en";
-    if ([normalized hasPrefix:@"zh"]) {
-        normalized = @"zh-Hans";
-    } else if ([normalized hasPrefix:@"en"]) {
+    if ([normalized hasPrefix:@"en"]) {
         normalized = @"en";
     } else if ([normalized hasPrefix:@"fr"]) {
         normalized = @"fr";

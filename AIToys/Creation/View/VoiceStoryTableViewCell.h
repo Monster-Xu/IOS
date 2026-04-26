@@ -52,6 +52,9 @@ NS_ASSUME_NONNULL_BEGIN
 /// ✅ 显示/隐藏音频加载状态
 - (void)showAudioLoading:(BOOL)loading;
 
++ (CGFloat)statusViewHeightForStory:(VoiceStoryModel *)story tableWidth:(CGFloat)tableWidth;
++ (CGFloat)rowHeightForStory:(VoiceStoryModel *)story tableWidth:(CGFloat)tableWidth;
+
 @end
 
 NS_ASSUME_NONNULL_END

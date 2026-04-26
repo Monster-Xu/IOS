@@ -12,6 +12,7 @@
 #import "ATFontManager.h"
 #import "NegotiateViewController.h"
 #import "ATLanguageHelper.h"
+#import "APIManager.h"
 #import "LGBaseAlertView.h"
 
 @interface AcountLoginViewController ()<UITextFieldDelegate,UITextViewDelegate>
@@ -116,7 +117,7 @@
         ];
     } else {
         segments = @[
-            @{@"text": @"同意"},
+            @{@"text": @"Agree to the "},
             @{@"text": LocalString(@"隐私政策") ?: @"", @"link": @"privacyPolicy://"},
             @{@"text": @"、"},
             @{@"text": LocalString(@"用户协议") ?: @"", @"link": @"userProtocol://"},
@@ -233,7 +234,7 @@
         [weakSelf loginSaas];
     } failure:^(NSError *error) {
         [weakSelf hiddenHud];
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
     
     

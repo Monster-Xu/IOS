@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <ThingSmartBizCore/ThingSmartBizCore.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)applyStoredLanguageConfiguration;
 + (BOOL)isSupportedLanguageCode:(NSString *)languageCode;
 + (NSString *)miniAppLangType;
++ (ThingSmartBizLanguageKey)thingSmartBizLanguageKey;
 + (BOOL)isRTLLanguage;
 + (void)applyGlobalRTLConfiguration;
 

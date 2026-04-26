@@ -87,6 +87,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @property (nonatomic, assign) long long activeHomeDataRequestHomeId;
 @property (nonatomic, assign) NSUInteger activeHomeDataRequestToken;
 @property (nonatomic, assign) BOOL isDeviceReloadScheduled;
+@property (nonatomic, assign) BOOL isHomeCallbacksActive;
 
 //播放器
 @property (nonatomic, strong) AudioPlayerView *currentAudioPlayer;
@@ -101,6 +102,19 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @end
 
 @implementation HomeViewController
+
+- (void)updateCurrentHomeDelegateRegistration {
+    self.currentHome.delegate = self.isHomeCallbacksActive ? self : nil;
+}
+
+- (NSString *)sectionMoreTitle {
+    NSString *moreText = LocalString(@"更多");
+    NSString *currentLanguageCode = [[ATLanguageHelper currentLanguageCode] lowercaseString] ?: @"";
+    if ([currentLanguageCode hasPrefix:@"ar"]) {
+        return [NSString stringWithFormat:@"\u200E<\u200E %@", moreText];
+    }
+    return [NSString stringWithFormat:@"%@ \u200E>\u200E", moreText];
+}
 
 - (void)resetCurrentHomeDataRequestStateLocked {
     [self.pendingHomeDataSuccessBlocks removeAllObjects];
@@ -275,6 +289,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    self.isHomeCallbacksActive = YES;
+    [self updateCurrentHomeDelegateRegistration];
     [self becomeFirstResponder];// 激活第一响应者
     
     // 🔧 优化：确保界面立即显示，避免闪动
@@ -314,6 +330,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 -(void)viewWillDisappear:(BOOL)animated{
     [super viewWillDisappear:animated];
+    self.isHomeCallbacksActive = NO;
+    [self updateCurrentHomeDelegateRegistration];
     if (self.currentAudioPlayer) {
         @try {
             [self.currentAudioPlayer pause];
@@ -370,6 +388,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.hj_NavIsHidden = YES;
+    self.view.semanticContentAttribute = [ATLanguageHelper isRTLLanguage] ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     self.view.backgroundColor = tableBgColor;
     self.topView.hidden = YES;
     self.titleLabel.text = LocalString(@"小朋友，你好！");
@@ -642,8 +661,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     CGFloat cycleScrollH = (kScreenWidth-30) *151/343.0;
     UIView *headerView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, cycleScrollH + 30)];
     self.cycleScrollView = [SDCycleScrollView cycleScrollViewWithFrame:CGRectMake(15, 15, kScreenWidth-30, cycleScrollH) delegate:self placeholderImage:nil];
-    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
-    self.cycleScrollView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.cycleScrollView.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
     [headerView addSubview:self.cycleScrollView];
 //    self.cycleScrollView.localizationImageNamesGroup = @[@"home_banner", @"home_banner", @"home_banner", @"home_banner"];
     self.cycleScrollView.bannerImageViewContentMode = UIViewContentModeScaleToFill;
@@ -1790,7 +1808,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 ThingSmartDeviceModel *selectedDevice = currentDisplayDeviceArray[index];
                 // 埋点上报：我的设备点击
                 [[AnalyticsManager sharedManager] reportMyDeviceClickWithDeviceId:selectedDevice.devId pid:selectedDevice.uuid];
-
+                
                 // 跳转小程序
                 NSLog(@"deviceId:%@,token:%@",selectedDevice.devId,kMyUser.accessToken);
                 
@@ -1874,7 +1892,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 NSLog(@"deviceId:%@,token:%@",dollModel.Id,kMyUser.accessToken);
                 // 跳转小程序
                 NSString *currentHomeId = [CoreArchive strForKey:KCURRENT_HOME_ID];
-                
                 // 获取当前音频播放状态信息
                 NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
                 NSString *envType = [bundleId isEqualToString:@"com.talenpal.talenpalapp"] ? @"prod" : @"dev";
@@ -1965,22 +1982,19 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     
     if(section ==0 || section ==1){
         UIButton *moreBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        [moreBtn setTitle:LocalString(@"更多") forState:UIControlStateNormal];
-        UIImage *moreImage = QD_IMG(@"home_section_more");
-        [moreBtn setImage:moreImage forState:UIControlStateNormal];
+        [moreBtn setTitle:[self sectionMoreTitle] forState:UIControlStateNormal];
         [moreBtn setTitleColor:UIColorHex(1DA9FF) forState:UIControlStateNormal];
         moreBtn.titleLabel.font = [ATFontManager systemFontOfSize:14];
-        moreBtn.titleLabel.textAlignment = NSTextAlignmentNatural;
+        moreBtn.titleLabel.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentLeft : NSTextAlignmentRight;
+        moreBtn.contentHorizontalAlignment = [ATLanguageHelper isRTLLanguage] ? UIControlContentHorizontalAlignmentLeft : UIControlContentHorizontalAlignmentRight;
+        moreBtn.contentEdgeInsets = UIEdgeInsetsMake(0, 6, 0, 6);
         moreBtn.tag = section + 100;
         [moreBtn addTarget:self action:@selector(viewMore:) forControlEvents:UIControlEventTouchUpInside];
-        UIUserInterfaceLayoutDirection direction = [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:headView.semanticContentAttribute];
-        HKBtnImagePosition imagePosition = direction == UIUserInterfaceLayoutDirectionRightToLeft ? HKBtnImagePosition_Left : HKBtnImagePosition_Right;
-        [moreBtn layoutWithStyle:imagePosition space:15];
         [headView addSubview:moreBtn];
         [moreBtn mas_makeConstraints:^(MASConstraintMaker *make) {
             make.trailing.equalTo(headView.mas_trailing).offset(-15);
             make.top.bottom.equalTo(headView);
-            make.width.mas_equalTo(60);
+            make.width.mas_greaterThanOrEqualTo(90);
         }];
         if(section ==0){
             moreBtn.hidden = self.deviceArr.count < 3;
@@ -2212,6 +2226,9 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 // 家庭的信息更新，例如家庭 name 变化
 - (void)homeDidUpdateInfo:(ThingSmartHome *)home {
+    if (!self.isHomeCallbacksActive) {
+        return;
+    }
     [self reloadHomeListData];
 }
 
@@ -2219,21 +2236,33 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 // 添加设备
 - (void)home:(ThingSmartHome *)home didAddDeivice:(ThingSmartDeviceModel *)device {
+    if (!self.isHomeCallbacksActive) {
+        return;
+    }
     [self scheduleDeviceDataReload];
 }
 
 // 删除设备
 - (void)home:(ThingSmartHome *)home didRemoveDeivice:(NSString *)devId {
+    if (!self.isHomeCallbacksActive) {
+        return;
+    }
     [self scheduleDeviceDataReload];
 }
 
 // 设备信息更新，例如设备 name 变化，在线状态变化
 - (void)home:(ThingSmartHome *)home deviceInfoUpdate:(ThingSmartDeviceModel *)device {
+    if (!self.isHomeCallbacksActive) {
+        return;
+    }
     [self scheduleDeviceDataReload];
 }
 
 // 家庭下设备的 dps 变化代理回调
 - (void)home:(ThingSmartHome *)home device:(ThingSmartDeviceModel *)device dpsUpdate:(NSDictionary *)dps {
+    if (!self.isHomeCallbacksActive) {
+        return;
+    }
     if(!kMyUser.accessToken){
         return;
     }

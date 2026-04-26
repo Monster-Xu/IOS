@@ -6,11 +6,18 @@
 //
 
 #import "HomeToysItem.h"
+#import "ATLanguageHelper.h"
 
 @implementation HomeToysItem
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.contentView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.topLeftView.semanticContentAttribute = self.contentView.semanticContentAttribute;
+    self.nameLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.storyNumLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.timeNumLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.topLeftTitleLabel.text = LocalString(@"DIY公仔");
     self.storyNamLabel.text = LocalString(@"故事");
 }

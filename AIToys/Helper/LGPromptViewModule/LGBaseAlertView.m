@@ -10,6 +10,7 @@
 #import "LGTextView.h"
 #import <MBProgressHUD+JDragon.h>
 #import "ATFontManager.h"
+#import "ATLanguageHelper.h"
 
 @interface LGBaseAlertView ()<UITextViewDelegate>
 @property (nonatomic, strong) UITableView *tableView;
@@ -20,6 +21,46 @@
 @end
 
 @implementation LGBaseAlertView
+
+- (UIWindow *)presentationWindow
+{
+    id<UIApplicationDelegate> appDelegate = UIApplication.sharedApplication.delegate;
+    if ([appDelegate respondsToSelector:@selector(window)]) {
+        UIWindow *delegateWindow = appDelegate.window;
+        if (delegateWindow) {
+            return delegateWindow;
+        }
+    }
+
+    if (@available(iOS 13.0, *)) {
+        for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+            if (scene.activationState != UISceneActivationStateForegroundActive ||
+                ![scene isKindOfClass:[UIWindowScene class]]) {
+                continue;
+            }
+
+            UIWindowScene *windowScene = (UIWindowScene *)scene;
+            for (UIWindow *window in windowScene.windows) {
+                if (window.isKeyWindow) {
+                    return window;
+                }
+            }
+
+            UIWindow *sceneWindow = windowScene.windows.firstObject;
+            if (sceneWindow) {
+                return sceneWindow;
+            }
+        }
+    }
+
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+        if (window.isKeyWindow) {
+            return window;
+        }
+    }
+
+    return UIApplication.sharedApplication.windows.firstObject;
+}
 
 - (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
     // 首先检查是否在bgView内
@@ -234,14 +275,11 @@
  */
 - (void)show
 {
-    UIWindow* window = [UIApplication sharedApplication].keyWindow;
-    if (!window) {
-        // 如果keyWindow不可用，尝试获取其他window
-        window = [UIApplication sharedApplication].windows.firstObject;
-    }
+    UIWindow *window = [self presentationWindow];
     
     if (!window) return;  // 安全检查
-    
+
+    self.frame = window.bounds;
     [window addSubview:self];
     self.alpha = 1.0;
     self.userInteractionEnabled = YES;
@@ -261,7 +299,7 @@
 #pragma mark - 获取根视图视图控制器
 - (UINavigationController *)getRootVCformViewController
 {
-    UIViewController *rootVC = [UIApplication sharedApplication].keyWindow.rootViewController;
+    UIViewController *rootVC = [self presentationWindow].rootViewController;
     UINavigationController *nav = nil;
     if ([rootVC isKindOfClass:[UITabBarController class]]) {
         UITabBarController *tabbar = (UITabBarController *)rootVC;
@@ -328,6 +366,7 @@
         }
             break;
         case ALERT_VIEW_TYPE_NORMAL:{
+            BOOL reverseButtons = [ATLanguageHelper isRTLLanguage];
             if(_info[@"title"]){
                 self.titleLabel.text = _info[@"title"];
                 [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -370,8 +409,13 @@
                 [self.cancelBtn setTitleColor:UIColorFromRGBA(0x000000, 0.5) forState:UIControlStateNormal];
                 [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                     make.top.equalTo(self.lineView.mas_bottom);
-                    make.left.mas_offset(0);
-                    make.right.equalTo(self.midlleView.mas_left);
+                    if (reverseButtons) {
+                        make.left.equalTo(self.midlleView.mas_right);
+                        make.right.equalTo(self.bgView);
+                    } else {
+                        make.left.equalTo(self.bgView);
+                        make.right.equalTo(self.midlleView);
+                    }
                     make.height.mas_equalTo(56);
                 }];
             }
@@ -380,8 +424,13 @@
                 if(_cancelBtn){
                     [self.confirmBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                         make.top.equalTo(self.lineView.mas_bottom);
-                        make.right.mas_offset(0);
-                        make.left.equalTo(self.midlleView.mas_right);
+                        if (reverseButtons) {
+                            make.left.equalTo(self.bgView);
+                            make.right.equalTo(self.midlleView.mas_left);
+                        } else {
+                            make.left.equalTo(self.midlleView.mas_right);
+                            make.right.equalTo(self.bgView);
+                        }
                         make.height.mas_equalTo(56);
                     }];
                 }else{
@@ -400,6 +449,7 @@
             break;
         case ALERT_VIEW_TYPE_NORMAL_REJECT:
         case ALERT_VIEW_TYPE_NORMAL_CANCEL: {  // 合并相似逻辑
+            BOOL reverseButtons = [ATLanguageHelper isRTLLanguage];
             [self.bgView addSubview:self.textView];
             [self.textView mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.mas_offset(20);
@@ -424,16 +474,26 @@
             [self.cancelBtn setTitleColor:UIColorFromRGBA(0x000000, 0.5) forState:UIControlStateNormal];
             [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
-                make.left.equalTo(self.bgView);
-                make.right.equalTo(self.midlleView);
+                if (reverseButtons) {
+                    make.left.equalTo(self.midlleView.mas_right);
+                    make.right.equalTo(self.bgView);
+                } else {
+                    make.left.equalTo(self.bgView);
+                    make.right.equalTo(self.midlleView);
+                }
                 make.bottom.equalTo(self.bgView);
             }];
             [self.confirmBtn setTitle:LocalString(@"确定")forState:UIControlStateNormal];
             [self.confirmBtn setTitleColor:mainColor forState:UIControlStateNormal];
             [self.confirmBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
-                make.left.equalTo(self.midlleView.mas_right);
-                make.right.equalTo(self.bgView);
+                if (reverseButtons) {
+                    make.left.equalTo(self.bgView);
+                    make.right.equalTo(self.midlleView.mas_left);
+                } else {
+                    make.left.equalTo(self.midlleView.mas_right);
+                    make.right.equalTo(self.bgView);
+                }
                 make.bottom.equalTo(self.bgView);
             }];
             [self.bgLayer setFillColor:UIColorFromRGB(0xF4F5F9).CGColor];
@@ -443,6 +503,7 @@
         }
             break;
         case ALERT_VIEW_TYPE_EditName: {
+            BOOL reverseButtons = [ATLanguageHelper isRTLLanguage];
             if(_info[@"title"]){
                 self.titleLabel.text = _info[@"title"];
                 [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -452,7 +513,10 @@
                     make.height.mas_equalTo(20);
                 }];
             }
-            self.textField.placeholder = _info[@"placeholder"] ? : @"请输入名称";
+            BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+            self.textField.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+            self.textField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+            self.textField.placeholder = _info[@"placeholder"] ?: LocalString(@"请输入名称");
             self.textField.text = _info[@"value"];
             
             // 添加安全检查
@@ -484,15 +548,25 @@
             [self.cancelBtn setTitle:LocalString(@"取消")forState:UIControlStateNormal];
             [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
-                make.left.equalTo(self.bgView);
-                make.right.equalTo(self.midlleView);
+                if (reverseButtons) {
+                    make.left.equalTo(self.midlleView.mas_right);
+                    make.right.equalTo(self.bgView);
+                } else {
+                    make.left.equalTo(self.bgView);
+                    make.right.equalTo(self.midlleView);
+                }
                 make.bottom.equalTo(self.bgView);
             }];
             [self.confirmBtn setTitle:LocalString(@"确定") forState:UIControlStateNormal];
             [self.confirmBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
-                make.left.equalTo(self.midlleView.mas_right);
-                make.right.equalTo(self.bgView);
+                if (reverseButtons) {
+                    make.left.equalTo(self.bgView);
+                    make.right.equalTo(self.midlleView.mas_left);
+                } else {
+                    make.left.equalTo(self.midlleView.mas_right);
+                    make.right.equalTo(self.bgView);
+                }
                 make.bottom.equalTo(self.bgView);
             }];
             [self.bgLayer setFillColor:UIColorFromRGB(0xF4F5F9).CGColor];
@@ -502,6 +576,7 @@
         }
             break;
         case ALERT_VIEW_TYPE_EditText: {
+            BOOL reverseButtons = [ATLanguageHelper isRTLLanguage];
             if(_info[@"title"]){
                 self.titleLabel.text = _info[@"title"];
                 [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -542,15 +617,25 @@
             [self.cancelBtn setTitle:_info[@"cancelStr"] ? _info[@"cancelStr"] :LocalString(@"取消") forState:UIControlStateNormal];
             [self.cancelBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
-                make.left.equalTo(self.bgView);
-                make.right.equalTo(self.midlleView);
+                if (reverseButtons) {
+                    make.left.equalTo(self.midlleView.mas_right);
+                    make.right.equalTo(self.bgView);
+                } else {
+                    make.left.equalTo(self.bgView);
+                    make.right.equalTo(self.midlleView);
+                }
                 make.bottom.equalTo(self.bgView);
             }];
             [self.confirmBtn setTitle:_info[@"confirmStr"] ? _info[@"confirmStr"] :LocalString(@"确定") forState:UIControlStateNormal];
             [self.confirmBtn mas_makeConstraints:^(MASConstraintMaker *make) {
                 make.top.equalTo(_lineView.mas_bottom);
-                make.left.equalTo(self.midlleView.mas_right);
-                make.right.equalTo(self.bgView);
+                if (reverseButtons) {
+                    make.left.equalTo(self.bgView);
+                    make.right.equalTo(self.midlleView.mas_left);
+                } else {
+                    make.left.equalTo(self.midlleView.mas_right);
+                    make.right.equalTo(self.bgView);
+                }
                 make.bottom.equalTo(self.bgView);
             }];
             [self.bgLayer setFillColor:UIColorFromRGB(0xF4F5F9).CGColor];

@@ -88,9 +88,14 @@
     ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.deviceModel.devId];
     NSString *bundleId = [NSBundle mainBundle].bundleIdentifier ?: @"";
     NSString *envType = [bundleId isEqualToString:@"com.talenpal.talenpalapp"] ? @"prod" : @"dev";
+    NSString *deviceName = [self.deviceNameTextView.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (deviceName.length == 0) {
+        [SVProgressHUD showErrorWithStatus:LocalString(@"请输入设备名称")];
+        return;
+    }
     if (![self.deviceNameTextView.text isEqualToString:self.deviceModel.name]) {
         
-        [device updateName:self.deviceNameTextView.text success:^{
+        [device updateName:deviceName success:^{
                 NSLog(@"updateName success");
             [SVProgressHUD showSuccessWithStatus:LocalString(@"修改成功，开始使用")];
             // 跳转小程序

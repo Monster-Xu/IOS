@@ -57,6 +57,9 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
     }
 }
 
+static CGFloat const kAITVoiceManagementBaseRowHeight = 82.0;
+static CGFloat const kAITVoiceManagementDefaultStatusHeight = 44.0;
+
 @interface VoiceManagementTableViewCell ()
 
 // 数据
@@ -65,10 +68,42 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
 // ✅ 编辑模式状态
 @property (nonatomic, assign) BOOL isEditingMode;
 @property (nonatomic, assign) BOOL isSelected;
+@property (nonatomic, strong) NSLayoutConstraint *statusViewHeightConstraint;
 
 @end
 
 @implementation VoiceManagementTableViewCell
+
+- (NSString *)localizedStatusText {
+    NSString *desc = self.voiceModel.statusDesc;
+    return desc.length > 0 ? LocalString(desc) : @"";
+}
+
++ (CGFloat)statusViewHeightForVoice:(VoiceModel *)voice tableWidth:(CGFloat)tableWidth {
+    if (![self needsStatusViewForVoice:voice]) {
+        return 0;
+    }
+    if (voice.statusDesc.length == 0) {
+        return kAITVoiceManagementDefaultStatusHeight;
+    }
+    BOOL showFailureIcon = (voice.cloneStatus == VoiceCloneStatusFailed);
+    CGFloat labelWidth = tableWidth - (showFailureIcon ? 104.0 : 64.0);
+    labelWidth = MAX(labelWidth, 60.0);
+    CGRect textRect = [LocalString(voice.statusDesc) boundingRectWithSize:CGSizeMake(labelWidth, CGFLOAT_MAX)
+                                                                  options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+                                                               attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14]}
+                                                                  context:nil];
+    CGFloat contentHeight = ceil(CGRectGetHeight(textRect)) + 8.0;
+    return MAX(kAITVoiceManagementDefaultStatusHeight, contentHeight);
+}
+
++ (CGFloat)rowHeightForVoice:(VoiceModel *)voice tableWidth:(CGFloat)tableWidth {
+    CGFloat statusHeight = [self statusViewHeightForVoice:voice tableWidth:tableWidth];
+    if (statusHeight <= 0) {
+        return kAITVoiceManagementBaseRowHeight;
+    }
+    return 79.0 + statusHeight;
+}
 
 - (void)awakeFromNib {
     [super awakeFromNib];
@@ -116,6 +151,15 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
     // ✅ 初始化编辑模式状态
     self.isEditingMode = NO;
     self.isSelected = NO;
+    
+    for (NSLayoutConstraint *constraint in self.statusView.constraints) {
+        if (constraint.firstAttribute == NSLayoutAttributeHeight &&
+            constraint.firstItem == self.statusView &&
+            constraint.secondItem == nil) {
+            self.statusViewHeightConstraint = constraint;
+            break;
+        }
+    }
 }
 
 
@@ -240,6 +284,10 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
         self.statusLabel.adjustsFontSizeToFitWidth = NO;
     }
     
+    if (self.statusViewHeightConstraint) {
+        self.statusViewHeightConstraint.constant = kAITVoiceManagementDefaultStatusHeight;
+    }
+    
     // 重置编辑按钮
     self.editButton.enabled = NO;
     self.editButton.hidden = NO;
@@ -261,6 +309,18 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
     NSLog(@"🔄 按钮状态和statusView已重置");
 }
 
+- (void)updateStatusViewHeightForCurrentVoice {
+    CGFloat tableWidth = CGRectGetWidth(self.contentView.bounds);
+    if (tableWidth <= 0) {
+        tableWidth = [UIScreen mainScreen].bounds.size.width;
+    }
+    CGFloat height = [[self class] statusViewHeightForVoice:self.voiceModel tableWidth:tableWidth];
+    if (height <= 0) {
+        height = kAITVoiceManagementDefaultStatusHeight;
+    }
+    self.statusViewHeightConstraint.constant = height;
+}
+
 /// 配置克隆失败状态
 - (void)configureFailedState {
     NSLog(@"🔴 音色状态: 克隆失败");
@@ -275,7 +335,7 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
     self.faildImgView.hidden = NO;
     
     // ✅ 设置状态文字和颜色
-    self.statusLabel.text = LocalString(@"声音克隆失败，请重新开始录音");
+    self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:1.0]; // 红色文字
     
     // ✅ 设置label的文本显示属性，防止与图标重合
@@ -289,6 +349,7 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
         self.statusLabelLeadingConstraint.constant = 42;
         NSLog(@"🔧 失败状态：设置statusLabel左边距 = 12px");
     }
+    [self updateStatusViewHeightForCurrentVoice];
     
     // 按钮状态：编辑可用（失败后可以重新编辑），播放禁用
     self.editButton.enabled = YES;
@@ -312,7 +373,7 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
     self.faildImgView.hidden = YES;
     
     // ✅ 设置状态文字和颜色
-    self.statusLabel.text = LocalString(@"声音克隆中");
+    self.statusLabel.text = [self localizedStatusText];
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.8 blue:0.0 alpha:1.0]; // 黄色文字
     
     // ✅ 设置label的文本显示属性
@@ -325,6 +386,7 @@ static void AITUpdateBadgeImageViewSize(UIImageView *imageView, UIImage *image) 
         self.statusLabelLeadingConstraint.constant = 16;  // 直接到statusView左边的间距
         NSLog(@"🔧 克隆中状态：设置statusLabel左边距 = 16px");
     }
+    [self updateStatusViewHeightForCurrentVoice];
     
     // 按钮状态：编辑和播放都禁用（克隆中不能操作）
     self.editButton.hidden = YES;

@@ -10,6 +10,7 @@
 #import "MineAvatarCell.h"
 #import "SelectAvatarVC.h"
 #import "AvatarModel.h"
+#import "ATLanguageHelper.h"
 @interface PersonalInformationVC ()<UITableViewDataSource,UITableViewDelegate,RYFTableViewDelegate>
 @property (nonatomic, strong)RYFTableView *tableView;
 @property (nonatomic, strong) NSMutableArray <MineItemModel *>*itemArray;
@@ -47,6 +48,9 @@
 }
 
 -(void)setupUI{
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.tableView.semanticContentAttribute = self.view.semanticContentAttribute;
     self.tableView.loadState = RYFCanLoadNone;
     [self.view addSubview:self.tableView];
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -164,7 +168,7 @@
                 }];
         } else {
             if(is_value){
-                [SVProgressHUD showErrorWithStatus:LocalString(@"请输入昵称")];
+                [SVProgressHUD showErrorWithStatus:LocalString(@"内容不能为空")];
             }
         }
     }];

@@ -37,6 +37,10 @@ typedef void(^failBlock)(NSString *msg);
 //保存用户信息
 - (void)saveSelfData:(NSDictionary *)dic;
 
+// 统一错误文案映射，避免英文错误直接透传到界面
++ (NSString *)localizedMessageForError:(NSError * _Nullable)error;
++ (NSString *)localizedMessageForString:(NSString * _Nullable)message;
+
 
 #pragma mark -- 上传图片
 - (void)uploadImg:(UIImage *)img

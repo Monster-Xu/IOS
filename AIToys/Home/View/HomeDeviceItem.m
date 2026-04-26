@@ -90,7 +90,7 @@
     }else{
         self.batteryImageW.constant = 0;
         self.batteryLabel.hidden = NO;
-        self.batteryLabel.text = LocalString(@"更换Wi-Fi >");
+        self.batteryLabel.text = [NSString stringWithFormat:@"%@ >", LocalString(@"更换wifi")];
     }
     
 }

@@ -9,6 +9,7 @@
 #import "AcountLoginViewController.h"
 #import "LoginViewController.h"
 #import "ATLanguageHelper.h"
+#import "APIManager.h"
 
 @interface SetPasswordVC ()<UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -120,11 +121,11 @@
            
         } failure:^(NSError *error) {
             [weakSelf hiddenHud];
-            [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+            [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
         }];
 
     } failure:^(NSError *error) {
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
 }
 
