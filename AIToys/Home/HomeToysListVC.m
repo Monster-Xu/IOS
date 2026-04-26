@@ -274,7 +274,7 @@
     }
     
     WEAK_SELF
-    [LGBaseAlertView showAlertWithTitle:LocalString(@"确定要删除设备吗？")  content:nil cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"删除") confirmBlock:^(BOOL isValue, id obj) {
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"删除公仔")  content:LocalString(@"确定要删除设备吗？") cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"删除") confirmBlock:^(BOOL isValue, id obj) {
         if (isValue){
             NSMutableDictionary *dic = [NSMutableDictionary dictionary];
             [dic setObject:self.selectDeviceId forKey:@"id"];

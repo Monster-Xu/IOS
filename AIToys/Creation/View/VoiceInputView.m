@@ -99,7 +99,7 @@
     self.contentTextView.backgroundColor = [UIColor clearColor];
     self.contentTextView.font = [UIFont systemFontOfSize:16];
     self.contentTextView.textColor = [UIColor blackColor];
-    self.contentTextView.text = LocalString(@"请输入故事主要情节...");
+    self.contentTextView.text = LocalString(@"请简要输入故事主线");
     self.contentTextView.editable = NO;
     self.contentTextView.scrollEnabled = YES;
     [self.containerView addSubview:self.contentTextView];
@@ -231,7 +231,7 @@
     self.recognizedText = text ?: @"";
     
     if (self.recognizedText.length == 0) {
-        self.contentTextView.text = LocalString(@"请输入故事主要情节...");
+        self.contentTextView.text = LocalString(@"请简要输入故事主线");
         self.contentTextView.textColor = [UIColor grayColor];
     } else {
         self.contentTextView.text = self.recognizedText;

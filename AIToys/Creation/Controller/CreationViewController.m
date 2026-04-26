@@ -654,16 +654,8 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
         // 骨架屏的高度可以根据样式调整
         return 76;
     } else {
-        // ✅ 使用 section 而不是 row
         VoiceStoryModel *model = self.dataSource[indexPath.section];
-        
-        // 如果是生成中、音频生成中或失败状态，需要额外的空间显示状态提示
-        if (model.storyStatus == 1 || model.storyStatus == 3 || model.storyStatus == 4 ||model.storyStatus==6){
-            return 122; // 卡片内容高度，无上下边距
-        }
-        
-        // 正常状态
-        return 88; // 卡片内容高度，无上下边距
+        return [VoiceStoryTableViewCell rowHeightForStory:model tableWidth:CGRectGetWidth(tableView.bounds)];
     }
 }
 

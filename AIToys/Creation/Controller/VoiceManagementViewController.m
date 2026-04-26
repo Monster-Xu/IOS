@@ -466,11 +466,7 @@
     // ✅ 根据音色状态动态调整高度
     if (indexPath.section < self.voiceList.count) {
         VoiceModel *voice = self.voiceList[indexPath.section];
-        
-        // 状态文案在德语等语言下更长，给 statusView 预留两行高度
-        if ([VoiceManagementTableViewCell needsStatusViewForVoice:voice]) {
-            return 82 + 41;
-        }
+        return [VoiceManagementTableViewCell rowHeightForVoice:voice tableWidth:CGRectGetWidth(tableView.bounds)];
     }
     
     // 默认高度
@@ -866,7 +862,7 @@
     
     // 检查是否可以删除
     if (!voice.canDelete) {
-        [self showErrorAlert:LocalString(@"删除失败") message:LocalString(@"该音色已关联故事，无法删除。")];
+        [self showErrorAlert:LocalString(@"无法删除") message:LocalString(@"该音色已关联故事，无法删除。")];
         return;
     }
     
@@ -1022,7 +1018,7 @@
         // ✅ 达到最大数量时禁用按钮并改变样式
         self.createVoiceBtn.enabled = NO;
         self.createVoiceBtn.alpha = 0.5;
-        [self.createVoiceBtn setTitle:[NSString stringWithFormat:LocalString(@"已达上限（%ld/%ld）"), (long)currentCount, (long)maxVoiceCount] forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:[NSString stringWithFormat:LocalString(@"创建音色（%ld/%ld）"), (long)currentCount, (long)maxVoiceCount] forState:UIControlStateNormal];
     } else {
         // ✅ 未达到最大数量时启用按钮
         self.createVoiceBtn.enabled = YES;

@@ -8,6 +8,7 @@
 #import "SetNewPasswordViewController.h"
 #import "AcountLoginViewController.h"
 #import "ATLanguageHelper.h"
+#import "APIManager.h"
 
 @interface SetNewPasswordViewController ()<UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -100,7 +101,7 @@
         
 
     } failure:^(NSError *error) {
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
     
 }

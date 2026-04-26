@@ -373,6 +373,7 @@
         _pageNum = 1;
         _pageSize = 20;
         _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
+        _language = [ATLanguageHelper miniAppLangType];
     }
     return self;
 }
@@ -383,6 +384,7 @@
         _pageSize = pageSize;
         // ⭐ 自动获取当前 familyId
         _familyId = [[CoreArchive strForKey:KCURRENT_HOME_ID] integerValue];
+        _language = [ATLanguageHelper miniAppLangType];
     }
     return self;
 }
@@ -392,7 +394,8 @@
     return @{
         @"pageNo": @(self.pageNum),      // pageNum -> pageNo 映射
         @"pageSize": @(self.pageSize),
-        @"familyId": @(self.familyId)
+        @"familyId": @(self.familyId),
+        @"language": self.language ?: @"en"
     };
 }
 

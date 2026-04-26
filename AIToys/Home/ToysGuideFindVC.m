@@ -7,6 +7,7 @@
 
 #import "ToysGuideFindVC.h"
 #import "ATFontManager.h"
+#import "ATLanguageHelper.h"
 
 @interface ToysGuideFindVC ()
 
@@ -20,10 +21,13 @@
 }
 
 -(void)setupUI{
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     self.view.backgroundColor = UIColorFromRGBA(000000, 0.5);
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     self.alertView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, 370);
     self.alertView.layer.cornerRadius = 24;
     self.alertView.backgroundColor = [UIColor whiteColor];
+    self.alertView.semanticContentAttribute = self.view.semanticContentAttribute;
     
     UILabel *titleLabel = [[UILabel alloc] init];
     titleLabel.text = LocalString(@"发现新公仔");
@@ -34,6 +38,7 @@
     [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(self.alertView).offset(20);
         make.leading.equalTo(self.alertView).offset(20);
+        make.trailing.equalTo(self.alertView).offset(-20);
         make.height.mas_equalTo(30);
     }];
     
@@ -42,7 +47,12 @@
     [closeBtn addTarget:self action:@selector(close) forControlEvents:UIControlEventTouchUpInside];
     [self.alertView addSubview:closeBtn];
     [closeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.trailing.mas_equalTo(self.alertView);
+        make.top.equalTo(self.alertView);
+        if (isRTL) {
+            make.left.equalTo(self.alertView);
+        } else {
+            make.right.equalTo(self.alertView);
+        }
         make.height.mas_equalTo(40);
         make.width.mas_equalTo(50);
     }];

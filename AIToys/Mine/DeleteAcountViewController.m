@@ -7,6 +7,7 @@
 
 #import "DeleteAcountViewController.h"
 #import "DateUtil.h"
+#import "ATLanguageHelper.h"
 
 @interface DeleteAcountViewController ()
 @property (weak, nonatomic) IBOutlet UILabel *titleLab1;
@@ -23,6 +24,15 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.titleLab1.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.titleLab2.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.titleLab3.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.titleLab4.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.titleLab5.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.timeLab.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.timeLab.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     self.titleLab1.text = LocalString(@"尊敬的用户");
     self.titleLab2.text = LocalString(@"如果您确定提交\"注销账号\"申请，账号注销于");
     self.titleLab3.text = LocalString(@"鉴于此，我们将删除您账户中的个人数据");
@@ -37,7 +47,8 @@
     NSDate *appointDate;    // 指定日期声明
     NSTimeInterval oneDay = 24 * 60 * 60;  // 一天一共有多少秒
     appointDate = [currentDate initWithTimeIntervalSinceNow: oneDay * days];
-    self.timeLab.text = [NSString stringWithFormat:@"%@ 00:00:00",[DateUtil stringFromDate:appointDate Formater:@"yyyy-MM-dd"]];
+    NSString *dateText = [NSString stringWithFormat:@"%@ 00:00:00",[DateUtil stringFromDate:appointDate Formater:@"yyyy-MM-dd"]];
+    self.timeLab.text = isRTL ? [NSString stringWithFormat:@"\u202B%@\u202C", dateText] : dateText;
     
     //APP埋点：点击删除账户
             [[AnalyticsManager sharedManager]reportEventWithName:@"tap_delete_account" level1:kAnalyticsLevel1_Mine level2:@"" level3:@"" reportTrigger:@"点击删除账户时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {

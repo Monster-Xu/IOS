@@ -28,6 +28,19 @@
 
 @implementation SettingViewController
 
+- (NSArray<MineItemModel *> *)filteredSettingItemsFromArray:(NSArray<NSDictionary *> *)items {
+    NSMutableArray<NSDictionary *> *filteredItems = [NSMutableArray array];
+    NSString *blockedTitle = LocalString(@"APP消息通知");
+    for (NSDictionary *item in items) {
+        NSString *title = item[@"title"];
+        if ([title isEqualToString:blockedTitle]) {
+            continue;
+        }
+        [filteredItems addObject:item];
+    }
+    return [MineItemModel mj_objectArrayWithKeyValuesArray:filteredItems];
+}
+
 -(NSMutableArray *)itemArray{
     if (!_itemArray) {
         _itemArray = [NSMutableArray array];
@@ -87,19 +100,19 @@
         @{@"title" : LocalString(@"账号与安全"),@"value" :@"", @"toVC" : @"AccountSecurityVC"},
         @{@"title" : LocalString(@"切换语言"),@"value" :@"", @"toVC" : @"LanguageSelection"},
         ];
-    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr1]];
+    [self.itemArray addObject:[self filteredSettingItemsFromArray:arr1]];
     
 //    NSArray *arr2 = @[
 //        @{@"title" : LocalString(@"APP消息通知"),@"value" :@"", @"toVC" : @""}
 //        ];
-//    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr2]];
+//    [self.itemArray addObject:[self filteredSettingItemsFromArray:arr2]];
     
     NSArray *arr3 = @[
         @{@"title" : LocalString(@"关于"),@"value" :@"", @"toVC" : @"AboutUsViewController"},
         @{@"title" : LocalString(@"隐私设置"),@"value" :@"", @"toVC" : @"PrivateSettingViewController"},
         @{@"title" : LocalString(@"隐私政策管理"),@"value" :@"", @"toVC" : @"PrivacyPolicyManagementVC"}
         ];
-    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr3]];
+    [self.itemArray addObject:[self filteredSettingItemsFromArray:arr3]];
     
     
     
@@ -107,14 +120,14 @@
         @{@"title" : LocalString(@"WiFi列表"),@"value" :@"", @"toVC" : @"WiFiListViewController"},
         @{@"title" : LocalString(@"导出日志"),@"value" :@"", @"toVC" : @"WiFiListViewController"}
         ];
-    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr4]];
+    [self.itemArray addObject:[self filteredSettingItemsFromArray:arr4]];
     
     
     
     NSArray *arr5 = @[
         @{@"title" : LocalString(@"清理缓存"),@"value" :[NSString stringWithFormat:@"%.2fM",[PublicObj readCacheSize]], @"toVC" : @""}
         ];
-    [self.itemArray addObject:[MineItemModel mj_objectArrayWithKeyValuesArray:arr5]];
+    [self.itemArray addObject:[self filteredSettingItemsFromArray:arr5]];
 }
 
 - (void)refreshLanguageSettingItem {
@@ -603,9 +616,7 @@
 
 - (NSString *)localizedStringForKey:(NSString *)key languageCode:(NSString *)languageCode {
     NSString *normalized = languageCode ?: @"en";
-    if ([normalized hasPrefix:@"zh"]) {
-        normalized = @"zh-Hans";
-    } else if ([normalized hasPrefix:@"en"]) {
+    if ([normalized hasPrefix:@"en"]) {
         normalized = @"en";
     } else if ([normalized hasPrefix:@"fr"]) {
         normalized = @"fr";

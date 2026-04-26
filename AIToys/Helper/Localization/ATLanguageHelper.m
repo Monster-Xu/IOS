@@ -31,7 +31,7 @@ static NSString * const kATSelectedLanguageCodeKey = @"ATSelectedLanguageCode";
 
 + (NSString *)currentLanguageCode {
     NSString *manualLanguageCode = [[NSUserDefaults standardUserDefaults] stringForKey:kATSelectedLanguageCodeKey];
-    if ([self isSupportedLanguageCode:manualLanguageCode]) {
+    if (manualLanguageCode.length > 0) {
         return [self normalizedLanguageCode:manualLanguageCode];
     }
     NSString *systemLanguageCode = [NSLocale preferredLanguages].firstObject ?: @"en";
@@ -40,9 +40,6 @@ static NSString * const kATSelectedLanguageCodeKey = @"ATSelectedLanguageCode";
 
 + (NSString *)normalizedLanguageCode:(NSString *)languageCode {
     NSString *normalized = languageCode.lowercaseString ?: @"en";
-    if ([normalized hasPrefix:@"zh"]) {
-        return @"zh-Hans";
-    }
     if ([normalized hasPrefix:@"fr"]) {
         return @"fr";
     }
@@ -65,10 +62,12 @@ static NSString * const kATSelectedLanguageCodeKey = @"ATSelectedLanguageCode";
     [[NSUserDefaults standardUserDefaults] setObject:normalized forKey:@"AppleLocale"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [self applyLanguageBundleForCode:normalized];
+    [[ThingSmartBizCore sharedInstance] languageSwitchTo:[self thingSmartBizLanguageKey]];
 }
 
 + (void)applyStoredLanguageConfiguration {
     [self applyLanguageBundleForCode:[self currentLanguageCode]];
+    [[ThingSmartBizCore sharedInstance] languageSwitchTo:[self thingSmartBizLanguageKey]];
 }
 
 + (BOOL)isSupportedLanguageCode:(NSString *)languageCode {
@@ -76,7 +75,7 @@ static NSString * const kATSelectedLanguageCodeKey = @"ATSelectedLanguageCode";
         return NO;
     }
     NSString *normalized = [self normalizedLanguageCode:languageCode];
-    return [@[@"zh-Hans", @"en", @"fr", @"de", @"es", @"ar"] containsObject:normalized];
+    return [@[@"en", @"fr", @"de", @"es", @"ar"] containsObject:normalized];
 }
 
 + (void)applyLanguageBundleForCode:(NSString *)languageCode {
@@ -93,9 +92,6 @@ static NSString * const kATSelectedLanguageCodeKey = @"ATSelectedLanguageCode";
 
 + (NSString *)miniAppLangType {
     NSString *preferredLanguage = [self currentLanguageCode];
-    if ([preferredLanguage hasPrefix:@"zh"]) {
-        return @"zh_CN";
-    }
     if ([preferredLanguage hasPrefix:@"ar"]) {
         return @"ar";
     }
@@ -109,6 +105,44 @@ static NSString * const kATSelectedLanguageCodeKey = @"ATSelectedLanguageCode";
         return @"es";
     }
     return @"en";
+}
+
++ (ThingSmartBizLanguageKey)thingSmartBizLanguageKey {
+    NSString *preferredLanguage = [self currentLanguageCode];
+    if ([preferredLanguage hasPrefix:@"ar"]) {
+        return ThingSmartBizLanguageKeyArabic;
+    }
+    if ([preferredLanguage hasPrefix:@"fr"]) {
+        return ThingSmartBizLanguageKeyFrench;
+    }
+    if ([preferredLanguage hasPrefix:@"de"]) {
+        return ThingSmartBizLanguageKeyGerman;
+    }
+    if ([preferredLanguage hasPrefix:@"es-419"]) {
+        return ThingSmartBizLanguageKeyLatinAmericanSpanish;
+    }
+    if ([preferredLanguage hasPrefix:@"es"]) {
+        return ThingSmartBizLanguageKeySpanish;
+    }
+    if ([preferredLanguage hasPrefix:@"ja"]) {
+        return ThingSmartBizLanguageKeyJapanese;
+    }
+    if ([preferredLanguage hasPrefix:@"ko"]) {
+        return ThingSmartBizLanguageKeyKorean;
+    }
+    if ([preferredLanguage hasPrefix:@"it"]) {
+        return ThingSmartBizLanguageKeyItalian;
+    }
+    if ([preferredLanguage hasPrefix:@"ru"]) {
+        return ThingSmartBizLanguageKeyRussian;
+    }
+    if ([preferredLanguage hasPrefix:@"pt-BR"] || [preferredLanguage hasPrefix:@"pt-br"]) {
+        return ThingSmartBizLanguageKeyBrazilianPortuguese;
+    }
+    if ([preferredLanguage hasPrefix:@"pt"]) {
+        return ThingSmartBizLanguageKeyPortuguese;
+    }
+    return ThingSmartBizLanguageKeyEnglish;
 }
 
 + (BOOL)isRTLLanguage {

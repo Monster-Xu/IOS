@@ -43,6 +43,8 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param voice VoiceModel 数据模型
 /// @return YES表示需要显示statusView，cell高度需要增加35px
 + (BOOL)needsStatusViewForVoice:(VoiceModel *)voice;
++ (CGFloat)statusViewHeightForVoice:(VoiceModel *)voice tableWidth:(CGFloat)tableWidth;
++ (CGFloat)rowHeightForVoice:(VoiceModel *)voice tableWidth:(CGFloat)tableWidth;
 
 /// 更新编辑模式状态
 /// @param isEditingMode 是否处于编辑模式

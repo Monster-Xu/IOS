@@ -41,6 +41,19 @@
 @end
 
 @implementation FindDeviceViewController
+
+- (void)configureThingDelegatesActive:(BOOL)active{
+    ThingSmartBLEManager *bleManager = [ThingSmartBLEManager sharedInstance];
+    if (active || bleManager.delegate == self) {
+        bleManager.delegate = active ? self : nil;
+    }
+
+    ThingSmartBLEWifiActivator *wifiActivator = [ThingSmartBLEWifiActivator sharedInstance];
+    if (active || wifiActivator.bleWifiDelegate == self) {
+        wifiActivator.bleWifiDelegate = active ? self : nil;
+    }
+}
+
 -(NSMutableArray *)checkPermmitionArr{
     if(!_checkPermmitionArr){
         _checkPermmitionArr = [NSMutableArray array];
@@ -71,6 +84,13 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    [self configureThingDelegatesActive:YES];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [self endScan];
+    [self configureThingDelegatesActive:NO];
 }
 
 - (void)viewDidAppear:(BOOL)animated{
@@ -94,8 +114,7 @@
     }
     [self setupUI];
     [self getData];
-    // 设置代理
-    [ThingSmartBLEManager sharedInstance].delegate = self;
+    [self configureThingDelegatesActive:YES];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(wifiHavenOpen) name:NetworkReachableWifi object:nil];
     
@@ -109,8 +128,10 @@
 -(void)dealloc{
     //停止扫描
     [self endScan];
+    [self configureThingDelegatesActive:NO];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:NetworkReachableWifi object:nil];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:@"BluetoothStateChanged" object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:@"faildBackChange" object:nil];
 }
 
 //获取数据
@@ -180,6 +201,7 @@
     // 结束扫描
     [[ThingSmartBLEManager sharedInstance] stopListening:YES];
     [self.timer invalidate];
+    self.timer = nil;
 }
 
 
@@ -481,6 +503,7 @@
         NSLog(@"指令下发成功");
     } failure:^(NSError *error) {
       // 指令下发失败
+        [self configureThingDelegatesActive:NO];
         NSLog(@"指令下发失败");
         [SVProgressHUD showErrorWithStatus:error.description];
 //        self.status = AddStatusType_default;
@@ -493,6 +516,7 @@
 
 - (void)bleWifiActivator:(ThingSmartBLEWifiActivator *)activator notConfigStateWithError:(NSError *)error {
   // 设备不在配网状态
+    [self configureThingDelegatesActive:NO];
     NSLog(@"！！！！设备不在配网状态");
     [SVProgressHUD showErrorWithStatus:error.description];
 //    self.status = AddStatusType_fail;
@@ -501,6 +525,7 @@
 
 - (void)bleWifiActivator:(ThingSmartBLEWifiActivator *)activator didScanWifiList:(NSArray *)wifiList uuid:(NSString *)uuid error:(nonnull NSError *)error{
     [SVProgressHUD dismiss];
+    [self configureThingDelegatesActive:NO];
 //    self.status = AddStatusType_default;
 //    [self.tableView reloadData];
     if (error) {

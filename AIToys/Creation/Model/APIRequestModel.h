@@ -151,6 +151,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger pageNum;
 @property (nonatomic, assign) NSInteger pageSize;
 @property (nonatomic, assign) NSInteger familyId;
+@property (nonatomic, copy) NSString *language;
 //@property (nonatomic, assign) NSInteger storyStatus;
 
 - (instancetype)initWithPageNum:(NSInteger)pageNum pageSize:(NSInteger)pageSize;

@@ -7,6 +7,7 @@
 
 #import "AddToysGuideVC.h"
 #import "ATFontManager.h"
+#import "ATLanguageHelper.h"
 
 @interface AddToysGuideVC ()
 
@@ -21,11 +22,14 @@
 }
 
 -(void)setupUI{
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     self.view.backgroundColor = UIColorFromRGBA(000000, 0.5);
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     self.alertView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, 470);
     self.alertView.layer.masksToBounds = YES;
     self.alertView.layer.cornerRadius = 24;
     self.alertView.backgroundColor = [UIColor whiteColor];
+    self.alertView.semanticContentAttribute = self.view.semanticContentAttribute;
     
     UIImageView *topImgView = [[UIImageView alloc] init];
     topImgView.contentMode = UIViewContentModeScaleToFill;
@@ -40,7 +44,12 @@
     [closeBtn addTarget:self action:@selector(close) forControlEvents:UIControlEventTouchUpInside];
     [self.alertView addSubview:closeBtn];
     [closeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.trailing.mas_equalTo(self.alertView);
+        make.top.equalTo(self.alertView);
+        if (isRTL) {
+            make.left.equalTo(self.alertView);
+        } else {
+            make.right.equalTo(self.alertView);
+        }
         make.height.mas_equalTo(40);
         make.width.mas_equalTo(50);
     }];

@@ -339,7 +339,7 @@
 }
 
 - (NSString *)pickerTitleForTypeLanguageCode:(NSString *)languageCode {
-    return LocalString(@"故事类型");
+    return LocalString(@"选择故事类型");
 }
 
 - (NSString *)pickerTitleForLengthLanguageCode:(NSString *)languageCode {
@@ -807,11 +807,13 @@
     
     // Placeholder
     self.themePlaceholderLabel = [[UILabel alloc] init];
-    self.themePlaceholderLabel.text = LocalString(@"最多120个字符");
+    self.themePlaceholderLabel.text = LocalString(@"故事名称不能超过120个字符");
     self.themePlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.themePlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.themePlaceholderLabel.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.themePlaceholderLabel.userInteractionEnabled = NO;
+    self.themePlaceholderLabel.numberOfLines = 0;
+    self.themePlaceholderLabel.lineBreakMode = NSLineBreakByWordWrapping;
     [self.themeCardView addSubview:self.themePlaceholderLabel];
     
     [self.themePlaceholderLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -974,7 +976,7 @@
     
     // Placeholder
     self.contentPlaceholderLabel = [[UILabel alloc] init];
-    self.contentPlaceholderLabel.text = LocalString(@"请简要输入这个故事的主要情节");
+    self.contentPlaceholderLabel.text = LocalString(@"请简要输入故事主线");
     self.contentPlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.contentPlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.contentPlaceholderLabel.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;

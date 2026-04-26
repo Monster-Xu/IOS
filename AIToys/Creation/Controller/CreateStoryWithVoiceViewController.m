@@ -83,6 +83,9 @@
 
 @implementation CreateStoryWithVoiceViewController
 
+- (BOOL)shouldUseExistingStoryCopy {
+    return self.storyId > 0;
+}
 
 
 #pragma mark - Lifecycle
@@ -132,21 +135,21 @@
     NSLog(@"🔧 viewDidLoad: isEditMode = %@", self.isEditMode ? @"YES" : @"NO");
     NSLog(@"🔧 viewDidLoad: storyId = %ld", (long)self.storyId);
     
-    // 根据编辑模式设置标题
-    self.title = self.isEditMode ? LocalString(@"编辑故事") : LocalString(@"创建故事");
+    // 这个页面承接“已有文本故事后选择音色”的链路，storyId 存在时统一按编辑页文案展示
+    self.title = [self shouldUseExistingStoryCopy] ? LocalString(@"编辑故事") : LocalString(@"创建故事");
     
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     [self.navigationController.navigationBar setBarTintColor:[UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0]];
     
-    self.storyStautsLabel.text = LocalString(@"故事生成中");
+    self.storyStautsLabel.text = LocalString(@"故事已生成");
     self.storyNameLabel.text = LocalString(@"故事名称");
     self.chooseVoiceLabel.text = LocalString(@"选择音色");
     [self.addNewVoiceBtn setTitle:LocalString(@"新增音色") forState:UIControlStateNormal];
-    [self.saveStoryBtn setTitle:LocalString(@"保存故事") forState:UIControlStateNormal];
+    [self.saveStoryBtn setTitle:[self shouldUseExistingStoryCopy] ? LocalString(@"保存") : LocalString(@"保存故事") forState:UIControlStateNormal];
     [self.deletBtn setTitle:LocalString(@"删除故事") forState:UIControlStateNormal];
     self.emptyVoiceLabel.text = LocalString(@"暂无音色，请先创建");
     self.voiceAvatarLabel.text = LocalString(@"音色头像");
-    self.cloneFailedLabel.text = LocalString(@"音色克隆失败，请重新录制");
+    self.cloneFailedLabel.text = LocalString(@"声音克隆失败，请重新开始录音");
     self.storyStautsLabel.textAlignment = labelAlignment;
     self.storyNameLabel.textAlignment = labelAlignment;
     self.chooseVoiceLabel.textAlignment = labelAlignment;

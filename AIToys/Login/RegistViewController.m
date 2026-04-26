@@ -11,6 +11,7 @@
 #import "LoginViewController.h"
 #import "SelectBirthdayView.h"
 #import "ATLanguageHelper.h"
+#import "APIManager.h"
 
 @interface RegistViewController ()<UITextFieldDelegate>
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -130,7 +131,7 @@
             }
             
         }else{
-            [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+            [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
         }
     }];
 }

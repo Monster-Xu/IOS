@@ -7,6 +7,7 @@
 
 #import "GetVerityCodeViewController.h"
 #import "CodeViewController.h"
+#import "APIManager.h"
 
 @interface GetVerityCodeViewController ()
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
@@ -44,7 +45,7 @@
         VC.type = EmailType_modifyPwd;
         [weakSelf.navigationController pushViewController:VC animated:YES];
     } failure:^(NSError *error) {
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
 }
 

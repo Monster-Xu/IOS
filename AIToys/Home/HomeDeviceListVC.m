@@ -368,7 +368,7 @@
         return;
     }
     WEAK_SELF
-    [LGBaseAlertView showAlertWithTitle:LocalString(@"确定要删除设备吗？")  content:nil cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"删除") confirmBlock:^(BOOL isValue, id obj) {
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"删除设备") content:LocalString(@"确定要删除设备吗？") cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"删除") confirmBlock:^(BOOL isValue, id obj) {
         if (isValue){
             ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.selectDeviceId];
             [device resetFactory:^{

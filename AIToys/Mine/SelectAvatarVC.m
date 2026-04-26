@@ -8,6 +8,7 @@
 #import "SelectAvatarVC.h"
 #import "SelctAvatarCell.h"
 #import "ATFontManager.h"
+#import "ATLanguageHelper.h"
 
 @interface SelectAvatarVC ()<UICollectionViewDelegate,UICollectionViewDataSource,UICollectionViewDelegateFlowLayout>
 
@@ -42,10 +43,13 @@
 }
 
 -(void)setupUI{
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     self.view.backgroundColor = UIColorFromRGBA(000000, 0.5);
+    self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     self.alertView.frame = CGRectMake(0, kScreenHeight, kScreenWidth, kScreenHeight-StatusBar_Height);
     self.alertView.layer.cornerRadius = 12;
     self.alertView.backgroundColor = [UIColor whiteColor];
+    self.alertView.semanticContentAttribute = self.view.semanticContentAttribute;
     
     UILabel *titleLabel = [[UILabel alloc] init];
     titleLabel.text = LocalString(@"头像");
@@ -70,7 +74,11 @@
     [sureBtn addTarget:self action:@selector(sureBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.alertView addSubview:sureBtn];
     [sureBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.right.mas_equalTo(self.alertView);
+        if (isRTL) {
+            make.left.mas_equalTo(self.alertView);
+        } else {
+            make.right.mas_equalTo(self.alertView);
+        }
         make.height.mas_equalTo(40);
         make.width.mas_equalTo(88);
         make.centerY.equalTo(titleLabel);

@@ -39,7 +39,9 @@
     self.exitBtn.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.titleLabel.text = LocalString(@"设备添加失败");
     self.causeTitleLabel.text = LocalString(@"配网失败的常见原因：");
-    NSString *reasonText = [LocalString(@"1.请选择2.4g的wifi，请不要选择5G的wifi \\n2.核对wifi密码是否填写正确 \\n3.请确认设备是否进入配网状态，并显示4位数字 \\n4.请检查wifi路由状态，是否可以正常联网") stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
+    NSString *reasonText = LocalString(@"1.请选择2.4g的wifi，请不要选择5G的wifi  2.核对wifi密码是否填写正确  3.请确认设备是否进入配网状态，并显示4位数字  4.请检查wifi路由状态，是否可以正常联网");
+    reasonText = [reasonText stringByReplacingOccurrencesOfString:@"\\n" withString:@"\n"];
+    reasonText = [reasonText stringByReplacingOccurrencesOfString:@"  " withString:@"\n"];
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.lineSpacing = 8.0;
     paragraphStyle.alignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
