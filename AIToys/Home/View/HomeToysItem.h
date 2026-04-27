@@ -24,6 +24,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UIImageView *toysImgView;
 @property (weak, nonatomic) IBOutlet UIView *rankView;
 @property (weak, nonatomic) IBOutlet UILabel *rankLabel;
+@property (weak, nonatomic) IBOutlet UIImageView *rankBgImgView;
 @property (weak, nonatomic) IBOutlet UIImageView *chooseImgView;
 
 @property(nonatomic, assign) BOOL isEdit;

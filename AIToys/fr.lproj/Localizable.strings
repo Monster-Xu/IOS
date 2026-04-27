@@ -606,7 +606,7 @@
 "音色“%@”已关联故事，无法删除。\n\n请先解除关联。" = "La voix « %@ » est liée à des histoires et ne peut pas être supprimée.\n\nVeuillez d'abord supprimer les associations.";
 "音色不存在，可能已被删除" = "La voix n'existe pas, elle a peut-être été supprimée";
 "音色信息更新成功！" = "Infos de la voix mises à jour !";
-"音色克隆已开始！\n\n系统正在后台处理您的声音。\n请稍后刷新查看进度。" = "Le clonage de la voix a commencé !\n\nLe système traite votre voix en arrière-plan。\nVeuillez actualiser plus tard pour voir l’avancement。";
+"音色克隆已开始！\n\n系统正在后台处理您的声音。\n请稍后刷新查看进度。" = "Le clonage de la voix a commencé !\n\nLe système traite votre voix en arrière-plan\nVeuillez actualiser plus tard pour voir l’avancement";
 "音色克隆约需3-5分钟，可先保存" = "Le clonage vocal devrait prendre 3 à 5 minutes. Vous pouvez l'enregistrer pour l'instant.";
 "音色名称" = "Nom de la voix";
 "音色复刻完成" = "Clonage de la voix terminé";

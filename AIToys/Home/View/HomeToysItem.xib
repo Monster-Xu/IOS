@@ -220,6 +220,7 @@
                 <outlet property="chooseImgView" destination="KzY-9T-H09" id="841-jO-7qT"/>
                 <outlet property="nameLabel" destination="vR0-CH-hGv" id="8mL-jS-DCw"/>
                 <outlet property="rankLabel" destination="ewK-05-uSW" id="prb-l1-Y2Q"/>
+                <outlet property="rankBgImgView" destination="mUx-dL-Ymy" id="ZQ3-yI-aXH"/>
                 <outlet property="rankView" destination="Gjt-1f-93M" id="q6T-B4-hgT"/>
                 <outlet property="storyNamLabel" destination="vQM-va-7DY" id="D54-0B-WFK"/>
                 <outlet property="storyNumLabel" destination="ybp-Hy-7iF" id="VM0-ax-Tup"/>
