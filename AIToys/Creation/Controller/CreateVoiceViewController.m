@@ -256,12 +256,15 @@
 - (void)viewDidLayoutSubviews {
     [super viewDidLayoutSubviews];
     
-    // 在布局完成后重新计算初始高度，确保宽度计算正确
-    if (self.voiceTextLabel.frame.size.width > 0 && self.voiceTextLabel.text.length == 0) {
-        NSString *placeholderText = [self defaultVoiceSampleText];
-        CGFloat correctHeight = [self calculateTextHeight:placeholderText];
-        
-        if (abs(self.voiceTextLabelHeightConstraint.constant - correctHeight) > 1.0) {
+    if (!self.faildView.hidden) {
+        [self updateFailedBannerLayout];
+    }
+    
+    // 在布局完成后按当前宽度重算高度，确保小屏换行后朗读稿仍完整显示。
+    if (self.voiceTextLabel.frame.size.width > 0) {
+        NSString *displayText = self.placeholderLabel.hidden ? self.voiceTextLabel.text : self.placeholderLabel.text;
+        CGFloat correctHeight = [self calculateTextHeight:displayText];
+        if (fabs(self.voiceTextLabelHeightConstraint.constant - correctHeight) > 1.0) {
             self.voiceTextLabelHeightConstraint.constant = correctHeight;
         }
     }
@@ -515,10 +518,11 @@
     
     // 根据克隆状态设置失败视图显示/隐藏
     if (voice.cloneStatus == VoiceCloneStatusFailed) {
-        self.topConstraint.constant = 52;
         self.faildView.hidden = NO;
+        [self updateFailedBannerLayout];
     } else {
         self.faildView.hidden = YES;
+        self.topConstraint.constant = 10;
     }
     
     // ✅ 首先保存原始数据用于变更比较
@@ -549,6 +553,25 @@
     self.hasUnsavedChanges = NO;
     
     NSLog(@"✅ 编辑模式数据填充完成");
+}
+
+- (void)updateFailedBannerLayout {
+    CGFloat availableWidth = CGRectGetWidth(self.faildView.bounds) - 16.0 - 24.0 - 10.0 - 16.0;
+    if (availableWidth <= 0) {
+        availableWidth = CGRectGetWidth([UIScreen mainScreen].bounds) - 32.0 - 16.0 - 24.0 - 10.0 - 16.0;
+    }
+    
+    CGSize messageSize = [self.faildMessageLabel sizeThatFits:CGSizeMake(availableWidth, CGFLOAT_MAX)];
+    CGFloat bannerHeight = MAX(32.0, ceil(messageSize.height) + 14.0);
+    self.faildViewConstraintHeight.constant = bannerHeight;
+    self.topConstraint.constant = bannerHeight + 20.0;
+}
+
+- (void)setVoiceIntroVisibleForEditing:(BOOL)visible {
+    self.voiceSubLabel.hidden = !visible;
+    self.voiceTitleLabel.hidden = !visible;
+    self.voiceImage.hidden = !visible;
+    self.voiceTextTopConstraint.constant = visible ? 10.0 : -50.0;
 }
 
 #pragma mark - ✅ 编辑模式数据填充（原有方法保持兼容）
@@ -659,23 +682,28 @@
         case VoiceCloneStatusSuccess:
             // 成功状态：不允许重新录音，显示完成状态
             NSLog(@"   🟢 成功状态，设置成功状态UI");
+            [self setVoiceIntroVisibleForEditing:NO];
             [self setupSuccessStateUI];
             break;
             
         case VoiceCloneStatusFailed:
             NSLog(@"   🔴 失败状态，允许重新录音");
+            [self setVoiceIntroVisibleForEditing:YES];
             break;
             
         case VoiceCloneStatusPending:
             NSLog(@"   🟡 待处理状态，允许重新录音");
+            [self setVoiceIntroVisibleForEditing:YES];
             break;
             
         case VoiceCloneStatusCloning:
             NSLog(@"   🔵 克隆中状态，不应该进入编辑模式");
+            [self setVoiceIntroVisibleForEditing:YES];
             break;
             
         default:
             NSLog(@"   ⚪ 未知状态: %ld，默认允许录音", (long)voice.cloneStatus);
+            [self setVoiceIntroVisibleForEditing:YES];
             break;
     }
 }
@@ -693,9 +721,10 @@
     self.voiceTextLabel.layer.cornerRadius = 12;
     self.voiceTextLabel.clipsToBounds = YES;
     
-    // 查找并移除现有的高度约束，添加新的高度约束
+    // 查找并移除现有的高度约束，添加新的高度约束。
+    // XIB 里曾有小屏保护用的 <= 高度限制，会截断朗读稿，这里统一移除。
     for (NSLayoutConstraint *constraint in self.voiceTextLabel.constraints) {
-        if (constraint.firstAttribute == NSLayoutAttributeHeight && constraint.relation == NSLayoutRelationEqual) {
+        if (constraint.firstAttribute == NSLayoutAttributeHeight) {
             [self.voiceTextLabel removeConstraint:constraint];
         }
     }
@@ -2180,8 +2209,8 @@
     // 计算实际高度（加上上下内边距）
     CGFloat calculatedHeight = ceil(textRect.size.height) + 24;
     
-    // 限制高度范围：50-200
-    return MAX(50, MIN(200, calculatedHeight));
+    // 朗读稿必须完整展示，不做最大高度截断。
+    return MAX(50, calculatedHeight);
 }
 
 - (void)updateRecordingTime {

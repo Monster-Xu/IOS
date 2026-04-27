@@ -18,8 +18,17 @@
     self.nameLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.storyNumLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.timeNumLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    [self applyImageDirectionForRTL:isRTL];
     self.topLeftTitleLabel.text = LocalString(@"DIY公仔");
     self.storyNamLabel.text = LocalString(@"故事");
+}
+
+- (void)applyImageDirectionForRTL:(BOOL)isRTL {
+    CGAffineTransform imageTransform = isRTL ? CGAffineTransformMakeScale(-1.0, 1.0) : CGAffineTransformIdentity;
+    self.bgImgView.transform = imageTransform;
+    self.toysImgView.transform = imageTransform;
+    self.topLeftImgView.transform = imageTransform;
+    self.rankBgImgView.transform = imageTransform;
 }
 
 -(void)setIndex:(NSInteger)index{
