@@ -178,6 +178,8 @@
     self.voiceTitleLabel.minimumScaleFactor = 0.8;
     self.voiceSubLabel.numberOfLines = 0;
     self.voiceSubLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.voiceSubLabel.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.voiceSubLabel.textAlignment = inputAlignment;
     self.speekLabel.numberOfLines = 2;
     self.speekLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.faildMessageLabel.numberOfLines = 0;
@@ -210,6 +212,10 @@
 
     // 创建可变的富文本
     NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:fullText];
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.alignment = inputAlignment;
+    paragraphStyle.baseWritingDirection = isRTL ? NSWritingDirectionRightToLeft : NSWritingDirectionLeftToRight;
+    [attributedText addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, attributedText.length)];
 
     // 找到需要标红加粗的文本范围
     NSString *highlightedText = LocalString(@"清晰、富有感情且大声");

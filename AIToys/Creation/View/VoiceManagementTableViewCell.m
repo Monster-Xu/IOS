@@ -7,6 +7,7 @@
 
 #import "VoiceManagementTableViewCell.h"
 #import "VoiceModel.h"
+#import "ATLanguageHelper.h"
 #import <SDWebImage/UIImageView+WebCache.h>
 
 static NSString *AITLocalizedCreateNewBadgeImageName(void) {
@@ -74,9 +75,9 @@ static CGFloat const kAITVoiceManagementDefaultStatusHeight = 44.0;
 
 @implementation VoiceManagementTableViewCell
 
-- (NSString *)localizedStatusText {
+- (NSString *)cloudStatusText {
     NSString *desc = self.voiceModel.statusDesc;
-    return desc.length > 0 ? LocalString(desc) : @"";
+    return desc.length > 0 ? desc : @"";
 }
 
 + (CGFloat)statusViewHeightForVoice:(VoiceModel *)voice tableWidth:(CGFloat)tableWidth {
@@ -89,10 +90,10 @@ static CGFloat const kAITVoiceManagementDefaultStatusHeight = 44.0;
     BOOL showFailureIcon = (voice.cloneStatus == VoiceCloneStatusFailed);
     CGFloat labelWidth = tableWidth - (showFailureIcon ? 104.0 : 64.0);
     labelWidth = MAX(labelWidth, 60.0);
-    CGRect textRect = [LocalString(voice.statusDesc) boundingRectWithSize:CGSizeMake(labelWidth, CGFLOAT_MAX)
-                                                                  options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
-                                                               attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14]}
-                                                                  context:nil];
+    CGRect textRect = [voice.statusDesc boundingRectWithSize:CGSizeMake(labelWidth, CGFLOAT_MAX)
+                                                     options:NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading
+                                                  attributes:@{NSFontAttributeName : [UIFont systemFontOfSize:14]}
+                                                     context:nil];
     CGFloat contentHeight = ceil(CGRectGetHeight(textRect)) + 8.0;
     return MAX(kAITVoiceManagementDefaultStatusHeight, contentHeight);
 }
@@ -132,6 +133,7 @@ static CGFloat const kAITVoiceManagementDefaultStatusHeight = 44.0;
     // 设置背景颜色
     self.contentView.backgroundColor = [UIColor whiteColor];
     AITUpdateBadgeImageViewSize(self.createNewImageView, [UIImage imageNamed:AITLocalizedCreateNewBadgeImageName()]);
+    [self applyRTLLayoutIfNeeded];
     
     // 设置按钮交互
     if (self.editButton) {
@@ -160,6 +162,21 @@ static CGFloat const kAITVoiceManagementDefaultStatusHeight = 44.0;
             break;
         }
     }
+}
+
+- (void)applyRTLLayoutIfNeeded {
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    UISemanticContentAttribute semanticAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    NSTextAlignment textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    
+    self.semanticContentAttribute = semanticAttribute;
+    self.contentView.semanticContentAttribute = semanticAttribute;
+    self.statusView.semanticContentAttribute = semanticAttribute;
+    self.statusLabel.semanticContentAttribute = semanticAttribute;
+    self.faildImgView.semanticContentAttribute = semanticAttribute;
+    
+    self.voiceNameLabel.textAlignment = textAlignment;
+    self.statusLabel.textAlignment = textAlignment;
 }
 
 
@@ -335,7 +352,7 @@ static CGFloat const kAITVoiceManagementDefaultStatusHeight = 44.0;
     self.faildImgView.hidden = NO;
     
     // ✅ 设置状态文字和颜色
-    self.statusLabel.text = [self localizedStatusText];
+    self.statusLabel.text = [self cloudStatusText];
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.0 blue:0.0 alpha:1.0]; // 红色文字
     
     // ✅ 设置label的文本显示属性，防止与图标重合
@@ -373,7 +390,7 @@ static CGFloat const kAITVoiceManagementDefaultStatusHeight = 44.0;
     self.faildImgView.hidden = YES;
     
     // ✅ 设置状态文字和颜色
-    self.statusLabel.text = [self localizedStatusText];
+    self.statusLabel.text = [self cloudStatusText];
     self.statusLabel.textColor = [UIColor colorWithRed:1.0 green:0.8 blue:0.0 alpha:1.0]; // 黄色文字
     
     // ✅ 设置label的文本显示属性
