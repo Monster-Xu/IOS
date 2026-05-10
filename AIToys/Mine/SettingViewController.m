@@ -110,7 +110,7 @@
     NSArray *arr3 = @[
         @{@"title" : LocalString(@"关于"),@"value" :@"", @"toVC" : @"AboutUsViewController"},
         @{@"title" : LocalString(@"隐私设置"),@"value" :@"", @"toVC" : @"PrivateSettingViewController"},
-        @{@"title" : LocalString(@"隐私政策管理"),@"value" :@"", @"toVC" : @"PrivacyPolicyManagementVC"}
+        @{@"title" : LocalString(@"隐私政策"),@"value" :@"", @"toVC" : @"PrivacyPolicyManagementVC"}
         ];
     [self.itemArray addObject:[self filteredSettingItemsFromArray:arr3]];
     
@@ -215,9 +215,13 @@
     if (tableView == self.languageTableView) {
         UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"LanguageCell" forIndexPath:indexPath];
         NSDictionary *option = self.languageOptions[indexPath.row];
+        BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+        UISemanticContentAttribute semantic = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         cell.layoutMargins = UIEdgeInsetsZero;
         cell.separatorInset = UIEdgeInsetsZero;
+        cell.semanticContentAttribute = semantic;
+        cell.contentView.semanticContentAttribute = semantic;
 
         UILabel *flagLabel = [cell.contentView viewWithTag:101];
         UILabel *nameLabel = [cell.contentView viewWithTag:102];
@@ -269,6 +273,7 @@
 
         flagLabel.text = option[@"flag"] ?: @"";
         nameLabel.text = option[@"name"] ?: @"";
+        nameLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
         BOOL isSelected = [self.pendingLanguageCode isEqualToString:option[@"code"]];
         nameLabel.textColor = isSelected ? UIColorFromRGB(0x2D8CFF) : UIColorFromRGB(0x333333);
         checkView.hidden = !isSelected;
@@ -476,9 +481,12 @@
 }
 
 - (void)buildLanguageDialog {
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    UISemanticContentAttribute semantic = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     UIView *overlay = [[UIView alloc] initWithFrame:CGRectZero];
     overlay.translatesAutoresizingMaskIntoConstraints = NO;
     overlay.backgroundColor = [[UIColor blackColor] colorWithAlphaComponent:0.4];
+    overlay.semanticContentAttribute = semantic;
     [self.view addSubview:overlay];
     [NSLayoutConstraint activateConstraints:@[
         [overlay.topAnchor constraintEqualToAnchor:self.view.topAnchor],
@@ -494,6 +502,7 @@
     card.backgroundColor = UIColor.whiteColor;
     card.layer.cornerRadius = 16.0;
     card.layer.masksToBounds = YES;
+    card.semanticContentAttribute = semantic;
     [overlay addSubview:card];
     self.languageCardView = card;
 
@@ -520,6 +529,7 @@
     tableView.layoutMargins = UIEdgeInsetsZero;
     tableView.tableFooterView = [UIView new];
     tableView.scrollEnabled = NO;
+    tableView.semanticContentAttribute = semantic;
     [tableView registerClass:UITableViewCell.class forCellReuseIdentifier:@"LanguageCell"];
     [card addSubview:tableView];
     self.languageTableView = tableView;

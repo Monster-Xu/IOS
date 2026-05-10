@@ -107,6 +107,7 @@
 "撤销成功" = "Révocation réussie";
 "取消" = "Annuler";
 "确定" = "Confirmer";
+"确认" = "Confirmer";
 "请至少保留一个家庭" = "Veuillez conserver au moins une famille";
 "删除家庭不可恢复，您的家庭成员将会被清退，是否继续？" = "La suppression d'une famille est irréversible et les membres de votre famille seront supprimés. Voulez-vous continuer ?";
 "打开蓝牙" = "Activer le Bluetooth";
@@ -336,7 +337,7 @@
 "邀请码" = "Code d'invitation";
 "为向您提供更优质的服务，我们申请获取以下权限：" = "Pour vous offrir de meilleurs services, nous demandons les autorisations suivantes:";
 "在您使用本应用期间，我们将收集必要信息（包括统计数据、网络使用数据、应用崩溃事件），用于监测应用运行性能。" = "Lorsque vous utilisez cette application, nous collecterons les informations nécessaires (données statistiques, données d'utilisation du réseau, événements de plantage de l'application) afin de surveiller les performances de l'application.";
-"服务维护与优化" = "Maintenance et amélioration des services";
+"服务维护与优化" = "Activité d'amélioration et de maintenance du service";
 "个性化推荐" = "Recommandations personnalisées";
 "允许我们收集与产品使用相关的数据。若您拒绝授权，应用基础功能仍可正常使用，但基于数据偏好的体验优化策略将失效。" = "Autorisez-nous à collecter des données relatives à l’utilisation du produit. Les fonctions de base resteront disponibles si vous refusez l’autorisation, mais la stratégie d’optimisation de l’expérience basée sur les préférences de données ne sera plus effective.";
 "允许我们通过广告和通知为您推荐相关内容。若您关闭此项功能，我们将不会向您推送可能感兴趣的内容。" = "Autorisez-nous à vous recommander du contenu pertinent par le biais de publicités et de notifications. Si vous désactivez cette option, nous ne vous enverrons pas de contenu susceptible de vous intéresser.";
@@ -457,7 +458,7 @@
 "指示灯已闪烁" = "Le voyant clignote";
 "插画URL不能为空" = "L'URL de l'illustration ne peut pas être vide";
 "搜索设备中，若长时间未搜索到设备，可查看\"设备复位引导\"" = "Recherche d'appareils en cours. Si aucun appareil n'est trouvé pendant une longue période, consultez le \"Guide de réinitialisation de l'appareil\"";
-"搜索设备时间过长仍未发现设备，请参考" = "Si aucun appareil n’est trouvé après une longue recherche, veuillez consulter";
+"搜索设备时间过长仍未发现设备，请参考" = "Si aucun appareil n’est trouvé après une longue recherche";
 "撤回后你将：\n1.注销当前账号，并退出APP，\n2.该账号下的相关个人信息都将清除。" = "Après la révocation, vous :\n1. Annulerez le compte actuel et quitterez l'application. \n2. Toutes les informations personnelles sous le compte seront effacées.";
 "播放失败" = "Échec de la lecture";
 "播放错误" = "Erreur de lecture";

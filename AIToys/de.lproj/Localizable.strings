@@ -107,6 +107,7 @@
 "撤销成功" = "Widerruf erfolgreich";
 "取消" = "Abbrechen";
 "确定" = "Bestätigen";
+"确认" = "Bestätigen";
 "请至少保留一个家庭" = "Bitte behalten Sie mindestens eine Familie bei.";
 "删除家庭不可恢复，您的家庭成员将会被清退，是否继续？" = "Das Löschen einer Familie kann nicht rückgängig gemacht werden, und Ihre Familienmitglieder werden entfernt. Möchten Sie fortfahren?";
 "打开蓝牙" = "Bluetooth einschalten";
@@ -336,7 +337,7 @@
 "邀请码" = "Einladungscode";
 "为向您提供更优质的服务，我们申请获取以下权限：" = "Um Ihnen bessere Dienste anbieten zu können, fordern wir die folgenden Berechtigungen an:";
 "在您使用本应用期间，我们将收集必要信息（包括统计数据、网络使用数据、应用崩溃事件），用于监测应用运行性能。" = "Wenn Sie diese App nutzen, erfassen wir notwendige Informationen (einschließlich statistischer Daten, Netzwerknutzungsdaten und App-Absturzereignisse), um die Leistung der App zu überwachen.";
-"服务维护与优化" = "Dienstwartung und -verbesserung";
+"服务维护与优化" = "Service-Wartungs- und Verbesserungsaktivität";
 "个性化推荐" = "Personalisierte Empfehlungen";
 "允许我们收集与产品使用相关的数据。若您拒绝授权，应用基础功能仍可正常使用，但基于数据偏好的体验优化策略将失效。" = "Erlauben Sie uns, Daten zur Produktnutzung zu erfassen. Grundlegende Funktionen bleiben auch bei verweigerter Genehmigung verfügbar, aber die erfahrungsbasierte Optimierung durch Datenpräferenzen wird nicht mehr wirksam.";
 "允许我们通过广告和通知为您推荐相关内容。若您关闭此项功能，我们将不会向您推送可能感兴趣的内容。" = "Erlauben Sie uns, relevante Inhalte über Werbung und Benachrichtigungen zu empfehlen. Wenn Sie diese Funktion deaktivieren, senden wir keine Inhalte, die Sie interessieren könnten.";
@@ -457,7 +458,7 @@
 "指示灯已闪烁" = "Die Kontrollleuchte blinkt";
 "插画URL不能为空" = "Illustrations-URL darf nicht leer sein";
 "搜索设备中，若长时间未搜索到设备，可查看\"设备复位引导\"" = "Geräte werden gesucht. Wenn längere Zeit kein Gerät gefunden wird, sehen Sie in der \"Anleitung zum Zurücksetzen des Geräts\" nach";
-"搜索设备时间过长仍未发现设备，请参考" = "Wenn nach langer Suche kein Gerät gefunden wird, lesen Sie bitte";
+"搜索设备时间过长仍未发现设备，请参考" = "Wenn nach langer Suche kein Gerät gefunden wird";
 "撤回后你将：\n1.注销当前账号，并退出APP，\n2.该账号下的相关个人信息都将清除。" = "Nach dem Widerruf werden Sie:\n1. Das aktuelle Konto kündigen und die App verlassen. \n2. Alle persönlichen Daten unter dem Konto werden gelöscht.";
 "播放失败" = "Wiedergabe fehlgeschlagen";
 "播放错误" = "Wiedergabefehler";

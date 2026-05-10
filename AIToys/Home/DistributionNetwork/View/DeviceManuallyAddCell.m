@@ -25,7 +25,7 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    self.titleLabel.text = LocalString(@"搜索设备时间过长仍未发现设备，请参考");
+    self.titleLabel.text = LocalString(@"搜索设备时间过长仍未发现设备");
     self.subTitleLabel.text = LocalString(@"请参考");
     [self.devicebtnClick setTitle:LocalString(@"设备重置指南") forState:UIControlStateNormal];
     if (@available(iOS 15.0, *)) {

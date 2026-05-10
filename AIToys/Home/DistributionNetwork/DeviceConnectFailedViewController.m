@@ -67,13 +67,20 @@
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     NSTextAlignment contentAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.causeTitleLabel.textAlignment = contentAlignment;
-    self.retryBtn.contentHorizontalAlignment = isRTL ? UIControlContentHorizontalAlignmentRight : UIControlContentHorizontalAlignmentCenter;
+    self.retryBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
     self.retryBtn.contentEdgeInsets = UIEdgeInsetsMake(8, 12, 8, 12);
     self.exitBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
     self.exitBtn.contentEdgeInsets = UIEdgeInsetsMake(8, 12, 8, 12);
     if (@available(iOS 15.0, *)) {
-        self.retryBtn.configuration.title = LocalString(@"重试");
-        self.exitBtn.configuration.title = LocalString(@"退出配网");
+        UIButtonConfiguration *retryConfiguration = self.retryBtn.configuration;
+        retryConfiguration.title = LocalString(@"重试");
+        retryConfiguration.titleAlignment = UIButtonConfigurationTitleAlignmentCenter;
+        self.retryBtn.configuration = retryConfiguration;
+
+        UIButtonConfiguration *exitConfiguration = self.exitBtn.configuration;
+        exitConfiguration.title = LocalString(@"退出配网");
+        exitConfiguration.titleAlignment = UIButtonConfigurationTitleAlignmentCenter;
+        self.exitBtn.configuration = exitConfiguration;
     }
 }
 - (IBAction)closeBtnClick:(id)sender {

@@ -94,81 +94,24 @@
 
 
 - (NSAttributedString *)agreementAttributedText {
-    NSString *languageCode = [NSLocale preferredLanguages].firstObject.lowercaseString ?: @"en";
-    NSArray<NSDictionary<NSString *, NSString *> *> *segments = nil;
-    if ([languageCode hasPrefix:@"fr"]) {
-        segments = @[
-            @{@"text": @"J'accepte la "},
-            @{@"text": @"Politique de Confidentialité", @"link": @"privacyPolicy://"},
-            @{@"text": @", l'"},
-            @{@"text": @"Accord Utilisateur", @"link": @"userProtocol://"},
-            @{@"text": @" et l'"},
-            @{@"text": @"Accord de Création", @"link": @"creativeAgreement://"}
-        ];
-    } else if ([languageCode hasPrefix:@"de"]) {
-        segments = @[
-            @{@"text": @"Ich stimme der "},
-            @{@"text": @"Datenschutzerklärung", @"link": @"privacyPolicy://"},
-            @{@"text": @", der "},
-            @{@"text": @"Nutzungsvereinbarung", @"link": @"userProtocol://"},
-            @{@"text": @" und der "},
-            @{@"text": @"Kreativvereinbarung", @"link": @"creativeAgreement://"},
-            @{@"text": @" zu"}
-        ];
-    } else {
-        segments = @[
-            @{@"text": @"Agree to the "},
-            @{@"text": LocalString(@"隐私政策") ?: @"", @"link": @"privacyPolicy://"},
-            @{@"text": @"、"},
-            @{@"text": LocalString(@"用户协议") ?: @"", @"link": @"userProtocol://"},
-            @{@"text": @"、"},
-            @{@"text": LocalString(@"创作协议") ?: @"", @"link": @"creativeAgreement://"}
-        ];
-        if ([languageCode hasPrefix:@"en"]) {
-            segments = @[
-                @{@"text": @"Agree to the "},
-                @{@"text": @"Privacy Policy", @"link": @"privacyPolicy://"},
-                @{@"text": @", "},
-                @{@"text": @"User Agreement", @"link": @"userProtocol://"},
-                @{@"text": @", and "},
-                @{@"text": @"Creative Agreement", @"link": @"creativeAgreement://"}
-            ];
-        } else if ([languageCode hasPrefix:@"ar"]) {
-            segments = @[
-                @{@"text": @"الموافقة على "},
-                @{@"text": @"سياسة الخصوصية", @"link": @"privacyPolicy://"},
-                @{@"text": @" و"},
-                @{@"text": @"اتفاقية المستخدم", @"link": @"userProtocol://"},
-                @{@"text": @" و"},
-                @{@"text": @"اتفاقية الإبداع", @"link": @"creativeAgreement://"}
-            ];
-        } else if ([languageCode hasPrefix:@"es"]) {
-            segments = @[
-                @{@"text": @"Acepto la "},
-                @{@"text": @"Política de privacidad", @"link": @"privacyPolicy://"},
-                @{@"text": @", el "},
-                @{@"text": @"Acuerdo de usuario", @"link": @"userProtocol://"},
-                @{@"text": @" y el "},
-                @{@"text": @"Acuerdo de creación", @"link": @"creativeAgreement://"}
-            ];
-        }
-    }
-
-    NSMutableString *fullText = [NSMutableString string];
-    NSMutableArray<NSDictionary<NSString *, id> *> *linkRanges = [NSMutableArray array];
-    for (NSDictionary<NSString *, NSString *> *segment in segments) {
-        NSString *segmentText = segment[@"text"] ?: @"";
-        NSRange range = NSMakeRange(fullText.length, segmentText.length);
-        [fullText appendString:segmentText];
-        if (segment[@"link"]) {
-            [linkRanges addObject:@{@"range": [NSValue valueWithRange:range], @"link": segment[@"link"]}];
-        }
-    }
+    NSString *fullText = LocalString(@"同意隐私政策、用户协议、创作协议") ?: @"";
+    NSArray<NSDictionary<NSString *, NSString *> *> *linkedItems = @[
+        @{@"text": LocalString(@"隐私政策") ?: @"", @"link": @"privacyPolicy://"},
+        @{@"text": LocalString(@"用户协议") ?: @"", @"link": @"userProtocol://"},
+        @{@"text": LocalString(@"创作协议") ?: @"", @"link": @"creativeAgreement://"}
+    ];
 
     NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:fullText];
     [attrStr addAttribute:NSForegroundColorAttributeName value:UIColorFromRGBA(000000, 0.5) range:NSMakeRange(0, fullText.length)];
-    for (NSDictionary<NSString *, id> *item in linkRanges) {
-        NSRange range = [item[@"range"] rangeValue];
+    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
+    paragraphStyle.alignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    [attrStr addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, fullText.length)];
+    for (NSDictionary<NSString *, NSString *> *item in linkedItems) {
+        NSString *linkText = item[@"text"] ?: @"";
+        NSRange range = [fullText rangeOfString:linkText];
+        if (range.location == NSNotFound || range.length == 0) {
+            continue;
+        }
         [attrStr addAttribute:NSForegroundColorAttributeName value:mainColor range:range];
         [attrStr addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:range];
         [attrStr addAttribute:NSLinkAttributeName value:item[@"link"] range:range];

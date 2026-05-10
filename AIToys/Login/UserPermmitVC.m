@@ -10,6 +10,7 @@
 #import "MyTabBarController.h"
 #import "AppSettingModel.h"
 #import "AnalyticsManager.h"
+#import "ATLanguageHelper.h"
 
 @interface UserPermmitVC ()
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
@@ -29,6 +30,7 @@
     self.hj_NavIsHidden = YES;
     self.tableView.tableHeaderView = self.headerView;
     self.tableView.backgroundColor = tableBgColor;
+    [self applyRTLLayoutIfNeeded];
     [self.tableView registerNib:[UINib nibWithNibName:@"UserPermmitCell" bundle:nil] forCellReuseIdentifier:@"UserPermmitCell"];
     NSArray *arr = @[
         @{@"title" : LocalString(@"功能体验升级计划"),@"value" :LocalString(@"允许我们收集与产品使用相关的数据，如果禁用权限，基本功能仍然可用，基于数据偏好提供的体验优化策略将会失效。")},
@@ -44,6 +46,20 @@
     self.headerDetailLabel.text = LocalString(@"当您使用本App时，我们会收集必要的信息（包括统计数据、网络使用数据、应用崩溃事件）用于监控App的性能。");
 //    [CoreArchive setBool:YES key:KISAgreeImprovement];
 //    [CoreArchive setBool:YES key:KISAgreeRecommendations];
+}
+
+- (void)applyRTLLayoutIfNeeded {
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    UISemanticContentAttribute semantic = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    NSTextAlignment alignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+
+    self.view.semanticContentAttribute = semantic;
+    self.headerView.semanticContentAttribute = semantic;
+    self.tableView.semanticContentAttribute = semantic;
+    self.headerTitleLabel.semanticContentAttribute = semantic;
+    self.headerDetailLabel.semanticContentAttribute = semantic;
+    self.headerTitleLabel.textAlignment = alignment;
+    self.headerDetailLabel.textAlignment = alignment;
 }
 
 - (void)loadPermissionData {

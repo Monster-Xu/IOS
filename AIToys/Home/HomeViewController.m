@@ -1520,8 +1520,6 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [self.listViewArray removeAllObjects];
     
     // 🔒 安全遍历：防止在遍历过程中数组被修改
-    // JXCategoryView/PageListView already mirrors horizontally in RTL.
-    // Keep the source order unchanged here, otherwise the list tabs and content views drift apart.
     NSArray *safeDollList = [NSArray arrayWithArray:self.exploreDollList];
     
     for (FindDollModel *item in safeDollList) {
@@ -1542,11 +1540,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         }
     }
     
-    NSArray *contentDollList = safeDollList;
-    if ([[ATLanguageHelper miniAppLangType].lowercaseString isEqualToString:@"ar"]) {
-        contentDollList = [[safeDollList reverseObjectEnumerator] allObjects];
-    }
-    for (FindDollModel *item in contentDollList) {
+    for (FindDollModel *item in safeDollList) {
         HomeExploreToysView *exploreView = [[HomeExploreToysView alloc] init];
         exploreView.model = item;
         [self safeAddObject:exploreView toArray:self.listViewArray];

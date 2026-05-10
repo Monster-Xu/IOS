@@ -107,6 +107,7 @@
 "撤销成功" = "Revocación exitosa";
 "取消" = "Cancelar";
 "确定" = "Confirmar";
+"确认" = "Confirmar";
 "请至少保留一个家庭" = "Por favor, mantén al menos una familia.";
 "删除家庭不可恢复，您的家庭成员将会被清退，是否继续？" = "La eliminación de una familia no se puede deshacer y los miembros de tu familia serán eliminados. ¿Quieres continuar?";
 "打开蓝牙" = "Activar Bluetooth";
@@ -336,7 +337,7 @@
 "邀请码" = "Código de invitación";
 "为向您提供更优质的服务，我们申请获取以下权限：" = "Para brindarte un mejor servicio, solicitamos los siguientes permisos:";
 "在您使用本应用期间，我们将收集必要信息（包括统计数据、网络使用数据、应用崩溃事件），用于监测应用运行性能。" = "Durante el uso de esta aplicación, recopilaremos información necesaria (incluidos datos estadísticos, datos de uso de red, eventos de cierre de la aplicación) para supervisar el rendimiento de la aplicación.";
-"服务维护与优化" = "Mantenimiento y mejora de servicios";
+"服务维护与优化" = "Actividad de mejora y mantenimiento del servicio";
 "个性化推荐" = "Recomendaciones personalizadas";
 "允许我们收集与产品使用相关的数据。若您拒绝授权，应用基础功能仍可正常使用，但基于数据偏好的体验优化策略将失效。" = "Permítenos recopilar datos relacionados con el uso del producto. Las funciones básicas seguirán disponibles si rechazas la autorización, pero la optimización de la experiencia basada en preferencias de datos no surtirá efecto.";
 "允许我们通过广告和通知为您推荐相关内容。若您关闭此项功能，我们将不会向您推送可能感兴趣的内容。" = "Permítenos recomendar contenido relevante a través de anuncios y notificaciones. Si desactivas esta función, no te enviaremos contenido que pueda interesarte.";
