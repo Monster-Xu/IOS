@@ -342,6 +342,9 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
     self.titleLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightMedium];
     self.titleLabel.textColor = [UIColor labelColor];
     self.titleLabel.numberOfLines = 1;
+    self.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+    self.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.titleLabel.minimumScaleFactor = 0.8;
     [self.containerView addSubview:self.titleLabel];
 }
 

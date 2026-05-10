@@ -7,6 +7,7 @@
 
 #import "JXPageListContainerView.h"
 #import "JXPageListMainTableView.h"
+#import "../JXCategoryView/RLTManager/RTLManager.h"
 
 @interface JXPageListContainerView() <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 @property (nonatomic, strong) UICollectionView *collectionView;
@@ -37,6 +38,10 @@
     self.collectionView.delegate = self;
     self.collectionView.dataSource = self;
     [self.collectionView registerClass:[UICollectionViewCell class] forCellWithReuseIdentifier:@"cell"];
+    if ([RTLManager supportRTL]) {
+        self.collectionView.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+        [RTLManager horizontalFlipView:self.collectionView];
+    }
     [self addSubview:self.collectionView];
 }
 
@@ -64,6 +69,11 @@
     UIView *listView = [self.delegate listContainerView:self listViewInRow:indexPath.item];
     listView.frame = cell.contentView.bounds;
     [cell.contentView addSubview:listView];
+    if ([RTLManager supportRTL]) {
+        [RTLManager horizontalFlipView:cell.contentView];
+    } else {
+        cell.contentView.transform = CGAffineTransformIdentity;
+    }
     return cell;
 }
 

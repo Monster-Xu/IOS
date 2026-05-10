@@ -8,6 +8,7 @@
 
 #import "LGAgreementView.h"
 #import "ATFontManager.h"
+#import "ATLanguageHelper.h"
 
 @interface LGAgreementView ()
 @property (nonatomic, strong) UIView       *bgView;
@@ -28,15 +29,18 @@
     self = [super initWithFrame:frame];
     if (self) {
         self.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.4];
+        BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+        self.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
         _bgView = [[UIView alloc]init];
         _bgView.layer.cornerRadius = 5;
         _bgView.backgroundColor = UIColorFromRGB(0xFFFFFF);
+        _bgView.semanticContentAttribute = self.semanticContentAttribute;
         [self addSubview:self.bgView];
         [_bgView mas_makeConstraints:^(MASConstraintMaker *make) {
             make.centerY.equalTo(self.mas_centerY).mas_equalTo(-40);
             make.left.equalTo(self.mas_left).offset(30);
             make.right.equalTo(self.mas_right).offset(-30);
-            make.height.mas_equalTo(300);
+            make.height.mas_equalTo(340);
         }];
         [self.bgView addSubview:self.titleLabel];
         [self.bgView addSubview:self.textView];
@@ -87,11 +91,14 @@
         _titleLabel.textColor = UIColorFromRGB(0x000000);
         _titleLabel.font = [ATFontManager systemFontOfSize:18];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
+        _titleLabel.numberOfLines = 0;
+        _titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
         [self.bgView addSubview:_titleLabel];
         _titleLabel.text = LocalString(@"用户协议及隐私政策");
         [_titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.bgView.mas_top).offset(15);
-            make.centerX.equalTo(self.bgView);
+            make.left.equalTo(self.bgView.mas_left).offset(20);
+            make.right.equalTo(self.bgView.mas_right).offset(-20);
         }];
     }
     return _titleLabel;
@@ -101,18 +108,19 @@
         _textView = UITextView .new;
         _textView.textColor = UIColorFromRGB(0x333333);
         _textView.backgroundColor = UIColor.clearColor;
-        _textView.textAlignment = NSTextAlignmentCenter;
+        _textView.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentCenter;
         _textView.editable = NO;
         _textView.selectable = NO;
+        _textView.scrollEnabled = NO;
         _textView.font = [ATFontManager systemFontOfSize:14];
         _textView.textContainerInset = UIEdgeInsetsMake(0, 0, 0, 0);
         _textView.text = LocalString(@"为更好的保障您的合法权益，请您\n阅读并同意以下协议");
         [self.bgView addSubview:_textView];
         [_textView mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.titleLabel.mas_bottom).offset(15);
-            make.centerX.equalTo(self);
-            make.width.mas_equalTo(kScreenWidth - 100);
-            make.height.mas_equalTo(50);
+            make.left.equalTo(self.bgView.mas_left).offset(20);
+            make.right.equalTo(self.bgView.mas_right).offset(-20);
+            make.height.mas_greaterThanOrEqualTo(50);
         }];
     }
     return _textView;
@@ -124,10 +132,14 @@
         [_seeBtn addTarget:self action:@selector(btnAction:) forControlEvents:UIControlEventTouchUpInside];
         [_seeBtn setTitle:LocalString(@"《用户协议》《隐私协议》") forState:UIControlStateNormal];
         [_seeBtn setTitleColor:UIColor.blueColor forState:UIControlStateNormal];
+        _seeBtn.titleLabel.numberOfLines = 0;
+        _seeBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
+        _seeBtn.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
         [self.bgView addSubview:_seeBtn];
         [_seeBtn mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.textView.mas_bottom).offset(10);
-            make.centerX.equalTo(self.bgView);
+            make.left.equalTo(self.bgView.mas_left).offset(20);
+            make.right.equalTo(self.bgView.mas_right).offset(-20);
         }];
     }
     return _seeBtn;
@@ -142,6 +154,9 @@
         [_nextBtn setTitle:LocalString(@"同意并继续") forState:UIControlStateNormal];
         [_nextBtn setTitleColor:UIColorFromRGB(0xFFFFFF) forState:UIControlStateNormal];
         [_nextBtn.titleLabel setFont:[ATFontManager systemFontOfSize:15]];
+        _nextBtn.titleLabel.numberOfLines = 1;
+        _nextBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+        _nextBtn.titleLabel.minimumScaleFactor = 0.75;
         [self.bgView addSubview:_nextBtn];
         [_nextBtn mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.seeBtn.mas_bottom).offset(30);
@@ -162,11 +177,16 @@
         [_exitBtn setTitle:LocalString(@"不同意并退出APP") forState:UIControlStateNormal];
         [_exitBtn setTitleColor:UIColorFromRGB(0x606060) forState:UIControlStateNormal];
         [_exitBtn.titleLabel setFont:[ATFontManager systemFontOfSize:15]];
+        _exitBtn.titleLabel.numberOfLines = 1;
+        _exitBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+        _exitBtn.titleLabel.minimumScaleFactor = 0.75;
         [self.bgView addSubview:_exitBtn];
         [_exitBtn mas_makeConstraints:^(MASConstraintMaker *make) {
             make.top.equalTo(self.nextBtn.mas_bottom).offset(20);
-            make.centerX.equalTo(self.bgView);
+            make.left.equalTo(self.bgView.mas_left).offset(20);
+            make.right.equalTo(self.bgView.mas_right).offset(-20);
             make.height.mas_equalTo(20);
+            make.bottom.lessThanOrEqualTo(self.bgView.mas_bottom).offset(-15);
         }];
     }
     return _exitBtn;

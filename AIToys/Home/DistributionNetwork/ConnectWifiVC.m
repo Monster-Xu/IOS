@@ -26,6 +26,14 @@
 
 @implementation ConnectWifiVC
 
+- (NSString *)networkDisplayTextForKey:(NSString *)key {
+    NSString *text = LocalString(key);
+    if ([ATLanguageHelper isRTLLanguage]) {
+        text = [text stringByReplacingOccurrencesOfString:@"\u00A0" withString:@" "];
+    }
+    return text;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
@@ -35,13 +43,15 @@
     }
     self.fd_prefersNavigationBarHidden = YES;
     [PublicObj makeButtonUnEnable:self.nextBtn];
-    self.titleLabel.text = LocalString(@"请选择2.4Ghz的Wi-Fi，并输入密码");
-    self.subTitleLabel.text = LocalString(@"如果你的Wi-Fi是5G的，请选择一个2.4G的Wi-Fi");
+    self.titleLabel.text = [self networkDisplayTextForKey:@"请选择2.4Ghz的Wi-Fi，并输入密码"];
+    self.subTitleLabel.text = [self networkDisplayTextForKey:@"如果你的Wi-Fi是5G的，请选择一个2.4G的Wi-Fi"];
 //    self.settingAlertLab.text = LocalString(@"常见路由器设置方法");
     self.settingAlertLab.text = @"";
     self.settingAlertLab.hidden = YES;
     self.nameTextField.placeholder = LocalString(@"Wi-Fi名称");
     self.pwdTextField.placeholder = LocalString(@"Wi-Fi密码");
+    self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.subTitleLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.titleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.subTitleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.nameTextField.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;

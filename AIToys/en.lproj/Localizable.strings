@@ -107,6 +107,7 @@
 "撤销成功" = "Invitation revoked";
 "取消" = "Cancel";
 "确定" = "Confirm";
+"确认" = "Confirm";
 "请至少保留一个家庭" = "Please keep at least one family";
 "删除家庭不可恢复，您的家庭成员将会被清退，是否继续？" = "Deleting a family cannot be restored, and your family members will be removed. Do you want to continue?";
 "打开蓝牙" = "Turn on Bluetooth";
@@ -336,7 +337,7 @@
 "邀请码" = "Invitation Code";
 "为向您提供更优质的服务，我们申请获取以下权限：" = "To provide you with better services, we request the following permissions:";
 "在您使用本应用期间，我们将收集必要信息（包括统计数据、网络使用数据、应用崩溃事件），用于监测应用运行性能。" = "When you use this app, we will collect necessary information (including statistical data, network usage data, app crash events) to monitor app performance.";
-"服务维护与优化" = "Service Maintenance & Improvement";
+"服务维护与优化" = "Service Maintenance & Improvement Activity";
 "个性化推荐" = "Personalized Recommendations";
 "允许我们收集与产品使用相关的数据。若您拒绝授权，应用基础功能仍可正常使用，但基于数据偏好的体验优化策略将失效。" = "Allow us to collect data related to product usage. Basic functions will still be available if you decline authorization, but the experience optimization strategy based on data preferences will no longer take effect.";
 "允许我们通过广告和通知为您推荐相关内容。若您关闭此项功能，我们将不会向您推送可能感兴趣的内容。" = "Allow us to recommend relevant content to you through advertisements and notifications. If you disable this feature, we will not push content that may interest you.";
@@ -398,7 +399,7 @@
 "冒险" = "Adventure";
 "分钟" = "min";
 "切换多语言后，App将会重启，是否继续？" = "After switching the language, the app will restart. Do you want to continue?";
-"切换语言" = "Switch Language";
+"切换语言" = "Language Settings";
 "创建一个家庭" = "Create a home";
 "创建失败" = "Creation failed";
 "创建故事" = "Story Creation";
@@ -457,7 +458,7 @@
 "指示灯已闪烁" = "The Indicator Light is Blinking";
 "插画URL不能为空" = "Illustration URL cannot be empty";
 "搜索设备中，若长时间未搜索到设备，可查看\"设备复位引导\"" = "Searching for devices. If no device is found for a long time, check the \"Device Reset Guide\"";
-"搜索设备时间过长仍未发现设备，请参考" = "If no device is found after searching for a long time, please refer to";
+"搜索设备时间过长仍未发现设备" = "If no device is found after searching for a long time";
 "撤回后你将：\n1.注销当前账号，并退出APP，\n2.该账号下的相关个人信息都将清除。" = "After revocation, you will:\n1. Cancel the current account and exit the app. \n2. All personal information under the account will be cleared.";
 "播放失败" = "Playback failed";
 "播放错误" = "Playback error";

@@ -16,9 +16,12 @@
     NSTextAlignment contentAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.playBtn.hidden = YES;
     [self.playBtn setTitle:LocalString(@"试听一下") forState:0];
-    UIUserInterfaceLayoutDirection direction = [UIView userInterfaceLayoutDirectionForSemanticContentAttribute:self.semanticContentAttribute];
-    HKBtnImagePosition imagePosition = direction == UIUserInterfaceLayoutDirectionRightToLeft ? HKBtnImagePosition_Right : HKBtnImagePosition_Left;
-    [self.playBtn layoutWithStyle:imagePosition space:8];
+    self.playBtn.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.playBtn.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
+    self.playBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.playBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.playBtn.contentEdgeInsets = UIEdgeInsetsMake(0, 12.0, 0, 12.0);
+    [self applyPlayButtonLayout];
     UIImage *playImage = [self.playBtn imageForState:UIControlStateNormal];
     if (playImage && @available(iOS 9.0, *)) {
         [self.playBtn setImage:[playImage imageFlippedForRightToLeftLayoutDirection] forState:UIControlStateNormal];
@@ -33,8 +36,50 @@
     self.playBtn.titleLabel.textAlignment = contentAlignment;
     self.storyLab.text = LocalString(@"故事");
     self.durationLab.text = LocalString(@"时长");
+
+
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    [self applyPlayButtonLayout];
+}
+
+- (void)applyPlayButtonLayout {
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    CGFloat spacing = 4.0;
+    NSString *title = [self.playBtn titleForState:UIControlStateNormal] ?: @"";
+    UIImageView *imageView = self.playBtn.imageView;
+    UILabel *titleLabel = self.playBtn.titleLabel;
+    UIImage *image = imageView.image ?: [self.playBtn imageForState:UIControlStateNormal];
+    CGFloat imageWidth = image.size.width;
+    CGFloat imageHeight = image.size.height;
+    CGFloat buttonWidth = CGRectGetWidth(self.playBtn.bounds);
+    CGFloat buttonHeight = CGRectGetHeight(self.playBtn.bounds);
+    CGFloat availableTitleWidth = buttonWidth - self.playBtn.contentEdgeInsets.left - self.playBtn.contentEdgeInsets.right - imageWidth - spacing;
+
+    self.playBtn.titleEdgeInsets = UIEdgeInsetsZero;
+    self.playBtn.imageEdgeInsets = UIEdgeInsetsZero;
+
+    if (availableTitleWidth <= 0 || buttonWidth <= 0 || buttonHeight <= 0 || !imageView || !titleLabel) {
+        return;
+    }
     
+    NSDictionary *attributes = @{NSFontAttributeName: self.playBtn.titleLabel.font ?: [UIFont systemFontOfSize:14]};
+    CGFloat naturalTitleWidth = ceil([title sizeWithAttributes:attributes].width);
+    CGFloat titleWidth = MIN(naturalTitleWidth, availableTitleWidth);
+    CGFloat titleHeight = MIN(ceil(titleLabel.intrinsicContentSize.height), buttonHeight);
+    CGFloat groupWidth = titleWidth + spacing + imageWidth;
+    CGFloat groupX = MAX(self.playBtn.contentEdgeInsets.left, floor((buttonWidth - groupWidth) * 0.5));
+    CGFloat centerY = buttonHeight * 0.5;
     
+    if (isRTL) {
+        titleLabel.frame = CGRectMake(groupX, floor(centerY - titleHeight * 0.5), titleWidth, titleHeight);
+        imageView.frame = CGRectMake(CGRectGetMaxX(titleLabel.frame) + spacing, floor(centerY - imageHeight * 0.5), imageWidth, imageHeight);
+    } else {
+        imageView.frame = CGRectMake(groupX, floor(centerY - imageHeight * 0.5), imageWidth, imageHeight);
+        titleLabel.frame = CGRectMake(CGRectGetMaxX(imageView.frame) + spacing, floor(centerY - titleHeight * 0.5), titleWidth, titleHeight);
+    }
 }
 
 //试玩一下

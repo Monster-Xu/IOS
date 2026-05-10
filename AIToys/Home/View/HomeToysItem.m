@@ -13,14 +13,20 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
-    self.contentView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
-    self.topLeftView.semanticContentAttribute = self.contentView.semanticContentAttribute;
+    self.contentView.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+    self.topLeftView.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
     self.nameLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.storyNumLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.timeNumLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.topLeftTitleLabel.textAlignment = NSTextAlignmentCenter;
     [self applyImageDirectionForRTL:isRTL];
     self.topLeftTitleLabel.text = LocalString(@"DIY公仔");
     self.storyNamLabel.text = LocalString(@"故事");
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    [self updateTopBadgePositionForRTL:[ATLanguageHelper isRTLLanguage]];
 }
 
 - (void)applyImageDirectionForRTL:(BOOL)isRTL {
@@ -28,7 +34,20 @@
     self.bgImgView.transform = imageTransform;
     self.toysImgView.transform = imageTransform;
     self.topLeftImgView.transform = imageTransform;
+    self.topLeftTitleLabel.transform = CGAffineTransformIdentity;
+    self.rankBgImgView.image = [UIImage imageNamed:@"device_sort_bg"];
     self.rankBgImgView.transform = imageTransform;
+}
+
+- (void)updateTopBadgePositionForRTL:(BOOL)isRTL {
+    UIView *containerView = self.topLeftView.superview;
+    if (!containerView) {
+        return;
+    }
+
+    CGRect frame = self.topLeftView.frame;
+    frame.origin.x = isRTL ? CGRectGetWidth(containerView.bounds) - CGRectGetWidth(frame) : 0.0;
+    self.topLeftView.frame = frame;
 }
 
 -(void)setIndex:(NSInteger)index{
@@ -65,7 +84,7 @@
     [self.toysImgView sd_setImageWithURL:[NSURL URLWithString:model.dollModel.coverImg]];
     self.storyNumLabel.text = [NSString stringWithFormat:@"%ld",(long)model.totalStoryNum];
     NSInteger totalMinutes = ceil(model.totalStoryDuration / 60.0);
-    
+
     if (totalMinutes < 1) {
         totalMinutes = 1; // 小于1分钟显示为1分钟
     }
@@ -91,7 +110,7 @@
     }else{
         [self.layer removeAllAnimations];
     }
-    
+
 }
 
 

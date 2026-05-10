@@ -12,8 +12,13 @@
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    self.contentView.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.bgView.semanticContentAttribute = self.contentView.semanticContentAttribute;
+    self.titleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.subTitleLabel.textAlignment = isRTL ? NSTextAlignmentLeft : NSTextAlignmentRight;
     UIImage *arrowImage = [UIImage imageNamed:@"cell_right_arrow"];
-    if (arrowImage && [ATLanguageHelper isRTLLanguage] && @available(iOS 9.0, *)) {
+    if (arrowImage && isRTL && @available(iOS 9.0, *)) {
         arrowImage = [arrowImage imageFlippedForRightToLeftLayoutDirection];
     }
     self.rightImgView.image = arrowImage;

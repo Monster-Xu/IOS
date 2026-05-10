@@ -118,11 +118,15 @@
 
 //设置右侧按钮
 -(void)setRightBtn{
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     self.editBtn = [[UIButton alloc] initWithFrame:CGRectMake(0,0, 106, 44)];
     [self.editBtn setTitle:LocalString(@"管理") forState:UIControlStateNormal];
     [self.editBtn setTitleColor:mainColor forState:UIControlStateNormal];
     self.editBtn.titleLabel.font = [ATFontManager systemFontOfSize:15 weight:600];
-    self.editBtn.contentHorizontalAlignment = UIControlContentHorizontalAlignmentRight; // 设置内容水平对齐方式为右对齐
+    self.editBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.editBtn.titleLabel.minimumScaleFactor = 0.75;
+    self.editBtn.titleLabel.textAlignment = isRTL ? NSTextAlignmentLeft : NSTextAlignmentRight;
+    self.editBtn.contentHorizontalAlignment = isRTL ? UIControlContentHorizontalAlignmentLeft : UIControlContentHorizontalAlignmentRight;
     [self.editBtn addTarget:self action:@selector(editBtnClick:) forControlEvents:UIControlEventTouchUpInside];
     UIBarButtonItem* rightItem = [[UIBarButtonItem alloc]initWithCustomView:self.editBtn];
     self.navigationItem.rightBarButtonItem = rightItem;
@@ -368,7 +372,7 @@
         return;
     }
     WEAK_SELF
-    [LGBaseAlertView showAlertWithTitle:LocalString(@"删除设备") content:LocalString(@"确定要删除设备吗？") cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"删除") confirmBlock:^(BOOL isValue, id obj) {
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"删除设备") content:LocalString(@"确定要删除设备吗？") cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"确认") confirmBlock:^(BOOL isValue, id obj) {
         if (isValue){
             ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.selectDeviceId];
             [device resetFactory:^{
