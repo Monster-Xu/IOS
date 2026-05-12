@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Talenpal Bridge Debug</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      background: #f6f7f9;
+      color: #172033;
+    }
+    body {
+      margin: 0;
+      padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.25;
+    }
+    .hint {
+      margin: 0 0 16px;
+      color: #667085;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .status {
+      margin: 0 0 14px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid #e4e7ec;
+      font-size: 13px;
+      color: #344054;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 8px;
+      background: #1b5cff;
+      color: #ffffff;
+      min-height: 44px;
+      padding: 10px 12px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    button.secondary {
+      background: #344054;
+    }
+    button.danger {
+      background: #d92d20;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+      padding: 12px;
+      min-height: 260px;
+      border-radius: 8px;
+      background: #101828;
+      color: #d0d5dd;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <h1>Talenpal Bridge Debug</h1>
+  <p class="hint">用于验证 iOS 注入的 window.TalenpalBridge.call 是否能正常获取 token、环境信息和 langType。</p>
+  <div class="status" id="bridgeStatus">Checking bridge...</div>
+  <div class="grid">
+    <button type="button" onclick="runBridgeMethod('getAuthToken')">getAuthToken</button>
+    <button type="button" onclick="runBridgeMethod('getEnvInfo')">getEnvInfo</button>
+    <button type="button" class="secondary" onclick="runBridgeMethod('refreshAuthToken')">refreshAuthToken</button>
+    <button type="button" class="danger" onclick="closeWebView()">closeWebView</button>
+  </div>
+  <pre id="log"></pre>
+
+  <script>
+    (function () {
+      var callbacks = {};
+      var sequence = 0;
+      var logNode = document.getElementById("log");
+      var statusNode = document.getElementById("bridgeStatus");
+
+      function stringify(value) {
+        try {
+          return JSON.stringify(value, null, 2);
+        } catch (error) {
+          return String(value);
+        }
+      }
+
+      function appendLog(title, value) {
+        var time = new Date().toLocaleTimeString();
+        logNode.textContent = "[" + time + "] " + title + "\n" + stringify(value) + "\n\n" + logNode.textContent;
+      }
+
+      function bridgeReady() {
+        return !!(window.TalenpalBridge && typeof window.TalenpalBridge.call === "function");
+      }
+
+      function updateStatus() {
+        statusNode.textContent = bridgeReady()
+          ? "Bridge ready: window.TalenpalBridge.call is available"
+          : "Bridge missing: open this page inside the iOS WKWebView";
+      }
+
+      window.TalenpalBridge = window.TalenpalBridge || {};
+      window.TalenpalBridge.__resolve = function (callbackId, response) {
+        var callback = callbacks[callbackId];
+        if (!callback) {
+          appendLog("unmatched callback: " + callbackId, response);
+          return;
+        }
+        delete callbacks[callbackId];
+        callback(response);
+      };
+
+      window.callNativeBridge = function (method, payload) {
+        return new Promise(function (resolve, reject) {
+          if (!bridgeReady()) {
+            reject({ code: -1, message: "TalenpalBridge.call is not available" });
+            return;
+          }
+          var callbackId = "debug_" + Date.now() + "_" + (++sequence);
+          callbacks[callbackId] = resolve;
+          window.TalenpalBridge.call(method, payload || {}, callbackId);
+          setTimeout(function () {
+            if (callbacks[callbackId]) {
+              delete callbacks[callbackId];
+              reject({ code: -2, message: "Bridge callback timeout", callbackId: callbackId });
+            }
+          }, 10000);
+        });
+      };
+
+      window.runBridgeMethod = function (method) {
+        appendLog("request: " + method, {});
+        window.callNativeBridge(method, {})
+          .then(function (response) {
+            appendLog("response: " + method, response);
+          })
+          .catch(function (error) {
+            appendLog("error: " + method, error);
+          });
+      };
+
+      window.closeWebView = function () {
+        if (!window.confirm("关闭当前 WebView？")) {
+          return;
+        }
+        if (!bridgeReady()) {
+          appendLog("error: closeWebView", { code: -1, message: "TalenpalBridge.call is not available" });
+          return;
+        }
+        window.TalenpalBridge.call("closeWebView", { reason: "debug_close" }, "");
+      };
+
+      updateStatus();
+      appendLog("page loaded", {
+        userAgent: navigator.userAgent,
+        bridgeReady: bridgeReady()
+      });
+    })();
+  </script>
+</body>
+</html>
