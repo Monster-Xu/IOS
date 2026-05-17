@@ -110,7 +110,7 @@
     NSArray *arr3 = @[
         @{@"title" : LocalString(@"关于"),@"value" :@"", @"toVC" : @"AboutUsViewController"},
         @{@"title" : LocalString(@"隐私设置"),@"value" :@"", @"toVC" : @"PrivateSettingViewController"},
-        @{@"title" : LocalString(@"隐私政策"),@"value" :@"", @"toVC" : @"PrivacyPolicyManagementVC"}
+        @{@"title" : LocalString(@"隐私政策管理"),@"value" :@"", @"toVC" : @"PrivacyPolicyManagementVC"}
         ];
     [self.itemArray addObject:[self filteredSettingItemsFromArray:arr3]];
     
@@ -371,7 +371,7 @@
                 
                 
                 
-                [LGBaseAlertView showAlertWithTitle:LocalString(@"日志已成功导出") content:message cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"上传") confirmBlock:^(BOOL isValue, id obj) {
+                [LGBaseAlertView showAlertWithTitle:LocalString(@"上传日志") content:message cancelBtnStr:LocalString(@"取消") confirmBtnStr:LocalString(@"上传") confirmBlock:^(BOOL isValue, id obj) {
                     if (isValue) {
                         
                         

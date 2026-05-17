@@ -30,12 +30,12 @@
 		18AF94042F6C4C9D002F73FB /* ATLanguageHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */; };
 		18BDB0022F80A00100ABCDEF /* H5/bridge_debug.html in Resources */ = {isa = PBXBuildFile; fileRef = 18BDB0012F80A00100ABCDEF /* H5/bridge_debug.html */; };
 		18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */; };
+		18D5F90A2FB6164100EC7671 /* سياسة خصوصية مستخدمي Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18D5F9092FB6164100EC7671 /* سياسة خصوصية مستخدمي Talenpal.docx */; };
 		18DF40952F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408C2F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx */; };
 		18DF40962F7C105300ACB5B1 /* إشعار الذكاء الاصطناعي Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40932F7C105300ACB5B1 /* إشعار الذكاء الاصطناعي Talenpal.docx */; };
 		18DF40972F7C105300ACB5B1 /* شروط استخدام Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408D2F7C105300ACB5B1 /* شروط استخدام Talenpal.docx */; };
 		18DF40982F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408A2F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx */; };
 		18DF40992F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40862F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx */; };
-		18DF409A2F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40872F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx */; };
 		18DF409B2F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40852F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx */; };
 		18DF409C2F7C105300ACB5B1 /* Aviso de IA de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40902F7C105300ACB5B1 /* Aviso de IA de Talenpal.docx */; };
 		18DF409D2F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF40892F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx */; };
@@ -475,11 +475,11 @@
 		18BDB0012F80A00100ABCDEF /* H5/bridge_debug.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = H5/bridge_debug.html; sourceTree = "<group>"; };
 		18CF0EF22E92626900F9E19E /* AFStoryAPIManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AFStoryAPIManager.h; sourceTree = "<group>"; };
 		18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AFStoryAPIManager.m; sourceTree = "<group>"; };
+		18D5F9092FB6164100EC7671 /* سياسة خصوصية مستخدمي Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "سياسة خصوصية مستخدمي Talenpal.docx"; sourceTree = "<group>"; };
 		18DF40832F7C105300ACB5B1 /* Política de Privacidad de Usuario de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Política de Privacidad de Usuario de Talenpal.docx"; sourceTree = "<group>"; };
 		18DF40842F7C105300ACB5B1 /* Politique de Confidentialité des Utilisateurs de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Politique de Confidentialité des Utilisateurs de Talenpal.docx"; sourceTree = "<group>"; };
 		18DF40852F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal Datenschutzrichtlinie für Nutzer.docx"; sourceTree = "<group>"; };
 		18DF40862F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal User Privacy Policy.docx"; sourceTree = "<group>"; };
-		18DF40872F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "سياسة خصوصية مستخدمي Talenpal.docx"; sourceTree = "<group>"; };
 		18DF40892F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Conditions d'Utilisation de Talenpal.docx"; sourceTree = "<group>"; };
 		18DF408A2F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Nutzungsbedingungen von Talenpal.docx"; sourceTree = "<group>"; };
 		18DF408B2F7C105300ACB5B1 /* Talenpal Terms of Use.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Talenpal Terms of Use.docx"; sourceTree = "<group>"; };
@@ -1212,7 +1212,7 @@
 				18DF40842F7C105300ACB5B1 /* Politique de Confidentialité des Utilisateurs de Talenpal.docx */,
 				18DF40852F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx */,
 				18DF40862F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx */,
-				18DF40872F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx */,
+				18D5F9092FB6164100EC7671 /* سياسة خصوصية مستخدمي Talenpal.docx */,
 			);
 			path = "隐私政策";
 			sourceTree = "<group>";
@@ -2707,7 +2707,6 @@
 				18DF40972F7C105300ACB5B1 /* شروط استخدام Talenpal.docx in Resources */,
 				18DF40982F7C105300ACB5B1 /* Nutzungsbedingungen von Talenpal.docx in Resources */,
 				18DF40992F7C105300ACB5B1 /* Talenpal User Privacy Policy.docx in Resources */,
-				18DF409A2F7C105300ACB5B1 /* سياسة خصوصية مستخدمي Talenpal.docx in Resources */,
 				18DF409B2F7C105300ACB5B1 /* Talenpal Datenschutzrichtlinie für Nutzer.docx in Resources */,
 				18DF409C2F7C105300ACB5B1 /* Aviso de IA de Talenpal.docx in Resources */,
 				18DF409D2F7C105300ACB5B1 /* Conditions d'Utilisation de Talenpal.docx in Resources */,
@@ -2740,6 +2739,7 @@
 				DC862AE32E095470001A4793 /* FamailyMemeberAvatarCell.xib in Resources */,
 				E46F39722E0FDE900039CE33 /* DeviceUnfindCell.xib in Resources */,
 				DCA5A1A32E29085A00096913 /* RevokePrivacyPolicyVC.xib in Resources */,
+				18D5F90A2FB6164100EC7671 /* سياسة خصوصية مستخدمي Talenpal.docx in Resources */,
 				E46A38D52E0C354B00C930D3 /* my_gif.gif in Resources */,
 				E49272AC2E01C70A00DB6A2A /* Localizable.strings in Resources */,
 				E42A8A202E0678A400AD0BD9 /* HomeNoDeviceCell.xib in Resources */,

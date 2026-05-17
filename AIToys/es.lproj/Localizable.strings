@@ -26,12 +26,15 @@
 "密码支持6-20位，必须包含字母和数字" = "La contraseña debe tener entre 6 y 20 caracteres, e incluir tanto letras como números";
 "密码不一致" = "Las contraseñas no coinciden";
 "忘记密码" = "Olvidé mi contraseña";
-"同意隐私政策、用户协议、创作协议" = "Acepto la Política de Privacidad, el Acuerdo de Usuario y el Acuerdo de Creación.";
+"同意隐私政策、用户协议、创作协议" = "Acepto la Política de privacidad, el Acuerdo de usuario y el Acuerdo de creación.";
 "隐私政策" = "Política de privacidad";
 "用户协议" = "Acuerdo de usuario";
 "儿童协议" = "Acuerdo infantil";
 "创作协议" = "Acuerdo de creación";
 "Ai对话协议" = "Acuerdo de uso de conversación de IA";
+"Talenpal隐私政策" = "Política de Privacidad";
+"Talenpal用户协议" = "el Acuerdo de Usuario";
+"Ai对话协议2" = "Acuerdo de uso de conversación de IA";
 "请勾选协议" = "Por favor, marca el acuerdo";
 "新密码" = "Nueva contraseña";
 "小朋友，你好！" = "Talen-spark, ¡crea una gran historia!";
@@ -58,7 +61,7 @@
 "置顶" = "Fijar al inicio";
 "管理" = "Gestionar";
 "完成" = "Hecho";
-"确定要删除设备吗？" = "¿Estás seguro de que quieres eliminar el Talens?";
+"确定要删除设备吗？" = "¿Está seguro que desea eliminar el dispositivo?";
 "正在搜索附近的设备，请确保设备处于配网状态" = "Buscando dispositivos cercanos. Asegúrate de que tu dispositivo esté en modo de emparejamiento";
 "在线" = "En línea";
 "离线" = "Fuera de línea";
@@ -137,12 +140,12 @@
 "APP消息通知" = "Notificación de la aplicación";
 "关于" = "Acerca de";
 "隐私设置" = "Ajustes de privacidad";
-"隐私政策管理" = "Política de privacidad";
+"隐私政策管理" = "Política de Privacidad";
 "清理缓存" = "Limpiar caché";
 "退出登录" = "Cerrar sesión";
 "昵称" = "Apodo";
 "请输入昵称" = "Por favor, introduce tu apodo";
-"邮箱" = "Dirección de correo electrónico";
+"邮箱" = "Email";
 "修改登录密码" = "Cambiar contraseña de inicio de sesión";
 "用户Code" = "Código de usuario";
 "注销账号" = "Eliminar cuenta";
@@ -302,7 +305,7 @@
 "稍后可在故事清单中查看故事" = "Podrás verla más tarde en la lista de historias";
 "确定要删除故事吗？" = "¿Seguro que quieres eliminar la historia?";
 "此故事已关联创意公仔「$1、$2、$3」，请将公仔重新放置在设备上获取最新资源。" = "Esta historia está vinculada a los Talens creativos \"$1, $2, $3\". Por favor, vuelve a colocar los Talens en el dispositivo para obtener los recursos más recientes.";
-"确定要删除出音色吗？" = "¿Seguro que quieres eliminar la voz?";
+"确定要删除此音色吗？" = "¿Seguro que quieres eliminar la voz?";
 "音色已被故事使用，请先删除使用音色的故事" = "Esta voz está siendo usada en una historia. Primero elimina la historia que la utiliza.";
 "您的故事未保存，确定要退出吗？" = "Tu historia no se ha guardado. ¿Seguro que quieres salir?";
 "如果应用程序出现异常、闪退或其他问题，请上传日志，以便我们更好地定位并解决问题。" = "Si la aplicación presenta anomalías, cierres inesperados u otros problemas, sube los registros para ayudarnos a localizar y solucionar el problema mejor.";
@@ -350,6 +353,9 @@
 "输入新密码" = "Ingresar nueva contraseña";
 "姓名" = "Nombre";
 "版本" = "Versión";
+"组件名" = "Nombre";
+"许可" = "Licencia";
+"是否被修改" = "¿Se ha modificado?";
 "证书" = "Certificado";
 "它是否修改？" = "¿Ha sido modificado?";
 "音色删除" = "Eliminar voz";
@@ -437,7 +443,7 @@
 "已达上限（%ld/%ld）" = "Límite alcanzado (%ld/%ld)";
 "开始录音失败，请重试" = "No se pudo iniciar la grabación, inténtalo de nuevo";
 "开始播放" = "Iniciar reproducción";
-"当您使用本App时，我们会收集必要的信息（包括统计数据、网络使用数据、应用崩溃事件）用于监控App的性能。" = "Cuando usas esta app, recopilamos la información necesaria (incluidos datos estadísticos, datos de uso de red y eventos de fallos de la aplicación) para supervisar el rendimiento de la app.";
+"当您使用本App时，我们会收集必要的信息（包括统计数据、网络使用数据、应用崩溃事件）用于监控App的性能。" = "Durante el uso de esta aplicación, recopilaremos información necesaria (incluidos datos estadísticos, datos de uso de red, eventos de cierre de la aplicación) para supervisar el rendimiento de la aplicación.";
 "录音中...松开结束" = "Grabando... suelta para terminar";
 "录音中，建议至少30秒，松开结束（%ld秒）" = "Grabando, se recomienda al menos 30 s, suelta para terminar (%ld s)";
 "录音中，松开结束（%ld秒）" = "Grabando, suelta para terminar (%ld s)";
@@ -479,7 +485,7 @@
 "故事已成功删除" = "Historia eliminada correctamente";
 "故事已成功更新" = "Historia actualizada correctamente";
 "故事已重新生成，可在故事列表查看" = "La historia se regeneró, se puede ver en la lista de historias";
-"故事开始生成，可在故事列表查看" = "La generación de la historia comenzó, ver en la lista de historias";
+"故事开始生成，可在故事列表查看" = "Podrás verla más tarde en la lista de historias";
 "故事描述" = "Contenido de la historia";
 "故事描述不能超过2400个字符" = "La descripción de la historia no puede superar 2400 caracteres";
 "故事摘要长度必须在1-2400字符之间" = "La longitud del resumen debe estar entre 1 y 2400 caracteres";
@@ -547,7 +553,7 @@
 "稍后可在故事列表查看" = "Podrás verla más tarde en la lista de historias";
 "童话" = "Cuento de hadas";
 "简体中文" = "Chino simplificado";
-"给你的设备起个名字吧" = "Ponle un nombre a tu dispositivo";
+"给你的设备起个名字吧" = "¡Ponle un nombre a tu dispositivo!";
 "编辑故事" = "Editar historia";
 "网络请求失败，请稍后重试" = "Solicitud de red fallida, inténtalo más tarde";
 "网络连接失败，请检查网络后重试" = "Falló la conexión de red, verifica la red e inténtalo de nuevo";
@@ -557,6 +563,8 @@
 "西班牙语" = "Español";
 "认证失败，请重新登录" = "Autenticación fallida, vuelve a iniciar sesión";
 "设备重置指南" = "Guía de restablecimiento del dispositivo";
+"设备重置" = "Restablecimiento del dispositivo";
+"设备已移除" = "El dispositivo ha sido eliminado";
 "该故事" = "Esta historia";
 "该故事已关联公仔“%@”。请将公仔放回设备以获取最新资源。\n\n确定要删除该故事吗？" = "Esta historia está vinculada a Talen \"%@\". Colócalo en el dispositivo para actualizar el contenido.\n\n¿Quieres eliminar esta historia?";
 "该邮箱已被占用，请重新输入" = "Este correo electrónico ya está en uso. Introduzca otro";
@@ -587,7 +595,7 @@
 "请选择插画" = "Selecciona una ilustración";
 "请选择故事插画" = "Selecciona una ilustración de la historia";
 "请选择有效的音色" = "Selecciona una voz válida";
-"请选择音色" = "Selecciona una voz";
+"请选择音色" = "Primero selecciona una voz";
 "请选择音色头像" = "Selecciona un avatar de voz";
 "读取音频数据失败" = "Falló la lectura de datos de audio";
 "超级英雄" = "Superhéroe";
@@ -607,7 +615,7 @@
 "音色“%@”已关联故事，无法删除。\n\n请先解除关联。" = "La voz \"%@\" está asociada a historias y no se puede eliminar.\n\nElimina las asociaciones primero.";
 "音色不存在，可能已被删除" = "La voz no existe, quizá fue eliminada";
 "音色信息更新成功！" = "¡Información de voz actualizada!";
-"音色克隆已开始！\n\n系统正在后台处理您的声音。\n请稍后刷新查看进度。" = "¡La clonación de voz ha comenzado！\n\nEl sistema procesa tu voz en segundo plano。\nActualiza más tarde para ver el progreso。";
+"音色克隆已开始！\n\n系统正在后台处理您的声音。\n请稍后刷新查看进度。" = "¡La clonación de voz ha comenzado！\n\nEl sistema procesa tu voz en segundo plano。\nActualiza más tarde para ver el progreso";
 "音色克隆约需3-5分钟，可先保存" = "La clonación de voz tomará aproximadamente de 3 a 5 minutos. Puedes guardarla por ahora.";
 "音色名称" = "Nombre de la voz";
 "音色复刻完成" = "Clonación de voz completada";
@@ -649,3 +657,5 @@
 "内容不能为空" = "El contenido no puede estar vacío";
 "使用报告" = "Informe de uso";
 "H5调试" = "Depuracion H5";
+"请选择故事时长" = "Por favor, selecciona la duración de la historia";
+"确定要删除公仔吗？" = "¿Estás seguro de que quieres eliminar el Talens?";

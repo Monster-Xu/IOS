@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (void)applyLanguageCode:(NSString *)languageCode;
 + (void)applyStoredLanguageConfiguration;
 + (BOOL)isSupportedLanguageCode:(NSString *)languageCode;
++ (NSString *)localizedStringForKey:(NSString *)key;
 + (NSString *)miniAppLangType;
 + (ThingSmartBizLanguageKey)thingSmartBizLanguageKey;
 + (BOOL)isRTLLanguage;

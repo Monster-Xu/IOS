@@ -66,7 +66,7 @@
 
     NSArray *validLengths = @[@90, @180, @270, @360];
     if (!(self.storyLength > 0)) {
-        return LocalString(@"请选择故事时长");
+        return [ATLanguageHelper localizedStringForKey:@"请选择故事时长"];
     }
 
 //    if (self.illustrationUrl.length == 0) {

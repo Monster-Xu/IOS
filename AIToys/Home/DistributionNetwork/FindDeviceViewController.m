@@ -254,7 +254,7 @@
             return 400;
             break;
         case 3:
-            return 70;
+            return [DeviceManuallyAddCell preferredRowHeight];
             break;
             
         default:

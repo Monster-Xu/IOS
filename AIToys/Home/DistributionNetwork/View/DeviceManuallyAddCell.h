@@ -16,6 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (weak, nonatomic) IBOutlet UILabel *subTitleLabel;
 @property (nonatomic, strong) NSArray <FindDollModel *> *dataArr;
 @property (nonatomic, copy) void(^devicebtnClickClickBlock)(void);
++ (CGFloat)preferredRowHeight;
 @end
 
 NS_ASSUME_NONNULL_END
