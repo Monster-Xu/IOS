@@ -867,8 +867,8 @@
     }
     
     // 确认删除
-    [LGBaseAlertView showAlertWithTitle:LocalString(@"删除音色")
-                                content:[NSString stringWithFormat:LocalString(@"确定要删除音色“%@”吗？"), voice.voiceName]
+    [LGBaseAlertView showAlertWithTitle:LocalString(@"音色删除")
+                                content:LocalString(@"确定要删除此音色吗？")
                            cancelBtnStr:LocalString(@"取消")
                           confirmBtnStr:LocalString(@"删除")
                            confirmBlock:^(BOOL isValue, id obj) {
@@ -923,7 +923,7 @@
             
             // 显示成功提示
             [SVProgressHUD showSuccessWithStatus:LocalString(@"删除成功")];
-            [SVProgressHUD dismissWithDelay:1.5];
+            [SVProgressHUD dismissWithDelay:2.5];
         });
         
     } failure:^(NSError *error) {
@@ -1015,9 +1015,9 @@
     NSInteger currentCount = self.voiceList.count;
     
     if (currentCount >= maxVoiceCount) {
-        // ✅ 达到最大数量时禁用按钮并改变样式
-        self.createVoiceBtn.enabled = NO;
-        self.createVoiceBtn.alpha = 0.5;
+        // 达到最大数量时仍允许点击，用于展示上限提示。
+        self.createVoiceBtn.enabled = YES;
+        self.createVoiceBtn.alpha = 1.0;
         [self.createVoiceBtn setTitle:[NSString stringWithFormat:LocalString(@"创建音色（%ld/%ld）"), (long)currentCount, (long)maxVoiceCount] forState:UIControlStateNormal];
     } else {
         // ✅ 未达到最大数量时启用按钮
@@ -1033,7 +1033,7 @@
     // ✅ 检查声音数量是否已达到最大限制
     NSInteger maxVoiceCount = 3;
     if (self.voiceList.count >= maxVoiceCount) {
-        [self showErrorAlert:LocalString(@"创建失败") message:[NSString stringWithFormat:LocalString(@"最多只能创建%ld个音色，请先删除部分音色。"), (long)maxVoiceCount]];
+        [self showErrorAlert:LocalString(@"创建失败") message:LocalString(@"声音数量已达上限")];
         return;
     }
     
@@ -1308,7 +1308,7 @@
 
 /// 更新底部按钮为编辑模式（删除按钮）
 - (void)updateBottomButtonForEditingMode {
-    [self.createVoiceBtn setTitle:LocalString(@"删除所选项") forState:UIControlStateNormal];
+    [self.createVoiceBtn setTitle:LocalString(@"音色删除") forState:UIControlStateNormal];
     
     // ✅ 设置红色字体白色底，边框为1的红色
     [self.createVoiceBtn setTitleColor:[UIColor colorWithRed:0xEA/255.0 green:0x00/255.0 blue:0x00/255.0 alpha:1.0] forState:UIControlStateNormal];
@@ -1356,9 +1356,9 @@
     self.createVoiceBtn.alpha = hasSelection ? 1.0 : 0.5;
     
     if (hasSelection) {
-        [self.createVoiceBtn setTitle:LocalString(@"删除所选项") forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:LocalString(@"音色删除") forState:UIControlStateNormal];
     } else {
-        [self.createVoiceBtn setTitle:LocalString(@"删除所选项") forState:UIControlStateNormal];
+        [self.createVoiceBtn setTitle:LocalString(@"音色删除") forState:UIControlStateNormal];
     }
 }
 
@@ -1380,8 +1380,8 @@
     }
     
     // ✅ 显示确认删除对话框
-    NSString *title = LocalString(@"删除音色");
-    NSString *message = [NSString stringWithFormat:LocalString(@"确定要删除音色“%@”吗？\n\n此操作无法撤销。"), voice.voiceName];
+    NSString *title = LocalString(@"音色删除");
+    NSString *message = LocalString(@"确定要删除此音色吗？");
     
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message

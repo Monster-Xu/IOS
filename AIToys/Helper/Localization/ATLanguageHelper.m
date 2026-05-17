@@ -78,6 +78,16 @@ static NSString * const kATSelectedLanguageCodeKey = @"ATSelectedLanguageCode";
     return [@[@"en", @"fr", @"de", @"es", @"ar"] containsObject:normalized];
 }
 
++ (NSString *)localizedStringForKey:(NSString *)key {
+    NSString *normalized = [self currentLanguageCode];
+    NSString *path = [[NSBundle mainBundle] pathForResource:normalized ofType:@"lproj"];
+    NSBundle *bundle = path.length > 0 ? [NSBundle bundleWithPath:path] : nil;
+    if (bundle) {
+        return [bundle localizedStringForKey:key value:key table:nil];
+    }
+    return NSLocalizedString(key, nil);
+}
+
 + (void)applyLanguageBundleForCode:(NSString *)languageCode {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{

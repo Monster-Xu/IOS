@@ -807,7 +807,7 @@
     
     // Placeholder
     self.themePlaceholderLabel = [[UILabel alloc] init];
-    self.themePlaceholderLabel.text = LocalString(@"故事名称不能超过120个字符");
+    self.themePlaceholderLabel.text = LocalString(@"最多120个字符");
     self.themePlaceholderLabel.font = [UIFont systemFontOfSize:15];
     self.themePlaceholderLabel.textColor = [UIColor colorWithWhite:0.7 alpha:1];
     self.themePlaceholderLabel.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
@@ -1533,7 +1533,7 @@
     
     // 验证故事时长
     if (self.selectedLengthIndex < 0) {
-        return LocalString(@"请选择故事时长");
+        return [ATLanguageHelper localizedStringForKey:@"请选择故事时长"];
     }
     
     return nil;
@@ -1850,7 +1850,7 @@
     [LGBaseAlertView showAlertWithTitle:LocalString(@"创建成功")
                                 content:LocalString(@"故事开始生成，可在故事列表查看")
                            cancelBtnStr:nil
-                          confirmBtnStr:LocalString(@"查看故事")
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         [self.navigationController popViewControllerAnimated:YES];
     }];

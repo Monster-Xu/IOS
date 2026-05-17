@@ -154,6 +154,14 @@
     return LocalString(@"露娜在雨中捡到一只小狗，躲在长椅下发抖。她把它带回家，但妈妈说不能养宠物。露娜很难过，贴了“招领”海报。第二天，一位老太太来敲门——原来是小狗的主人！她很感激，送给露娜一份手写曲奇配方。从此露娜每周都会去看望她，小狗每次见到她都摇尾巴。");
 }
 
+- (NSString *)recordStartPromptText {
+    NSString *languageCode = [[[ATLanguageHelper currentLanguageCode] lowercaseString] componentsSeparatedByString:@"-"].firstObject ?: @"";
+    if ([languageCode isEqualToString:@"de"]) {
+        return @"Gedrückt halten, um Aufnahme zu starten";
+    }
+    return [ATLanguageHelper localizedStringForKey:@"按住开始录音"];
+}
+
 -(void)viewWillAppear:(BOOL)animated{
     [super viewWillAppear:animated];
 
@@ -213,7 +221,7 @@
 
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     // 创建基础字符串
-    NSString *fullText = LocalString(@"请按住“开始朗读”并清晰、富有感情且大声地朗读以下内容，录音需超过30秒。");
+    NSString *fullText = LocalString(@"请点击「开始朗读」，请吐字清晰，并富有感情地朗读以下文本内容， 录音声音需要超过30秒");
 
     // 创建可变的富文本
     NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:fullText];
@@ -241,7 +249,7 @@
     self.voiceNameLabel.text = LocalString(@"音色名称");
     self.voiceAvatarLabel.text = LocalString(@"音色头像");
     self.voiceTitleLabel.text = LocalString(@"声音复刻");
-    self.speekLabel.text = LocalString(@"按住开始录音");
+    self.speekLabel.text = [self recordStartPromptText];
     self.faildMessageLabel.text = LocalString(@"声音克隆失败，请重新开始录音");
     self.voiceNameTextView.placeholder = LocalString(@"请输入音色名称");
     self.voiceNameTextView.textAlignment = inputAlignment;
@@ -729,7 +737,7 @@
 /// 处理失败或待处理音色的音频数据
 - (void)handleFailedOrPendingVoiceAudio:(VoiceModel *)voice {
     // 失败或待处理状态，用户需要重新录音
-    self.speekLabel.text = LocalString(@"按住开始录音");
+    self.speekLabel.text = [self recordStartPromptText];
 
     // 如果有示例文本，也使用 placeholder 样式显示
     if (voice.sampleText && voice.sampleText.length > 0) {
@@ -1139,7 +1147,7 @@
 
         // 4. 如果有新录音，检查时长
         if (hasNewRecording && self.recordedTime < 30) {
-            return LocalString(@"录音过短，至少需要30秒");
+            return LocalString(@"录音时间太短，至少需要30秒");
         }
     }
 
@@ -1700,7 +1708,7 @@
 
     // 4. 检查录音时长（最后一个限制）
     if (self.recordedTime < 30) {
-        return LocalString(@"录音过短，至少需要30秒");
+        return LocalString(@"录音时间太短，至少需要30秒");
     }
 
     // ✅ 所有验证通过，输出详情
@@ -2234,7 +2242,7 @@
     NSLog(@"🎬 录音正式开始");
 
     // 更新UI状态
-    self.speekLabel.text = LocalString(@"录音中，松开结束（0秒）");
+    self.speekLabel.text = [self recordingStatusTextWithRecordedTime:0];
 
     // 显示进度条
     [self showRecordingProgress];
@@ -2268,6 +2276,21 @@
             [self.view layoutIfNeeded];
         }];
     }
+}
+
+- (NSString *)recordingStatusTextWithRecordedTime:(NSInteger)recordedTime {
+    NSString *languageCode = [[[ATLanguageHelper currentLanguageCode] lowercaseString] componentsSeparatedByString:@"-"].firstObject ?: @"";
+    if ([languageCode isEqualToString:@"ar"]) {
+        if (recordedTime < 30) {
+            return [NSString stringWithFormat:@"جارٍ التسجيل. يُنصح بالتسجيل لمدة 30 ثانية على الأقل. أفلت للإنهاء (%ldث)", (long)recordedTime];
+        }
+        return [NSString stringWithFormat:@"جارٍ التسجيل. أفلت للإنهاء (%ldث)", (long)recordedTime];
+    }
+
+    if (recordedTime < 30) {
+        return [NSString stringWithFormat:LocalString(@"录音中，建议至少30秒，松开结束（%ld秒）"), (long)recordedTime];
+    }
+    return [NSString stringWithFormat:LocalString(@"录音中，松开结束（%ld秒）"), (long)recordedTime];
 }
 
 /// 计算文本高度的通用方法
@@ -2323,13 +2346,7 @@
     [self updateRecordingProgress:progress];
 
     // ✅ 更新录音时间显示 - 松手就能停止录音
-    if (self.recordedTime < 30) {
-        // 还没达到最少时间要求，提醒用户
-        self.speekLabel.text = [NSString stringWithFormat:LocalString(@"录音中，建议至少30秒，松开结束（%ld秒）"), (long)self.recordedTime];
-    } else {
-        // 已达到建议时间，正常显示
-        self.speekLabel.text = [NSString stringWithFormat:LocalString(@"录音中，松开结束（%ld秒）"), (long)self.recordedTime];
-    }
+    self.speekLabel.text = [self recordingStatusTextWithRecordedTime:self.recordedTime];
 }
 
 - (void)stopRecording {
@@ -2373,7 +2390,7 @@
     NSLog(@"⚠️ 录音时间不足30秒 (实际: %lds)", (long)self.recordedTime);
 
     // ✅ 使用SVProgressHUD显示提示
-    [SVProgressHUD showErrorWithStatus:LocalString(LocalString(@"录音过短，至少需要30秒"))];
+    [SVProgressHUD showErrorWithStatus:LocalString(@"录音时间太短，至少需要30秒")];
     [SVProgressHUD dismissWithDelay:2.0];
 
     // 删除录音文件
@@ -2395,7 +2412,7 @@
     self.finalRecognizedText = nil;
 
     // 恢复录音标签文字
-    self.speekLabel.text = LocalString(@"按住开始录音");
+    self.speekLabel.text = [self recordStartPromptText];
 
 
 }

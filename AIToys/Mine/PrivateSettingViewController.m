@@ -13,6 +13,7 @@
 #import <CoreLocation/CoreLocation.h>
 #import "AppSettingModel.h"
 #import "AnalyticsManager.h"
+#import "ATLanguageHelper.h"
 
 @interface PrivateSettingViewController ()<UITableViewDelegate,UITableViewDataSource,RYFTableViewDelegate>
 @property (nonatomic, strong)RYFTableView *tableView;
@@ -71,6 +72,10 @@
 }
 
 -(void)setupUI{
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    UISemanticContentAttribute semantic = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.view.semanticContentAttribute = semantic;
+    self.tableView.semanticContentAttribute = semantic;
     self.tableView.loadState = RYFCanLoadNone;
     [self.view addSubview:self.tableView];
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {

@@ -6,11 +6,20 @@
 //
 
 #import "PrivateSettingCell.h"
+#import "ATLanguageHelper.h"
 
 @implementation PrivateSettingCell
 
 - (void)awakeFromNib {
     [super awakeFromNib];
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    UISemanticContentAttribute semantic = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.contentView.semanticContentAttribute = semantic;
+    self.bgView.semanticContentAttribute = semantic;
+    self.titleLabel.semanticContentAttribute = semantic;
+    self.subTitleLabel.semanticContentAttribute = semantic;
+    self.titleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.subTitleLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.titleLabel.numberOfLines = 0;
     self.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.subTitleLabel.numberOfLines = 0;

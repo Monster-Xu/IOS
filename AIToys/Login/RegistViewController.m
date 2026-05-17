@@ -58,6 +58,9 @@
         }
     }
     self.titleLabel.numberOfLines = 0;
+    self.alertLabel.numberOfLines = 0;
+    self.alertLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    self.alertLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
     self.acountTitleLabel.text = LocalString(@"账号");
     self.textField.placeholder = LocalString(@"账号");
     self.dateTitleLabel.text = LocalString(@"出生日期");
@@ -70,6 +73,9 @@
     self.textField.minimumFontSize = 12.0;
     self.dateTextfield.adjustsFontSizeToFitWidth = YES;
     self.dateTextfield.minimumFontSize = 12.0;
+    self.sendCodeBtn.titleLabel.numberOfLines = 1;
+    self.sendCodeBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
+    self.sendCodeBtn.titleLabel.minimumScaleFactor = 0.75;
     [PublicObj makeButtonUnEnable:self.sendCodeBtn];
     if(self.numStr.length>0){
         self.textField.text = self.numStr;

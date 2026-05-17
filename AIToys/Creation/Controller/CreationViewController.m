@@ -1225,16 +1225,16 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     
     // 正常删除确认流程
     NSString *title = LocalString(@"确认删除");
-    NSString *message = [NSString stringWithFormat:LocalString(@"确定要删除故事“%@”吗？"), model.storyName ?: LocalString(@"未命名故事")];
+    NSString *message = LocalString(@"确定要删除故事吗？");
     
     __weak typeof(self) weakSelf = self;
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
                              cancelBtnStr:LocalString(@"取消")
-                            confirmBtnStr:LocalString(@"删除")
+                            confirmBtnStr:LocalString(@"确定")
                             confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (strongSelf && is_value) { // 用户点击了"Delete"按钮
+        if (strongSelf && is_value) {
             [strongSelf performSingleDeleteAtIndex:strongSelf.selectedIndex];
         }
         // is_value == NO 是"Cancel"按钮，无需处理
@@ -1450,16 +1450,16 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     
     // 正常删除确认流程
     NSString *title = LocalString(@"确认删除");
-    NSString *message = [NSString stringWithFormat:LocalString(@"确定要删除故事“%@”吗？"), model.storyName ?: LocalString(@"未命名故事")];
+    NSString *message = LocalString(@"确定要删除故事吗？");
     
     __weak typeof(self) weakSelf = self;
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
                              cancelBtnStr:LocalString(@"取消")
-                            confirmBtnStr:LocalString(@"删除")
+                            confirmBtnStr:LocalString(@"确定")
                             confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (strongSelf && is_value) { // 用户点击了"Delete"按钮
+        if (strongSelf && is_value) {
             [strongSelf performSingleDelete:index];
         }
         // is_value == NO 是"Cancel"按钮，无需处理
@@ -1676,12 +1676,12 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
                              cancelBtnStr:LocalString(@"取消")
-                            confirmBtnStr:LocalString(@"删除")
+                            confirmBtnStr:LocalString(@"确定")
                             confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
         
-        if (is_value) { // 用户点击了"Delete"按钮
+        if (is_value) {
             NSLog(@"✅ 用户确认删除已绑定公仔的故事");
             // 根据删除方式调用对应的删除方法
             if (strongSelf.isSingleEditingMode && index == strongSelf.selectedIndex) {
