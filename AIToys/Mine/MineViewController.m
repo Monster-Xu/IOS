@@ -52,9 +52,6 @@
 //        @{@"icon" : @"mine_msg", @"title" : LocalString(@"消息中心"), @"toVC" : @"MessageCenterVC"},
         @{@"icon" : @"mine_setting", @"title" : LocalString(@"设置"), @"toVC" : @"SettingViewController"},
         @{@"icon":@"mine_help",@"title":LocalString(@"使用报告"),@"toVC":@"UsageReport"},
-#ifdef DEBUG
-        @{@"icon":@"mine_help",@"title":LocalString(@"H5调试"),@"toVC":@"BridgeDebug"},
-#endif
         @{@"icon":@"mine_help",@"title":LocalString(@"帮助中心"),@"toVC":@"MyWebViewController"},
     ] mutableCopy];
 //    @{@"icon" : @"mine_help", @"title" : LocalString(@"帮助中心"), @"toVC" : @"FamailyManageVC"},
@@ -173,14 +170,8 @@
                     }];
     }else if ([str isEqualToString:@"UsageReport"]){
         MyWebViewController * webVC = [[MyWebViewController alloc]init];
-        webVC.title = title;
+        webVC.fullscreenDisplay = YES;
         webVC.mainUrl = [APIPortConfiguration getUsageReportUrl];
-        [self.navigationController pushViewController:webVC animated:YES];
-    }else if ([str isEqualToString:@"BridgeDebug"]){
-        MyWebViewController * webVC = [[MyWebViewController alloc]init];
-        webVC.title = title;
-        NSString *filePath = [[NSBundle mainBundle] pathForResource:@"bridge_debug" ofType:@"html"];
-        webVC.mainUrl = filePath.length > 0 ? [NSURL fileURLWithPath:filePath].absoluteString : @"about:blank";
         [self.navigationController pushViewController:webVC animated:YES];
     }else if ([title isEqualToString:LocalString(@"帮助中心")]){
         MyWebViewController * webVC = [[MyWebViewController alloc]init];

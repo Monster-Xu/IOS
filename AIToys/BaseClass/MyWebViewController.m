@@ -43,6 +43,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    self.hj_NavIsHidden = self.fullscreenDisplay;
     [self setupUI];
     NSURL *url = [self webURLForMainUrl:self.mainUrl ?: @"http://192.168.1.74:8710/course/api/course/view/introduce/1287995003540406274"];
     if (url.isFileURL) {
@@ -52,8 +53,20 @@
     }
     [self.navigationController.navigationBar setBarTintColor:UIColor.redColor];
 }
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    if (!self.fullscreenDisplay) {
+        return;
+    }
+    self.webView.frame = self.view.bounds;
+    self.progressView.frame = CGRectMake(0, 0, CGRectGetWidth(self.view.bounds), 2);
+}
 -(void)setMainUrl:(NSString *)mainUrl{
     _mainUrl = mainUrl;
+    if ([self isUsageReportURLString:mainUrl]) {
+        self.fullscreenDisplay = YES;
+    }
 }
 
 - (void)dealloc {
@@ -78,10 +91,19 @@
     config.userContentController = userContentController;
     config.applicationNameForUserAgent = [NSString stringWithFormat:@"TalenpalApp/%@ (platform=ios)", APP_VERSION ?: @""];
     
-    _webView = [[WKWebView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, kScreenHeight-Nav_And_Tabbar_Height) configuration:config];
+    CGRect webViewFrame = self.fullscreenDisplay ? self.view.bounds : CGRectMake(0, 0, kScreenWidth, kScreenHeight-Nav_And_Tabbar_Height);
+    _webView = [[WKWebView alloc] initWithFrame:webViewFrame configuration:config];
     _webView.navigationDelegate = self;
     _webView.UIDelegate = self;
     _webView.backgroundColor = [UIColor whiteColor];
+    _webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    if (self.fullscreenDisplay) {
+        if (@available(iOS 11.0, *)) {
+            _webView.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+        }
+        _webView.scrollView.contentInset = UIEdgeInsetsZero;
+        _webView.scrollView.scrollIndicatorInsets = UIEdgeInsetsZero;
+    }
     [self.view addSubview:_webView];
     //进度条
     _progressView = [[UIProgressView alloc] initWithFrame:CGRectMake(0, 0, kScreenWidth, 2)];
@@ -155,6 +177,13 @@
         return url;
     }
     return [NSURL fileURLWithPath:mainUrl];
+}
+
+- (BOOL)isUsageReportURLString:(NSString *)urlString {
+    if (![urlString isKindOfClass:NSString.class] || urlString.length == 0) {
+        return NO;
+    }
+    return [urlString containsString:@"#/talenpal/report"] || [urlString containsString:@"/talenpal/report"];
 }
 
 - (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message {

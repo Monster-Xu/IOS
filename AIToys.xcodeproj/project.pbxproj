@@ -28,7 +28,6 @@
 		1896661F2EB397DB00D7C9EA /* WiFiListTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1896661E2EB397DB00D7C9EA /* WiFiListTableViewCell.xib */; };
 		189666202EB397DB00D7C9EA /* WiFiListTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 1896661D2EB397DB00D7C9EA /* WiFiListTableViewCell.m */; };
 		18AF94042F6C4C9D002F73FB /* ATLanguageHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */; };
-		18BDB0022F80A00100ABCDEF /* H5/bridge_debug.html in Resources */ = {isa = PBXBuildFile; fileRef = 18BDB0012F80A00100ABCDEF /* H5/bridge_debug.html */; };
 		18CF0EF42E92628C00F9E19E /* AFStoryAPIManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */; };
 		18D5F90A2FB6164100EC7671 /* سياسة خصوصية مستخدمي Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18D5F9092FB6164100EC7671 /* سياسة خصوصية مستخدمي Talenpal.docx */; };
 		18DF40952F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx in Resources */ = {isa = PBXBuildFile; fileRef = 18DF408C2F7C105300ACB5B1 /* Términos de Uso de Talenpal.docx */; };
@@ -472,7 +471,6 @@
 		18AF93742F6B02A3002F73FB /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		18AF94022F6C4C95002F73FB /* ATLanguageHelper.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ATLanguageHelper.h; sourceTree = "<group>"; };
 		18AF94032F6C4C9D002F73FB /* ATLanguageHelper.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ATLanguageHelper.m; sourceTree = "<group>"; };
-		18BDB0012F80A00100ABCDEF /* H5/bridge_debug.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = H5/bridge_debug.html; sourceTree = "<group>"; };
 		18CF0EF22E92626900F9E19E /* AFStoryAPIManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AFStoryAPIManager.h; sourceTree = "<group>"; };
 		18CF0EF32E92628C00F9E19E /* AFStoryAPIManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AFStoryAPIManager.m; sourceTree = "<group>"; };
 		18D5F9092FB6164100EC7671 /* سياسة خصوصية مستخدمي Talenpal.docx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "سياسة خصوصية مستخدمي Talenpal.docx"; sourceTree = "<group>"; };
@@ -2390,7 +2388,6 @@
 				DC3E06942E2A3AF80099A9FB /* PrivacyInfo.xcprivacy */,
 				E46A38D42E0C354B00C930D3 /* my_gif.gif */,
 				18019EE42EB3AF6F00232D13 /* loading.gif */,
-				18BDB0012F80A00100ABCDEF /* H5/bridge_debug.html */,
 				E49272202E01BD3100DB6A2A /* main.m */,
 				E49272AE2E01C70A00DB6A2A /* Localizable.strings */,
 				E49272B92E01C80700DB6A2A /* InfoPlist.strings */,
@@ -2769,7 +2766,6 @@
 				DCCD62BF2E0E2EE7008988A9 /* FindDeviceViewController.xib in Resources */,
 				E46A38DA2E0C4B4D00C930D3 /* HomeToysListVC.xib in Resources */,
 				18019EE52EB3AF6F00232D13 /* loading.gif in Resources */,
-				18BDB0022F80A00100ABCDEF /* H5/bridge_debug.html in Resources */,
 				DC56676B2E0BF20600379234 /* HomeDeviceListVC.xib in Resources */,
 				DC862AE92E095B42001A4793 /* CreateFamailyVC.xib in Resources */,
 				E4B5C6EB2E248D3400950B7D /* MineAvatarCell.xib in Resources */,
