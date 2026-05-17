@@ -377,7 +377,7 @@
             ThingSmartDevice *device = [ThingSmartDevice deviceWithDeviceId:self.selectDeviceId];
             [device resetFactory:^{
                 NSLog(@"remove success");
-                [SVProgressHUD showSuccessWithStatus:LocalString(@"删除成功")];
+                [SVProgressHUD showSuccessWithStatus:LocalString(@"设备已移除")];
                 //APP埋点：手动删除设备
                     [[AnalyticsManager sharedManager]reportEventWithName:@"manually_delete_device" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"手动删除设备时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
                             

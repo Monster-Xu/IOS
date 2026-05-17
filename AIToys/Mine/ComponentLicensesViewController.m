@@ -11,6 +11,10 @@
 @interface ComponentLicensesViewController ()
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 @property (strong, nonatomic) IBOutlet UIView *headerView;
+@property (weak, nonatomic) IBOutlet UILabel *nameHeaderLabel;
+@property (weak, nonatomic) IBOutlet UILabel *versionHeaderLabel;
+@property (weak, nonatomic) IBOutlet UILabel *licenceHeaderLabel;
+@property (weak, nonatomic) IBOutlet UILabel *modifiedHeaderLabel;
 @property (nonatomic, strong) NSMutableArray <ComponentLicenseModel *>*dataArr;
 @end
 
@@ -43,11 +47,28 @@
     self.dataArr = [NSMutableArray arrayWithArray:[ComponentLicenseModel mj_objectArrayWithKeyValuesArray:arr]];
     
     _tableView.tableHeaderView = self.headerView;
+    [self setupLocalizedHeaderTexts];
     _tableView.tableFooterView = [UIView new];
     _tableView.sectionHeaderHeight = 15;
     _tableView.sectionFooterHeight = 0;
     _tableView.estimatedRowHeight = 45;
     [_tableView registerNib:[UINib nibWithNibName:@"ComponentLicenseCell" bundle:nil] forCellReuseIdentifier:@"ComponentLicenseCell"];
+}
+
+- (void)setupLocalizedHeaderTexts {
+    self.nameHeaderLabel.text = LocalString(@"组件名");
+    self.versionHeaderLabel.text = LocalString(@"版本");
+    self.licenceHeaderLabel.text = LocalString(@"许可");
+    self.modifiedHeaderLabel.text = LocalString(@"是否被修改");
+
+    NSArray<UILabel *> *headerLabels = @[self.nameHeaderLabel, self.versionHeaderLabel, self.licenceHeaderLabel, self.modifiedHeaderLabel];
+    for (UILabel *label in headerLabels) {
+        label.numberOfLines = 0;
+        label.adjustsFontSizeToFitWidth = YES;
+        label.minimumScaleFactor = 0.75;
+        label.lineBreakMode = NSLineBreakByWordWrapping;
+        label.textAlignment = NSTextAlignmentCenter;
+    }
 }
 
 #pragma mark -- UITableViewDataSource

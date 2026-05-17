@@ -73,7 +73,7 @@
 
 -(void)loadData{
     NSArray *arr = @[
-        @{@"title" : LocalString(@"账号"),@"value" :[ThingSmartUser sharedInstance].email, @"toVC" : @"EmaileViewController"},
+        @{@"title" : LocalString(@"邮箱"),@"value" :[ThingSmartUser sharedInstance].email, @"toVC" : @"EmaileViewController"},
         @{@"title" : LocalString(@"修改登录密码"),@"value" :@"", @"toVC" : @"GetVerityCodeViewController"},
         @{@"title" : LocalString(@"用户Code"),@"value" :[ThingSmartUser sharedInstance].userAlias},
         @{@"title" : LocalString(@"注销账号"),@"value" :@"", @"toVC" : @"DeleteAcountViewController"},

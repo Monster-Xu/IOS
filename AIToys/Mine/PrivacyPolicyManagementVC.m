@@ -66,9 +66,9 @@
 
 -(void)loadData{
     NSArray *arr = @[
-        @{@"title" : LocalString(@"隐私政策"),@"value" :@"", @"toVC" : @"MyWebViewController"},
-        @{@"title" : LocalString(@"用户协议"),@"value" :@"", @"toVC" : @"MyWebViewController"},
-        @{@"title" : LocalString(@"Ai对话协议"),@"value" :@"", @"toVC" : @"MyWebViewController"},
+        @{@"title" : LocalString(@"Talenpal隐私政策"),@"value" :@"", @"toVC" : @"MyWebViewController"},
+        @{@"title" : LocalString(@"Talenpal用户协议"),@"value" :@"", @"toVC" : @"MyWebViewController"},
+        @{@"title" : LocalString(@"Ai对话协议2"),@"value" :@"", @"toVC" : @"MyWebViewController"},
         @{@"title" : LocalString(@"第三方信息共享和SDK服务清单"),@"value" :@"", @"toVC" : @"MyWebViewController"},
         ];
     self.itemArray = [NSMutableArray arrayWithArray:[MineItemModel mj_objectArrayWithKeyValuesArray:arr]];
@@ -137,7 +137,7 @@
     if (indexPath.row==0) {
         //隐私政策
         NSLog(@"点击了隐私政策");
-        [self pushToNegotiateVCWithTitle:NSLocalizedString(@"隐私政策", @"") type:0];
+        [self pushToNegotiateVCWithTitle:LocalString(@"Talenpal隐私政策") type:0];
         //埋点：点击协议
         [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@1} completion:^(BOOL success, NSString * _Nullable message) {
                 
@@ -147,7 +147,7 @@
     } else if (indexPath.row==1) {
         //用户协议
         NSLog(@"点击了用户协议");
-        [self pushToNegotiateVCWithTitle:NSLocalizedString(@"用户协议", @"") type:1];
+        [self pushToNegotiateVCWithTitle:LocalString(@"Talenpal用户协议") type:1];
         [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@2} completion:^(BOOL success, NSString * _Nullable message) {
                 
         }];
@@ -156,7 +156,7 @@
     }else if (indexPath.row==2) {
         //Ai对话协议
         NSLog(@"点击了Ai对话协议");
-        [self pushToNegotiateVCWithTitle:NSLocalizedString(@"Ai对话协议", @"") type:3];
+        [self pushToNegotiateVCWithTitle:LocalString(@"Ai对话协议2") type:3];
         //埋点：点击协议
         [[AnalyticsManager sharedManager]reportEventWithName:@"tap_check_agreement_doc" level1:@"AccountLoginVC" level2:@"" level3:@"" reportTrigger:@"点击查看协议文档时" properties:@{@"fileType":@4} completion:^(BOOL success, NSString * _Nullable message) {
                 

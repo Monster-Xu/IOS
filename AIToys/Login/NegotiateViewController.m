@@ -78,6 +78,34 @@
     return nil;
 }
 
+- (BOOL)isArabicAgreementLanguage {
+    return [[self currentAgreementLanguageCode] isEqualToString:@"ar"];
+}
+
+- (void)applyArabicAgreementAlignmentIfNeeded {
+    if (![self isArabicAgreementLanguage]) {
+        return;
+    }
+
+    NSString *script =
+    @"(function() {"
+    "function apply(doc) {"
+    "if (!doc || !doc.body) { return; }"
+    "doc.body.style.textAlign = 'right';"
+    "var nodes = doc.querySelectorAll('body, p, div, span, li, td, th, h1, h2, h3, h4, h5, h6');"
+    "for (var i = 0; i < nodes.length; i++) {"
+    "nodes[i].style.textAlign = 'right';"
+    "}"
+    "}"
+    "apply(document);"
+    "var frames = document.querySelectorAll('iframe');"
+    "for (var i = 0; i < frames.length; i++) {"
+    "try { apply(frames[i].contentDocument); } catch (e) {}"
+    "}"
+    "})();";
+    [self.webView evaluateJavaScript:script completionHandler:nil];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     
@@ -106,8 +134,7 @@
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
     NSLog(@"文档加载完成");
+    [self applyArabicAgreementAlignmentIfNeeded];
 }
 
 @end
-
-

@@ -1208,12 +1208,12 @@
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
                              cancelBtnStr:LocalString(@"取消")
-                            confirmBtnStr:LocalString(@"删除")
+                            confirmBtnStr:LocalString(@"确定")
                             confirmBlock:^(BOOL is_value, id obj) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (!strongSelf) return;
         
-        if (is_value) { // 用户点击了"Delete"按钮
+        if (is_value) {
             NSLog(@"✅ 用户确认删除已绑定公仔的故事");
             [strongSelf performDeleteStory];
         } else {
@@ -1353,9 +1353,14 @@
 
 - (void)showErrorAlert:(NSString *)errorMessage {
     dispatch_async(dispatch_get_main_queue(), ^{
+        NSMutableParagraphStyle *titleStyle = [[NSMutableParagraphStyle alloc] init];
+        titleStyle.alignment = NSTextAlignmentCenter;
+        NSAttributedString *centeredTitle = [[NSAttributedString alloc] initWithString:LocalString(@"提示")
+                                                                            attributes:@{NSParagraphStyleAttributeName: titleStyle}];
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:LocalString(@"提示")
                                                                        message:errorMessage ?: LocalString(@"网络请求失败，请稍后重试")
                                                                 preferredStyle:UIAlertControllerStyleAlert];
+        [alert setValue:centeredTitle forKey:@"attributedTitle"];
         
         [alert addAction:[UIAlertAction actionWithTitle:LocalString(@"确定")
                                                   style:UIAlertActionStyleDefault
@@ -1367,7 +1372,7 @@
 
 - (IBAction)addNewVoice:(id)sender {
     if (self.voiceCount>=3) {
-        [SVProgressHUD showErrorWithStatus:LocalString(@"已创建3个音色，请先删除后再新建")];
+        [SVProgressHUD showErrorWithStatus:LocalString(@"声音数量已达上限")];
     }else{
         CreateVoiceViewController * vc = [[CreateVoiceViewController alloc]init];
         [self.navigationController pushViewController:vc animated:YES];
@@ -1565,17 +1570,21 @@
                     
             }];
         
-        [LGBaseAlertView showAlertWithTitle:LocalString(@"故事生成中，预计3-5分钟")
-                                    content:LocalString(@"稍后可在故事列表查看")
-                               cancelBtnStr:nil
-                              confirmBtnStr:LocalString(@"确定")
-                               confirmBlock:^(BOOL isValue, id obj) {
+        LGBaseAlertView *generatingAlert = [LGBaseAlertView showAlertWithTitle:LocalString(@"故事生成中，预计3-5分钟")
+                                                                       content:LocalString(@"稍后可在故事列表查看")
+                                                                  cancelBtnStr:nil
+                                                                 confirmBtnStr:LocalString(@"确定")
+                                                                  confirmBlock:^(BOOL isValue, id obj) {
             if (isValue) {
                 
                 
                 [self.navigationController popViewControllerAnimated:YES];
             }
         }];
+        if ([ATLanguageHelper isRTLLanguage]) {
+            generatingAlert.titleLabel.semanticContentAttribute = UISemanticContentAttributeForceRightToLeft;
+            generatingAlert.titleLabel.textAlignment = NSTextAlignmentRight;
+        }
         
     } failure:^(NSError * _Nonnull error) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
@@ -1616,11 +1625,8 @@
 
 /// 显示删除确认对话框
 - (void)showDeleteConfirmation {
-    // ✅ 获取故事名称用于确认对话框
-    NSString *storyName = self.currentStory.storyName ?: self.stroryThemeTextView.text ?: LocalString(@"该故事");
-    
     NSString *alertTitle = LocalString(@"删除故事");
-    NSString *alertMessage = [NSString stringWithFormat:LocalString(@"确定要删除故事“%@”吗？此操作无法撤销。"), storyName];
+    NSString *alertMessage = LocalString(@"确定要删除故事吗？");
     
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:alertTitle
                                                                              message:alertMessage
@@ -1630,14 +1636,14 @@
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:LocalString(@"取消")
                                                             style:UIAlertActionStyleCancel
                                                           handler:^(UIAlertAction * _Nonnull action) {
-        NSLog(@"📝 User cancelled story deletion: %@", storyName);
+//        NSLog(@"📝 User cancelled story deletion: %@", storyName);
     }];
     
-    // ✅ 删除按钮（使用危险样式）
-    UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:LocalString(@"删除")
+    // ✅ 确认按钮（使用危险样式）
+    UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:LocalString(@"确定")
                                                             style:UIAlertActionStyleDestructive
                                                           handler:^(UIAlertAction * _Nonnull action) {
-        NSLog(@"🗑️ User confirmed story deletion: %@, starting deletion", storyName);
+//        NSLog(@"🗑️ User confirmed story deletion: %@, starting deletion", storyName);
         [self performDeleteStory];
     }];
     

@@ -71,14 +71,19 @@
     // 完成按钮
     UIButton *sureBtn = [[UIButton alloc] init];
     sureBtn.titleLabel.font = [ATFontManager systemFontOfSize:16];
-    [sureBtn setTitle:LocalString(@"完成") forState:UIControlStateNormal];
+    NSString *sureTitle = LocalString(@"完成");
+    [sureBtn setTitle:sureTitle forState:UIControlStateNormal];
     [sureBtn setTitleColor:mainColor forState:UIControlStateNormal];
     [sureBtn addTarget:self action:@selector(sureBtnClick) forControlEvents:UIControlEventTouchUpInside];
     [self.alertView addSubview:sureBtn];
+    CGFloat sureBtnWidth = MAX(64.0, [sureTitle boundingRectWithSize:CGSizeMake(CGFLOAT_MAX, 40)
+                                                             options:NSStringDrawingUsesLineFragmentOrigin
+                                                          attributes:@{NSFontAttributeName:sureBtn.titleLabel.font}
+                                                             context:nil].size.width + 20.0);
     [sureBtn mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.trailing.mas_equalTo(self.alertView);
+        make.trailing.mas_equalTo(self.alertView).offset(-10);
         make.height.mas_equalTo(40);
-        make.width.mas_equalTo(50);
+        make.width.mas_equalTo(sureBtnWidth);
         make.centerY.equalTo(titleLabel);
     }];
     

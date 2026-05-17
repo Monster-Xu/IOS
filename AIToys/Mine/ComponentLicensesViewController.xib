@@ -17,7 +17,11 @@
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ComponentLicensesViewController">
             <connections>
                 <outlet property="headerView" destination="XZi-56-CXp" id="oS5-3y-39a"/>
+                <outlet property="licenceHeaderLabel" destination="wkZ-ze-VSE" id="q4e-Nk-i1r"/>
+                <outlet property="modifiedHeaderLabel" destination="jNF-mA-BLX" id="TrK-gp-8Yb"/>
+                <outlet property="nameHeaderLabel" destination="yTo-c1-2Wr" id="tKs-Fi-Pnr"/>
                 <outlet property="tableView" destination="xTi-Tv-AgR" id="JDG-X0-DpQ"/>
+                <outlet property="versionHeaderLabel" destination="wZM-vy-oiE" id="gVA-ZF-rZH"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>
