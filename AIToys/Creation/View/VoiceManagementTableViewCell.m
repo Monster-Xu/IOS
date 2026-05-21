@@ -108,11 +108,16 @@ static CGFloat const kAITVoiceManagementDefaultStatusHeight = 44.0;
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    
+
     // ✅ 设置圆角
+    self.backgroundColor = [UIColor clearColor];
+    self.backgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.backgroundView.backgroundColor = [UIColor clearColor];
+    self.layer.cornerRadius = 20;
+    self.layer.masksToBounds = YES;
     self.contentView.layer.cornerRadius = 20;
     self.contentView.clipsToBounds = YES;
-    
+
     // 设置选中样式
     self.selectionStyle = UITableViewCellSelectionStyleNone;
     

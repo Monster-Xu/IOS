@@ -162,12 +162,27 @@
     if (@available(iOS 9.0, *)) {
         self.navigationController.navigationBar.semanticContentAttribute = [ATLanguageHelper isRTLLanguage] ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     }
+    [self expandNavBackButtonHitArea];
     self.tableView.loadState = RYFCanLoadNone;
     [self.view addSubview:self.tableView];
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(self.view);
     }];
     
+}
+
+- (void)expandNavBackButtonHitArea {
+    if (!self.leftBarButton) {
+        return;
+    }
+
+    self.leftBarButton.translatesAutoresizingMaskIntoConstraints = NO;
+    self.leftBarButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentCenter;
+    self.leftBarButton.contentVerticalAlignment = UIControlContentVerticalAlignmentCenter;
+    [NSLayoutConstraint activateConstraints:@[
+        [self.leftBarButton.widthAnchor constraintGreaterThanOrEqualToConstant:44.0],
+        [self.leftBarButton.heightAnchor constraintGreaterThanOrEqualToConstant:44.0]
+    ]];
 }
 
 //权限数组更新

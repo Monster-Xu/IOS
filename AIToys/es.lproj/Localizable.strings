@@ -26,7 +26,7 @@
 "密码支持6-20位，必须包含字母和数字" = "La contraseña debe tener entre 6 y 20 caracteres, e incluir tanto letras como números";
 "密码不一致" = "Las contraseñas no coinciden";
 "忘记密码" = "Olvidé mi contraseña";
-"同意隐私政策、用户协议、创作协议" = "Acepto la Política de privacidad, el Acuerdo de usuario y el Acuerdo de creación.";
+"同意隐私政策、用户协议、创作协议" = "Aceptar la Política de Privacidad, el Acuerdo de Usuario, Acuerdo de creación.";
 "隐私政策" = "Política de privacidad";
 "用户协议" = "Acuerdo de usuario";
 "儿童协议" = "Acuerdo infantil";
@@ -251,13 +251,13 @@
 "编辑音色" = "Editar voz";
 "音色头像" = "Avatar de voz";
 "声音复刻" = "Réplica de voz";
-"请点击「开始朗读」，请吐字清晰，并富有感情地朗读以下文本内容， 录音声音需要超过30秒" = "Mantén pulsado “Iniciar lectura” y lee el siguiente texto de forma clara, con emoción y en voz alta. La grabación debe superar 30 segundos.";
+"请点击「开始朗读」,请吐字清晰,并富有感情地朗读以下文本内容, 录音声音需要超过30秒" = "Mantén pulsado “Iniciar lectura” y lee el siguiente texto de forma clara, con emoción y en voz alta. La grabación debe superar 30 segundos.";
 "声音复刻已完成" = "Clonación de voz completada";
 "音色管理" = "Gestión de voz";
 "按住开始录音" = "Mantén pulsado para empezar a grabar";
 "提示" = "Aviso";
 "录音时间太短，至少需要30秒" = "Grabación demasiado corta. Debe ser de al menos 30 segundos.";
-"录音中，松开结束录音" = "Grabando, se recomienda al menos 30 s, suelta para terminar (%ld s)";
+"录音中,松开结束录音" = "Grabando, se recomienda al menos 30 s, suelta para terminar (%ld s)";
 "声音克隆预计需要 3-5mins 可先保存即可" = "La clonación de voz tomará aproximadamente de 3 a 5 minutos. Puedes guardarla por ahora.";
 "成功" = "Éxito";
 "声音克隆已启动!" = "¡Clonación de voz iniciada!";
@@ -404,7 +404,7 @@
 "内容已达到2400字符上限" = "El contenido alcanzó el límite de 2400 caracteres";
 "冒险" = "Aventura";
 "分钟" = "min";
-"切换多语言后，App将会重启，是否继续？" = "Después de cambiar el idioma, la aplicación se reiniciará. ¿Deseas continuar?";
+"切换多语言后，App将会重启，是否继续？" = "Después de cambiar el idioma, la aplicación debe cerrarse y volver a abrirse. ¿Continuar?";
 "切换语言" = "Configuración multilingüe";
 "创建一个家庭" = "Crear un hogar";
 "创建失败" = "Creación fallida";
@@ -445,9 +445,9 @@
 "开始播放" = "Iniciar reproducción";
 "当您使用本App时，我们会收集必要的信息（包括统计数据、网络使用数据、应用崩溃事件）用于监控App的性能。" = "Durante el uso de esta aplicación, recopilaremos información necesaria (incluidos datos estadísticos, datos de uso de red, eventos de cierre de la aplicación) para supervisar el rendimiento de la aplicación.";
 "录音中...松开结束" = "Grabando... suelta para terminar";
-"录音中，建议至少30秒，松开结束（%ld秒）" = "Grabando, se recomienda al menos 30 s, suelta para terminar (%ld s)";
-"录音中，松开结束（%ld秒）" = "Grabando, suelta para terminar (%ld s)";
-"录音中，松开结束（0秒）" = "Grabando, suelta para terminar (0 s)";
+"录音中,建议至少30秒,松开结束（%ld秒）" = "Grabando, se recomienda al menos 30 s, suelta para terminar (%ld s)";
+"录音中,松开结束（%ld秒）" = "Grabando, suelta para terminar (%ld s)";
+"录音中,松开结束（0秒）" = "Grabando, suelta para terminar (0 s)";
 "录音初始化失败，请重试" = "Falló la inicialización de la grabación, inténtalo de nuevo";
 "录音器准备失败，请重试" = "Falló la preparación del grabador, inténtalo de nuevo";
 "录音器初始化失败，请重试" = "Falló la inicialización del grabador, inténtalo de nuevo";
@@ -459,7 +459,7 @@
 "德语" = "Alemán";
 "您已修改故事类型、主角名称或时长，需要重新生成故事。是否继续？" = "Has cambiado el tipo de historia, el nombre del protagonista o la duración. Es necesario regenerar la historia. ¿Deseas continuar?";
 "您有未保存的内容，确定要离开吗？" = "Tu historia no se ha guardado. ¿Seguro que quieres salir?";
-"我的声音" = "Mis voces";
+"我的声音" = "Mi voz";
 "打开Wi-Fi开关并连接" = "Encender el Wi-Fi y conectarse";
 "指示灯已闪烁" = "El indicador está parpadeando";
 "插画URL不能为空" = "La URL de la ilustración no puede estar vacía";
@@ -541,7 +541,7 @@
 "法语" = "Francés";
 "注册成功" = "Registro exitoso";
 "涂鸦-智慧生活App-sdkios-6.7.0版本" = "Tuya Smart Life App SDK iOS 6.7.0";
-"清晰、富有感情且大声" = "Claro, con emoción y en voz alta";
+"清晰,富有感情且大声" = "de forma clara, con emoción y en voz alta";
 "点击完成" = "Toca para terminar";
 "睡前故事" = "Historia para dormir";
 "确定要删除故事“%@”吗？" = "¿Seguro que quieres eliminar la historia \"%@\"?";
@@ -581,7 +581,7 @@
 "请在设置中允许语音识别权限" = "Permite el reconocimiento de voz en ajustes";
 "请在设置中允许麦克风权限" = "Permite el micrófono en ajustes";
 "请录音" = "Por favor graba";
-"请按住“开始朗读”并清晰、富有感情且大声地朗读以下内容，录音需超过30秒。" = "Mantén pulsado “Iniciar lectura” y lee el siguiente texto de forma clara, con emoción y en voz alta. La grabación debe superar 30 segundos.";
+"请按住“开始朗读”并清晰,富有感情且大声地朗读以下内容,录音需超过30秒。" = "Mantén pulsado “Iniciar lectura” y lee el siguiente texto de forma clara, con emoción y en voz alta. La grabación debe superar 30 segundos.";
 "请求失败" = "Solicitud fallida";
 "请稍后重试" = "Inténtalo más tarde";
 "请简要输入故事主线" = "Introduce brevemente la trama principal";
@@ -615,7 +615,7 @@
 "音色“%@”已关联故事，无法删除。\n\n请先解除关联。" = "La voz \"%@\" está asociada a historias y no se puede eliminar.\n\nElimina las asociaciones primero.";
 "音色不存在，可能已被删除" = "La voz no existe, quizá fue eliminada";
 "音色信息更新成功！" = "¡Información de voz actualizada!";
-"音色克隆已开始！\n\n系统正在后台处理您的声音。\n请稍后刷新查看进度。" = "¡La clonación de voz ha comenzado！\n\nEl sistema procesa tu voz en segundo plano。\nActualiza más tarde para ver el progreso";
+"音色克隆已开始！\n\n系统正在后台处理您的声音。\n请稍后刷新查看进度。" = "¡La clonación de voz ha comenzado!\n\nEl sistema procesa tu voz en segundo plano\nActualiza más tarde para ver el progreso";
 "音色克隆约需3-5分钟，可先保存" = "La clonación de voz tomará aproximadamente de 3 a 5 minutos. Puedes guardarla por ahora.";
 "音色名称" = "Nombre de la voz";
 "音色复刻完成" = "Clonación de voz completada";

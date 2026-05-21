@@ -14,10 +14,11 @@
 #import "UINavigationController+FDFullscreenPopGesture.h"
 #import "LGBaseAlertView.h"
 #import <AVFoundation/AVFoundation.h>
+#import <math.h>
 #import <SVProgressHUD/SVProgressHUD.h>
 #import "ATLanguageHelper.h"
 
-@interface VoiceManagementViewController ()<UITableViewDelegate, UITableViewDataSource, AVAudioPlayerDelegate>
+@interface VoiceManagementViewController ()<UITableViewDelegate, UITableViewDataSource, AVAudioPlayerDelegate, UIGestureRecognizerDelegate>
 @property (weak, nonatomic) IBOutlet UIView *emptyView;
 @property (weak, nonatomic) IBOutlet UILabel *emptyLabel;
 @property (weak, nonatomic) IBOutlet UIButton *createVoiceBtn;
@@ -42,14 +43,17 @@
 
 @implementation VoiceManagementViewController
 
+static NSTimeInterval const kVoiceDeleteSuccessToastDuration = 2.5;
+static NSTimeInterval const kVoiceDeleteFailureToastDuration = 3.0;
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
     self.view.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
-    
+
     // ✅ 重要：禁用BaseViewController的导航栏颜色变更，避免冲突
     self.changeNavColor = NO;  // 我们自己管理导航栏样式
-    
+
     // ✅ 配置导航栏 - 在BaseViewController基础上进行自定义
     [self setupNavigationBar];
     
@@ -240,7 +244,7 @@
     // ✅ 使用FD库来管理返回手势，避免冲突
     // 默认情况下FD库已经处理了全屏返回手势
     // 我们不需要自定义手势，只需要在特定情况下禁用即可
-    self.fd_interactivePopDisabled = NO;
+    [self updateGestureState];
 }
 
 /// 初始化数据
@@ -293,12 +297,8 @@
 
 /// 更新手势状态
 - (void)updateGestureState {
-    // ✅ 检查是否在自定义编辑模式，如果是则暂时禁用返回手势
-    if (self.isEditingMode) {
-        self.fd_interactivePopDisabled = YES;
-    } else {
-        self.fd_interactivePopDisabled = NO;
-    }
+    // 音色列表有横滑删除和长按编辑，整页禁用 FD 右滑返回，避免手势冲突。
+    self.fd_interactivePopDisabled = YES;
 }
 
 
@@ -571,7 +571,7 @@
 
 #pragma mark - UITableViewDelegate - 左滑删除
 
-- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+- (BOOL)canSwipeDeleteVoiceAtIndexPath:(NSIndexPath *)indexPath {
     // ✅ 加载中不允许删除
     if (self.isLoading) {
         return NO;
@@ -582,7 +582,27 @@
         return NO;
     }
     
+    if (indexPath.row != 0 || indexPath.section >= self.voiceList.count) {
+        return NO;
+    }
+
     return YES;
+}
+
+- (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
+    return [self canSwipeDeleteVoiceAtIndexPath:indexPath];
+}
+
+- (UITableViewCellEditingStyle)tableView:(UITableView *)tableView editingStyleForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return [self canSwipeDeleteVoiceAtIndexPath:indexPath] ? UITableViewCellEditingStyleDelete : UITableViewCellEditingStyleNone;
+}
+
+- (BOOL)tableView:(UITableView *)tableView shouldBeginEditingRowAtIndexPath:(NSIndexPath *)indexPath {
+    return [self canSwipeDeleteVoiceAtIndexPath:indexPath];
+}
+
+- (BOOL)tableView:(UITableView *)tableView shouldIndentWhileEditingRowAtIndexPath:(NSIndexPath *)indexPath {
+    return NO;
 }
 
 - (void)tableView:(UITableView *)tableView commitEditingStyle:(UITableViewCellEditingStyle)editingStyle forRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -591,24 +611,16 @@
     }
 }
 
-/// 处理左滑删除操作
-- (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath API_AVAILABLE(ios(11.0)) {
-    
-    // ✅ 加载中不显示删除操作
-    if (self.isLoading) {
+- (UISwipeActionsConfiguration *)deleteSwipeActionsConfigurationForIndexPath:(NSIndexPath *)indexPath API_AVAILABLE(ios(11.0)) {
+    if (![self canSwipeDeleteVoiceAtIndexPath:indexPath]) {
         return nil;
     }
     
-    // ✅ 自定义编辑模式下不显示左滑删除操作
-    if (self.isEditingMode) {
-        return nil;
-    }
-    
-    // 自定义删除按钮
+    __weak typeof(self) weakSelf = self;
     UIContextualAction *deleteAction = [UIContextualAction contextualActionWithStyle:UIContextualActionStyleNormal
                                                                                title:nil
                                                                              handler:^(UIContextualAction * _Nonnull action, __kindof UIView * _Nonnull sourceView, void (^ _Nonnull completionHandler)(BOOL)) {
-        [self deleteVoiceAtIndexPath:indexPath];
+        [weakSelf deleteVoiceAtIndexPath:indexPath];
         completionHandler(YES);
     }];
     
@@ -621,6 +633,16 @@
     return configuration;
 }
 
+/// 处理左滑删除操作
+- (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView trailingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath API_AVAILABLE(ios(11.0)) {
+    return [self deleteSwipeActionsConfigurationForIndexPath:indexPath];
+}
+
+/// 当前表格语义下 leading 在阿语仍表现为物理左滑，禁用它，只保留 trailing 的右滑删除。
+- (UISwipeActionsConfiguration *)tableView:(UITableView *)tableView leadingSwipeActionsConfigurationForRowAtIndexPath:(NSIndexPath *)indexPath API_AVAILABLE(ios(11.0)) {
+    return nil;
+}
+
 /// 开始编辑时禁用返回手势
 - (void)tableView:(UITableView *)tableView willBeginEditingRowAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"🔄 开始左滑删除编辑 - section: %ld", (long)indexPath.section);
@@ -628,8 +650,8 @@
     // ✅ 标记为正在左滑删除，禁用长按手势
     self.isSwipeDeleting = YES;
     
-    // ✅ 开始编辑时禁用返回手势
-    self.fd_interactivePopDisabled = YES;
+    // ✅ 该页面禁用右滑返回，避免和列表横滑删除冲突
+    [self updateGestureState];
 }
 
 /// 结束编辑时恢复返回手势
@@ -639,10 +661,8 @@
     // ✅ 恢复左滑删除状态，允许长按手势
     self.isSwipeDeleting = NO;
     
-    // ✅ 结束编辑时恢复返回手势（但要检查是否在自定义编辑模式）
-    if (!self.isEditingMode) {
-        self.fd_interactivePopDisabled = NO;
-    }
+    // ✅ 该页面禁用右滑返回，避免和列表横滑删除冲突
+    [self updateGestureState];
 }
 
 #pragma mark - 音频播放处理
@@ -870,7 +890,7 @@
     [LGBaseAlertView showAlertWithTitle:LocalString(@"音色删除")
                                 content:LocalString(@"确定要删除此音色吗？")
                            cancelBtnStr:LocalString(@"取消")
-                          confirmBtnStr:LocalString(@"删除")
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户确认删除，调用删除API
@@ -892,10 +912,16 @@
     
     [[AFStoryAPIManager sharedManager] deleteVoiceWithId:voiceId success:^(APIResponseModel *response) {
         
-        NSLog(@"[VoiceManagement] 删除成功");
+        NSLog(@"[VoiceManagement] 删除返回: code=%ld, message=%@", (long)response.code, response.message);
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [SVProgressHUD dismiss];
+            if (!response.isSuccess) {
+                NSString *errorMessage = response.errorMessage ?: response.message ?: LocalString(@"删除失败");
+                [SVProgressHUD showErrorWithStatus:errorMessage];
+                [SVProgressHUD dismissWithDelay:kVoiceDeleteFailureToastDuration];
+                return;
+            }
             
             // 从本地列表删除
             if (index < self.voiceList.count) {
@@ -923,7 +949,7 @@
             
             // 显示成功提示
             [SVProgressHUD showSuccessWithStatus:LocalString(@"删除成功")];
-            [SVProgressHUD dismissWithDelay:2.5];
+            [SVProgressHUD dismissWithDelay:kVoiceDeleteSuccessToastDuration];
         });
         
     } failure:^(NSError *error) {
@@ -934,7 +960,9 @@
             [SVProgressHUD dismiss];
             
             // 显示错误提示
-//            [self showErrorAlert:LocalString(@"删除失败") message:error.localizedDescription];
+            NSString *errorMessage = error.localizedDescription.length > 0 ? error.localizedDescription : LocalString(@"删除失败");
+            [SVProgressHUD showErrorWithStatus:errorMessage];
+            [SVProgressHUD dismissWithDelay:kVoiceDeleteFailureToastDuration];
         });
     }];
 }
@@ -1125,7 +1153,25 @@
 - (void)setupLongPressGesture {
     self.longPressGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handleLongPressGesture:)];
     self.longPressGesture.minimumPressDuration = 0.8; // 长按0.8秒触发
+    self.longPressGesture.delegate = self;
+    self.longPressGesture.cancelsTouchesInView = NO;
     [self.voiceListTabelView addGestureRecognizer:self.longPressGesture];
+}
+
+- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if (gestureRecognizer == self.longPressGesture) {
+        CGPoint velocity = [self.voiceListTabelView.panGestureRecognizer velocityInView:self.voiceListTabelView];
+        if (fabs(velocity.x) > fabs(velocity.y)) {
+            return NO;
+        }
+    }
+    return YES;
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
+    BOOL isLongPressAndTablePan = (gestureRecognizer == self.longPressGesture && otherGestureRecognizer == self.voiceListTabelView.panGestureRecognizer);
+    BOOL isTablePanAndLongPress = (otherGestureRecognizer == self.longPressGesture && gestureRecognizer == self.voiceListTabelView.panGestureRecognizer);
+    return isLongPressAndTablePan || isTablePanAndLongPress;
 }
 
 /// 处理长按手势
@@ -1217,8 +1263,8 @@
     // ✅ 恢复底部按钮为创建按钮
     [self updateBottomButtonForNormalMode];
     
-    // ✅ 恢复返回手势
-    self.fd_interactivePopDisabled = NO;
+    // ✅ 该页面禁用右滑返回，避免和列表横滑删除冲突
+    [self updateGestureState];
 }
 
 /// 设置编辑模式的导航栏
@@ -1386,7 +1432,7 @@
     [LGBaseAlertView showAlertWithTitle:title
                                 content:message
                            cancelBtnStr:LocalString(@"取消")
-                          confirmBtnStr:LocalString(@"删除")
+                          confirmBtnStr:LocalString(@"确定")
                            confirmBlock:^(BOOL isValue, id obj) {
         if (isValue) {
             // 用户确认删除

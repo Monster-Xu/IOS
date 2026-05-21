@@ -1129,7 +1129,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         
         // 主线程回调
         dispatch_async(dispatch_get_main_queue(), ^{
-            [SVProgressHUD showSuccessWithStatus:LocalString(@"日志上传成功")];
+            [SVProgressHUD showSuccessWithStatus:nil];
             
             if (success) {
                 success(responseObject);

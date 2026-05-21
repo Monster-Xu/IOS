@@ -92,7 +92,19 @@
         totalMinutes = 0;
     }
 
-    self.timeNumLabel.text = [NSString stringWithFormat:@"%ld %@", (long)totalMinutes, LocalString(@"分钟")];
+    self.timeNumLabel.text = [self localizedStoryDurationTextWithTotalMinutes:totalMinutes];
+}
+
+- (NSString *)localizedStoryDurationTextWithTotalMinutes:(NSInteger)totalMinutes {
+    if (![ATLanguageHelper isRTLLanguage]) {
+        return [NSString stringWithFormat:@"%ld %@", (long)totalMinutes, LocalString(@"分钟")];
+    }
+    NSInteger hours = totalMinutes / 60;
+    NSInteger minutes = totalMinutes % 60;
+    if (hours > 0) {
+        return [NSString stringWithFormat:@"%ld س %ld د", (long)hours, (long)minutes];
+    }
+    return [NSString stringWithFormat:@"%ld د", (long)minutes];
 }
 
 -(void)starAnimation:(BOOL)animaiton

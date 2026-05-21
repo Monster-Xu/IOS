@@ -13,10 +13,12 @@
 - (void)awakeFromNib {
     [super awakeFromNib];
     BOOL isRTL = [ATLanguageHelper isRTLLanguage];
-    NSTextAlignment contentAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    UISemanticContentAttribute cardSemantic = UISemanticContentAttributeForceLeftToRight;
+    self.semanticContentAttribute = cardSemantic;
+    [self applyLeftToRightSemanticInView:self.contentView];
     self.playBtn.hidden = YES;
     [self.playBtn setTitle:LocalString(@"试听一下") forState:0];
-    self.playBtn.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.playBtn.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : cardSemantic;
     self.playBtn.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
     self.playBtn.titleLabel.adjustsFontSizeToFitWidth = YES;
     self.playBtn.titleLabel.minimumScaleFactor = 0.75;
@@ -26,14 +28,7 @@
     if (playImage && @available(iOS 9.0, *)) {
         [self.playBtn setImage:[playImage imageFlippedForRightToLeftLayoutDirection] forState:UIControlStateNormal];
     }
-    self.nameLabel.textAlignment = contentAlignment;
-    self.introduceLabel.textAlignment = contentAlignment;
-    self.storyLab.textAlignment = contentAlignment;
-    self.durationLab.textAlignment = contentAlignment;
-    self.storyNumLabel.textAlignment = contentAlignment;
-    self.hoursLabel.textAlignment = contentAlignment;
-    self.horsNameLabel.textAlignment = contentAlignment;
-    self.playBtn.titleLabel.textAlignment = contentAlignment;
+    [self applyContentDirectionStyle];
     self.storyLab.text = LocalString(@"故事");
     self.durationLab.text = LocalString(@"时长");
 
@@ -42,7 +37,42 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
+    [self applyContentDirectionStyle];
     [self applyPlayButtonLayout];
+}
+
+- (void)applyLeftToRightSemanticInView:(UIView *)view {
+    view.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+    for (UIView *subview in view.subviews) {
+        [self applyLeftToRightSemanticInView:subview];
+    }
+}
+
+- (void)applyContentDirectionStyle {
+    [self applyLeftToRightSemanticInView:self.contentView];
+    NSArray<UILabel *> *leftToRightLabels = @[
+        self.nameLabel,
+        self.introduceLabel,
+        self.storyLab,
+        self.durationLab,
+        self.storyNumLabel,
+        self.hoursLabel,
+        self.horsNameLabel,
+        self.minutesLabel,
+        self.minNameLabel,
+        self.sLabel,
+        self.sNamelabel
+    ];
+    for (UILabel *label in leftToRightLabels) {
+        label.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+        label.textAlignment = NSTextAlignmentLeft;
+        label.lineBreakMode = NSLineBreakByTruncatingTail;
+    }
+    self.bgImgView.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+    self.storyNumImage.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+    self.stroyTimeImage.semanticContentAttribute = UISemanticContentAttributeForceLeftToRight;
+    self.playBtn.semanticContentAttribute = [ATLanguageHelper isRTLLanguage] ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.playBtn.titleLabel.textAlignment = NSTextAlignmentCenter;
 }
 
 - (void)applyPlayButtonLayout {
@@ -96,6 +126,11 @@
     self.storyNumLabel.hidden = NO;
     self.hoursLabel.hidden  =NO;
     self.horsNameLabel.hidden = NO;
+    self.storyLab.hidden = NO;
+    self.durationLab.hidden = NO;
+    self.storyLab.text = LocalString(@"故事");
+    self.durationLab.text = LocalString(@"时长");
+    [self applyContentDirectionStyle];
     _model = model;
     self.nameLabel.text = model.name;
     self.introduceLabel.text = model.desc;
@@ -156,6 +191,7 @@
         self.durationLab.hidden = YES;
         self.storyLab.text = LocalString(@"时长");
     }
+    [self applyContentDirectionStyle];
     
 }
 

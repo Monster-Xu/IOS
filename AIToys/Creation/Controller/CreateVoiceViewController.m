@@ -159,7 +159,7 @@
     if ([languageCode isEqualToString:@"de"]) {
         return @"Gedrückt halten, um Aufnahme zu starten";
     }
-    return [ATLanguageHelper localizedStringForKey:@"按住开始录音"];
+    return [self displayTextByNormalizingComma:[ATLanguageHelper localizedStringForKey:@"按住开始录音"]];
 }
 
 -(void)viewWillAppear:(BOOL)animated{
@@ -190,10 +190,12 @@
     self.voiceSubLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.voiceSubLabel.semanticContentAttribute = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
     self.voiceSubLabel.textAlignment = inputAlignment;
+    [self applyLocalizedFontForLabel:self.voiceSubLabel originalFontSize:self.voiceSubLabel.font.pointSize];
     self.speekLabel.numberOfLines = 2;
     self.speekLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.speekLabel.adjustsFontSizeToFitWidth = YES;
     self.speekLabel.minimumScaleFactor = 0.8;
+    [self applyLocalizedFontForLabel:self.speekLabel originalFontSize:self.speekLabel.font.pointSize];
     self.faildMessageLabel.numberOfLines = 0;
     self.faildMessageLabel.lineBreakMode = NSLineBreakByWordWrapping;
     self.chooseImageBtn.titleLabel.numberOfLines = 1;
@@ -221,7 +223,7 @@
 
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
     // 创建基础字符串
-    NSString *fullText = LocalString(@"请点击「开始朗读」，请吐字清晰，并富有感情地朗读以下文本内容， 录音声音需要超过30秒");
+    NSString *fullText = [self displayTextByNormalizingComma:LocalString(@"请按住“开始朗读”并清晰,富有感情且大声地朗读以下内容,录音需超过30秒。")];
 
     // 创建可变的富文本
     NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:fullText];
@@ -231,7 +233,7 @@
     [attributedText addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, attributedText.length)];
 
     // 找到需要标红加粗的文本范围
-    NSString *highlightedText = LocalString(@"清晰、富有感情且大声");
+    NSString *highlightedText = [self displayTextByNormalizingComma:LocalString(@"清晰,富有感情且大声")];
     NSRange highlightRange = [fullText rangeOfString:highlightedText];
 
     if (highlightRange.location != NSNotFound) {
@@ -1126,7 +1128,7 @@
 
     // 2. 检查插画选择
     if (!self.selectedAvatarUrl || self.selectedAvatarUrl.length == 0) {
-        return LocalString(@"请选择音色头像");
+        return LocalString(@"请选择插画");
     }
 
     // ✅ 对于编辑模式，音频验证根据状态而定，使用最新的API数据
@@ -1698,7 +1700,7 @@
 
     // 2. 检查插画选择（第二个字段）
     if (!self.selectedAvatarUrl || self.selectedAvatarUrl.length == 0) {
-        return LocalString(@"请选择音色头像");
+        return LocalString(@"请选择插画");
     }
 
     // 3. 检查是否有录音文件（第三个字段）
@@ -2282,15 +2284,48 @@
     NSString *languageCode = [[[ATLanguageHelper currentLanguageCode] lowercaseString] componentsSeparatedByString:@"-"].firstObject ?: @"";
     if ([languageCode isEqualToString:@"ar"]) {
         if (recordedTime < 30) {
-            return [NSString stringWithFormat:@"جارٍ التسجيل. يُنصح بالتسجيل لمدة 30 ثانية على الأقل. أفلت للإنهاء (%ldث)", (long)recordedTime];
+            NSString *text = [NSString stringWithFormat:@"جارٍ التسجيل. يُنصح بالتسجيل لمدة 30 ثانية على الأقل. أفلت للإنهاء (%ldث)", (long)recordedTime];
+            return [self displayTextByNormalizingComma:text];
         }
-        return [NSString stringWithFormat:@"جارٍ التسجيل. أفلت للإنهاء (%ldث)", (long)recordedTime];
+        NSString *text = [NSString stringWithFormat:@"جارٍ التسجيل. أفلت للإنهاء (%ldث)", (long)recordedTime];
+        return [self displayTextByNormalizingComma:text];
+    }
+    if ([languageCode isEqualToString:@"fr"]) {
+        NSString *format = recordedTime < 30 ? @"Enregistrement, recommandé au moins 30 s, relâchez pour terminer (%ld s)" : @"Enregistrement, relâchez pour terminer (%ld s)";
+        return [NSString stringWithFormat:format, (long)recordedTime];
+    }
+    if ([languageCode isEqualToString:@"de"]) {
+        NSString *format = recordedTime < 30 ? @"Aufnahme, mindestens 30 Sek. empfohlen, loslassen zum Beenden (%ld s)" : @"Aufnahme, loslassen zum Beenden (%ld s)";
+        return [NSString stringWithFormat:format, (long)recordedTime];
+    }
+    if ([languageCode isEqualToString:@"es"]) {
+        NSString *format = recordedTime < 30 ? @"Grabando, se recomienda al menos 30 s, suelta para terminar (%ld s)" : @"Grabando, suelta para terminar (%ld s)";
+        return [NSString stringWithFormat:format, (long)recordedTime];
+    }
+    if ([languageCode isEqualToString:@"en"]) {
+        NSString *format = recordedTime < 30 ? @"Recording, recommended at least 30s, release to finish (%ld s)" : @"Recording, release to finish (%ld s)";
+        return [NSString stringWithFormat:format, (long)recordedTime];
     }
 
     if (recordedTime < 30) {
-        return [NSString stringWithFormat:LocalString(@"录音中，建议至少30秒，松开结束（%ld秒）"), (long)recordedTime];
+        NSString *format = [self displayTextByNormalizingComma:LocalString(@"录音中,建议至少30秒,松开结束（%ld秒）")];
+        NSString *text = [NSString stringWithFormat:format, (long)recordedTime];
+        return [self displayTextByNormalizingComma:text];
     }
-    return [NSString stringWithFormat:LocalString(@"录音中，松开结束（%ld秒）"), (long)recordedTime];
+    NSString *format = [self displayTextByNormalizingComma:LocalString(@"录音中,松开结束（%ld秒）")];
+    NSString *text = [NSString stringWithFormat:format, (long)recordedTime];
+    return [self displayTextByNormalizingComma:text];
+}
+
+- (NSString *)displayTextByNormalizingComma:(NSString *)text {
+    return [(text ?: @"") stringByReplacingOccurrencesOfString:@"，" withString:@","];
+}
+
+- (void)applyLocalizedFontForLabel:(UILabel *)label originalFontSize:(CGFloat)fontSize {
+    NSString *languageCode = [[[ATLanguageHelper currentLanguageCode] lowercaseString] componentsSeparatedByString:@"-"].firstObject ?: @"";
+    if (![languageCode isEqualToString:@"zh"]) {
+        label.font = [UIFont systemFontOfSize:fontSize];
+    }
 }
 
 /// 计算文本高度的通用方法

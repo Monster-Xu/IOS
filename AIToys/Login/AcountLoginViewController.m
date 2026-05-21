@@ -95,10 +95,10 @@
 
 - (NSAttributedString *)agreementAttributedText {
     NSString *fullText = LocalString(@"同意隐私政策、用户协议、创作协议") ?: @"";
-    NSArray<NSDictionary<NSString *, NSString *> *> *linkedItems = @[
-        @{@"text": LocalString(@"隐私政策") ?: @"", @"link": @"privacyPolicy://"},
-        @{@"text": LocalString(@"用户协议") ?: @"", @"link": @"userProtocol://"},
-        @{@"text": LocalString(@"创作协议") ?: @"", @"link": @"creativeAgreement://"}
+    NSArray<NSDictionary<NSString *, id> *> *linkedItems = @[
+        @{@"texts": @[LocalString(@"Talenpal隐私政策") ?: @"", LocalString(@"隐私政策") ?: @""], @"link": @"privacyPolicy://"},
+        @{@"texts": @[LocalString(@"Talenpal用户协议") ?: @"", LocalString(@"用户协议") ?: @""], @"link": @"userProtocol://"},
+        @{@"texts": @[LocalString(@"创作协议") ?: @""], @"link": @"creativeAgreement://"}
     ];
 
     NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:fullText];
@@ -106,15 +106,24 @@
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.alignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     [attrStr addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, fullText.length)];
-    for (NSDictionary<NSString *, NSString *> *item in linkedItems) {
-        NSString *linkText = item[@"text"] ?: @"";
-        NSRange range = [fullText rangeOfString:linkText];
+    for (NSDictionary<NSString *, id> *item in linkedItems) {
+        NSArray<NSString *> *linkTexts = [item[@"texts"] isKindOfClass:NSArray.class] ? item[@"texts"] : @[];
+        NSRange range = NSMakeRange(NSNotFound, 0);
+        for (NSString *linkText in linkTexts) {
+            if (linkText.length == 0) {
+                continue;
+            }
+            range = [fullText rangeOfString:linkText];
+            if (range.location != NSNotFound && range.length > 0) {
+                break;
+            }
+        }
         if (range.location == NSNotFound || range.length == 0) {
             continue;
         }
         [attrStr addAttribute:NSForegroundColorAttributeName value:mainColor range:range];
         [attrStr addAttribute:NSUnderlineStyleAttributeName value:@(NSUnderlineStyleSingle) range:range];
-        [attrStr addAttribute:NSLinkAttributeName value:item[@"link"] range:range];
+        [attrStr addAttribute:NSLinkAttributeName value:item[@"link"] ?: @"" range:range];
     }
     return attrStr;
 }
