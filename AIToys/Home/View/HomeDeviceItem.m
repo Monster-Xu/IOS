@@ -6,12 +6,28 @@
 //
 
 #import "HomeDeviceItem.h"
+#import "ATLanguageHelper.h"
 
 @implementation HomeDeviceItem
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    // Initialization code
+    [self applyDirectionStyle];
+}
+
+- (void)applyDirectionStyle {
+    BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+    UISemanticContentAttribute semantic = isRTL ? UISemanticContentAttributeForceRightToLeft : UISemanticContentAttributeForceLeftToRight;
+    self.contentView.semanticContentAttribute = semantic;
+    self.bgView.semanticContentAttribute = semantic;
+    self.batteryView.semanticContentAttribute = semantic;
+    self.batteryLabel.semanticContentAttribute = semantic;
+    self.nameLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.onlineLabel.textAlignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentLeft;
+    self.batteryLabel.textAlignment = NSTextAlignmentCenter;
+    self.batteryLabel.adjustsFontSizeToFitWidth = YES;
+    self.batteryLabel.minimumScaleFactor = 0.85;
+    self.batteryLabelWidth.constant = 92.0;
 }
 
 -(void)setIndex:(NSInteger)index{
@@ -91,6 +107,7 @@
         self.batteryImageW.constant = 0;
         self.batteryLabel.hidden = NO;
         self.batteryLabel.text = [NSString stringWithFormat:@"%@ >", LocalString(@"更换wifi")];
+        self.batteryLabelWidth.constant = 92.0;
     }
     
 }

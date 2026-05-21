@@ -340,7 +340,7 @@
 //置顶设备
 - (IBAction)setDeviceTop:(id)sender {
     if([PublicObj isEmptyObject:self.selectDeviceId]){
-        [SVProgressHUD showErrorWithStatus:LocalString(@"请选择设备")];
+        [SVProgressHUD showErrorWithStatus:LocalString(@"请选择公仔")];
         return;
     }
     id objc;
