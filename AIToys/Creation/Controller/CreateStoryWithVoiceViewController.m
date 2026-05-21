@@ -153,7 +153,7 @@
     self.storyStautsLabel.textAlignment = labelAlignment;
     self.storyNameLabel.textAlignment = labelAlignment;
     self.chooseVoiceLabel.textAlignment = labelAlignment;
-    self.emptyVoiceLabel.textAlignment = labelAlignment;
+    self.emptyVoiceLabel.textAlignment = NSTextAlignmentCenter;
     self.cloneFailedLabel.textAlignment = labelAlignment;
     self.stroryThemeTextView.placeholder = LocalString(@"请输入故事名称");
     self.stroryThemeTextView.textAlignment = inputAlignment;
@@ -1410,7 +1410,11 @@
     // 验证必要参数
     NSString *validationError = [self validateEditStoryParameters];
     if (validationError) {
-        [self showErrorAlert:validationError];
+        if ([validationError isEqualToString:LocalString(@"请选择音色")]) {
+            [SVProgressHUD showErrorWithStatus:validationError];
+        } else {
+            [self showErrorAlert:validationError];
+        }
         return;
     }
     
@@ -1420,7 +1424,7 @@
     // ✅ 验证音色ID是否有效
     if (currentVoiceId <= 0) {
         NSLog(@"❌ 音色ID无效: %ld", (long)currentVoiceId);
-        [self showErrorAlert:LocalString(@"请选择有效的音色")];
+        [SVProgressHUD showErrorWithStatus:LocalString(@"请选择有效的音色")];
         return;
     }
     
@@ -1503,7 +1507,7 @@
 - (void)handleCreateStory {
     // 检查是否选择了音色
     if (self.selectedVoiceIndex < 0 || self.selectedVoiceIndex >= self.voiceListArray.count) {
-        [self showErrorAlert:LocalString(@"请先选择音色")];
+        [SVProgressHUD showErrorWithStatus:LocalString(@"请先选择音色")];
         //APP埋点：声音合成
             [[AnalyticsManager sharedManager]reportEventWithName:@"choose_voice_save_click" level1:kAnalyticsLevel1_Creation level2:@"" level3:@"" reportTrigger:@"选择声音并保存时" properties:@{@"choosevoicesaveResult":[NSString stringWithFormat:@"Fail:(Please select a voice first)"]} completion:^(BOOL success, NSString * _Nullable message) {
                     

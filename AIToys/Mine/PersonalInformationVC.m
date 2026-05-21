@@ -151,7 +151,7 @@
 //修改昵称
 - (void)showAlertWithTextField {
     WEAK_SELF
-    [LGBaseAlertView showAlertInfo:@{@"title":LocalString(@"昵称"),@"value":[ThingSmartUser sharedInstance].nickname?:@"",@"placeholder":LocalString(@"请输入名称")} withType:ALERT_VIEW_TYPE_EditName confirmBlock:^(BOOL is_value, id obj) {
+    [LGBaseAlertView showAlertInfo:@{@"title":LocalString(@"昵称"),@"value":[ThingSmartUser sharedInstance].nickname?:@"",@"placeholder":LocalString(@"请输入昵称")} withType:ALERT_VIEW_TYPE_EditName confirmBlock:^(BOOL is_value, id obj) {
         NSString *str = (NSString *)obj;
         if (is_value && str.length > 0) {
             [[ThingSmartUser sharedInstance] updateNickname:str success:^{

@@ -307,7 +307,7 @@ static NSString *const kSkeletonCellIdentifier = @"SkeletonCell";
     [self.emptyStateView addSubview:emptyMyVoiceButton];
     
     UIButton *emptyCreateButton = [UIButton buttonWithType:UIButtonTypeSystem];
-    NSString *createStoryTitle = LocalString(@"创建故事");
+    NSString *createStoryTitle = LocalString(@"创作故事");
     [emptyCreateButton setTitle:createStoryTitle forState:UIControlStateNormal];
     [emptyCreateButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     emptyCreateButton.titleLabel.font = [UIFont systemFontOfSize:14 weight:UIFontWeightSemibold];

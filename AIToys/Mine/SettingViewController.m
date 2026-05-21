@@ -384,7 +384,7 @@
                         [SVProgressHUD showWithStatus:LocalString(@"上传中")];
                         [[APIManager shared]uploadSingleFile:[APIPortConfiguration getuploadUrl] fileData:videoData fileName:[NSString stringWithFormat:@"%ld_%ld_%ld_%@",(long)year,(long)month,day,kMyUser.email] parameters:params success:^(id  _Nonnull result) {
                             dispatch_async(dispatch_get_main_queue(), ^{
-                                [SVProgressHUD showSuccessWithStatus:LocalString(@"日志上传成功")];
+                                [SVProgressHUD showSuccessWithStatus:nil];
                             });
                         } failure:^(NSError * _Nonnull error) {
                             dispatch_async(dispatch_get_main_queue(), ^{
