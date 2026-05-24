@@ -222,31 +222,8 @@
     }
 
     self.view.backgroundColor = [UIColor colorWithRed:0xF6/255.0 green:0xF7/255.0 blue:0xFB/255.0 alpha:1.0];
-    // 创建基础字符串
     NSString *fullText = [self displayTextByNormalizingComma:LocalString(@"请按住“开始朗读”并清晰,富有感情且大声地朗读以下内容,录音需超过30秒。")];
-
-    // 创建可变的富文本
-    NSMutableAttributedString *attributedText = [[NSMutableAttributedString alloc] initWithString:fullText];
-    NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
-    paragraphStyle.alignment = inputAlignment;
-    paragraphStyle.baseWritingDirection = isRTL ? NSWritingDirectionRightToLeft : NSWritingDirectionLeftToRight;
-    [attributedText addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, attributedText.length)];
-
-    // 找到需要标红加粗的文本范围
-    NSString *highlightedText = [self displayTextByNormalizingComma:LocalString(@"清晰,富有感情且大声")];
-    NSRange highlightRange = [fullText rangeOfString:highlightedText];
-
-    if (highlightRange.location != NSNotFound) {
-        // 设置加粗
-        UIFont *boldFont = [UIFont boldSystemFontOfSize:self.voiceSubLabel.font.pointSize];
-        [attributedText addAttribute:NSFontAttributeName value:boldFont range:highlightRange];
-
-        // 设置红色
-        [attributedText addAttribute:NSForegroundColorAttributeName value:[UIColor redColor] range:highlightRange];
-    }
-
-    // 应用到UILabel
-    self.voiceSubLabel.attributedText = attributedText;
+    self.voiceSubLabel.text = fullText;
 
     self.voiceNameLabel.text = LocalString(@"音色名称");
     self.voiceAvatarLabel.text = LocalString(@"音色头像");

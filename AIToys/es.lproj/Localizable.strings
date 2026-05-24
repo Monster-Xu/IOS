@@ -2,7 +2,7 @@
 
 "首页" = "Inicio";
 "通讯" = "Contactos";
-"创作" = "Creación";
+"创作" = "Crear";
 "我的" = "Perfil";
 "登录" = "Iniciar sesión";
 "注册" = "Registrarse";
@@ -12,7 +12,7 @@
 "登录中..." = "Iniciando sesión...";
 "请输入正确的邮箱地址" = "Por favor, introduce una dirección de correo electrónico válida";
 "请输入名称" = "Por favor, introduce tu nombre";
-"账号" = "email";
+"账号" = "Email";
 "输入验证码" = "Introducir código de verificación";
 "收不到验证码?" = "¿No recibiste el código?";
 "收不到验证码" = "No recibí el código";

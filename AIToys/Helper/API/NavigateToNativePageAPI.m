@@ -10,6 +10,7 @@
 #import <UIKit/UIKit.h>
 #import "FindDeviceViewController.h"
 #import "MyNavigationController.h"
+#import "MyTabBarController.h"
 #import "CoreArchive.h"
 #import "AppConfigureHeader.h"
 
@@ -202,20 +203,26 @@ static NSString * const kErrorCodeNavigationFailed = @"NAVIGATION_FAILED";
 
             // 即使已经在目标页面，也要关闭小程序返回到原生页面
             [self closeMiniAppAndReturnToNative:context];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self selectTabBarController:tabBarController index:targetIndex popToRoot:YES];
+            });
 
             return YES;
         }
 
         NSLog(@"[NavigateToNativePageAPI] 执行跳转: 从索引 %ld 跳转到索引 %ld", (long)currentIndex, (long)targetIndex);
-        tabBarController.selectedIndex = targetIndex;
+        BOOL didSelectTab = [self selectTabBarController:tabBarController index:targetIndex popToRoot:YES];
 
         // 验证跳转是否成功
         NSInteger newIndex = tabBarController.selectedIndex;
-        if (newIndex == targetIndex) {
+        if (didSelectTab && newIndex == targetIndex) {
             NSLog(@"[NavigateToNativePageAPI] ✅ 跳转成功，当前索引: %ld", (long)newIndex);
 
             // 关闭小程序，返回到原生页面
             [self closeMiniAppAndReturnToNative:context];
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                [self selectTabBarController:tabBarController index:targetIndex popToRoot:YES];
+            });
 
             return YES;
         } else {
@@ -227,6 +234,26 @@ static NSString * const kErrorCodeNavigationFailed = @"NAVIGATION_FAILED";
     }
 
     return NO;
+}
+
+- (BOOL)selectTabBarController:(UITabBarController *)tabBarController index:(NSInteger)index popToRoot:(BOOL)popToRoot {
+    if (index < 0 || index >= tabBarController.viewControllers.count) {
+        return NO;
+    }
+    if ([tabBarController isKindOfClass:[MyTabBarController class]]) {
+        return [(MyTabBarController *)tabBarController at_selectTabAtIndex:(NSUInteger)index popToRoot:popToRoot];
+    }
+
+    UIViewController *targetViewController = tabBarController.viewControllers[index];
+    tabBarController.selectedViewController = targetViewController;
+    tabBarController.selectedIndex = index;
+    if (index < tabBarController.tabBar.items.count) {
+        tabBarController.tabBar.selectedItem = tabBarController.tabBar.items[index];
+    }
+    if (popToRoot && [targetViewController isKindOfClass:[UINavigationController class]]) {
+        [(UINavigationController *)targetViewController popToRootViewControllerAnimated:NO];
+    }
+    return tabBarController.selectedIndex == index && tabBarController.selectedViewController == targetViewController;
 }
 
 /**

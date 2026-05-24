@@ -65,6 +65,7 @@
     
     // ✅ 强制刷新 TabBar 显示
     [self refreshTabBarTitles];
+    [self repairTabSelectionIfNeeded];
 }
 
 /// 配置 TabBar 外观
@@ -219,6 +220,48 @@
     [self addChildViewController:nav];
 }
 
+- (BOOL)at_selectTabAtIndex:(NSUInteger)index popToRoot:(BOOL)popToRoot {
+    if (index >= self.viewControllers.count || index >= self.tabBar.items.count) {
+        return NO;
+    }
+
+    UIViewController *targetViewController = self.viewControllers[index];
+    self.selectedViewController = targetViewController;
+    self.selectedIndex = index;
+    self.tabBar.selectedItem = self.tabBar.items[index];
+
+    if (popToRoot && [targetViewController isKindOfClass:[UINavigationController class]]) {
+        [(UINavigationController *)targetViewController popToRootViewControllerAnimated:NO];
+    }
+
+    [self repairTabSelectionIfNeeded];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self repairTabSelectionIfNeeded];
+    });
+    return self.selectedViewController == targetViewController && self.selectedIndex == index;
+}
+
+- (void)repairTabSelectionIfNeeded {
+    if (self.viewControllers.count == 0 || self.tabBar.items.count == 0) {
+        return;
+    }
+
+    NSUInteger selectedIndex = self.selectedIndex;
+    if (selectedIndex == NSNotFound || selectedIndex >= self.viewControllers.count || selectedIndex >= self.tabBar.items.count) {
+        selectedIndex = 0;
+    }
+
+    UIViewController *expectedViewController = self.viewControllers[selectedIndex];
+    UITabBarItem *expectedItem = self.tabBar.items[selectedIndex];
+
+    if (self.selectedViewController != expectedViewController) {
+        self.selectedViewController = expectedViewController;
+    }
+    if (self.tabBar.selectedItem != expectedItem) {
+        self.tabBar.selectedItem = expectedItem;
+    }
+}
+
 //处理登录会话过期
 - (void)loadNotification {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sessionInvalid) name:ThingSmartUserNotificationUserSessionInvalid object:nil];
@@ -248,7 +291,10 @@
         [self refreshTabBarTitles];
     });
     //APP埋点：点击功能按钮
-    UIViewController *currentVC = viewController.childViewControllers[0];
+    UIViewController *currentVC = viewController;
+    if ([viewController isKindOfClass:[UINavigationController class]]) {
+        currentVC = ((UINavigationController *)viewController).viewControllers.firstObject ?: viewController;
+    }
     if ([currentVC isKindOfClass:[CreationViewController class]]) {
         [[AnalyticsManager sharedManager]reportEventWithName:@"tap_creation" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击“创作”模块时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
                 
@@ -261,6 +307,13 @@
     
         
     return YES;
+}
+
+- (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
+    [self repairTabSelectionIfNeeded];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self repairTabSelectionIfNeeded];
+    });
 }
 
 /*

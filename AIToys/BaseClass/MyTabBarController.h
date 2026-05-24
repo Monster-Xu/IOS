@@ -11,6 +11,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MyTabBarController : UITabBarController
 
+- (BOOL)at_selectTabAtIndex:(NSUInteger)index popToRoot:(BOOL)popToRoot;
+
 @end
 
 NS_ASSUME_NONNULL_END
