@@ -357,7 +357,7 @@
             strongSelf.storyTextField.text = story.storyContent;
             
             // ✅ 根据故事状态控制failedView显示和storyNameTop约束
-            [strongSelf configureViewsForStoryStatus:story.storyStatus];
+            [strongSelf configureViewsForStory:story];
             
             // ✅ 故事内容加载完成后，统一刷新布局高度
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -1357,10 +1357,18 @@
         titleStyle.alignment = NSTextAlignmentCenter;
         NSAttributedString *centeredTitle = [[NSAttributedString alloc] initWithString:LocalString(@"提示")
                                                                             attributes:@{NSParagraphStyleAttributeName: titleStyle}];
+        BOOL isRTL = [ATLanguageHelper isRTLLanguage];
+        NSMutableParagraphStyle *messageStyle = [[NSMutableParagraphStyle alloc] init];
+        messageStyle.alignment = isRTL ? NSTextAlignmentRight : NSTextAlignmentCenter;
+        messageStyle.baseWritingDirection = isRTL ? NSWritingDirectionRightToLeft : NSWritingDirectionLeftToRight;
+        NSString *message = errorMessage ?: LocalString(@"网络请求失败，请稍后重试");
+        NSAttributedString *alignedMessage = [[NSAttributedString alloc] initWithString:message
+                                                                             attributes:@{NSParagraphStyleAttributeName: messageStyle}];
         UIAlertController *alert = [UIAlertController alertControllerWithTitle:LocalString(@"提示")
-                                                                       message:errorMessage ?: LocalString(@"网络请求失败，请稍后重试")
+                                                                       message:message
                                                                 preferredStyle:UIAlertControllerStyleAlert];
         [alert setValue:centeredTitle forKey:@"attributedTitle"];
+        [alert setValue:alignedMessage forKey:@"attributedMessage"];
         
         [alert addAction:[UIAlertAction actionWithTitle:LocalString(@"确定")
                                                   style:UIAlertActionStyleDefault
@@ -2282,6 +2290,12 @@
 /// ✅ 根据故事状态配置视图显示
 /// @param storyStatus 故事状态
 - (void)configureViewsForStoryStatus:(StoryStatus)storyStatus {
+    [self configureViewsForStory:self.currentStory];
+}
+
+/// ✅ 根据故事详情接口返回的模型配置视图显示
+- (void)configureViewsForStory:(VoiceStoryModel *)story {
+    StoryStatus storyStatus = story.storyStatus;
     NSLog(@"🎯 配置视图状态，故事状态: %ld (%@)", (long)storyStatus, [self storyStatusDescription:storyStatus]);
     
     
@@ -2301,6 +2315,7 @@
             
         case StoryStatusAudioFailed: // 状态为6，音频生成失败
             NSLog(@"❌ 故事音频生成失败，显示错误视图");
+            self.cloneFailedLabel.text = [self failedBannerTextForStory:story];
             [self showFailedView];
         
             break;
@@ -2312,6 +2327,13 @@
            
             break;
     }
+}
+
+- (NSString *)failedBannerTextForStory:(VoiceStoryModel *)story {
+    if (story.statusDesc.length > 0) {
+        return story.statusDesc;
+    }
+    return [self storyStatusDescription:story.storyStatus];
 }
 
 /// ✅ 获取故事状态描述

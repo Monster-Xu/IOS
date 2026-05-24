@@ -12,7 +12,7 @@
 "登录中..." = "Connexion en cours...";
 "请输入正确的邮箱地址" = "Veuillez saisir une adresse e-mail valide";
 "请输入名称" = "Veuillez saisir votre nom";
-"账号" = "e-mail";
+"账号" = "E-mail";
 "输入验证码" = "Entrez le code de vérification";
 "收不到验证码?" = "Vous n'avez pas reçu le code ?";
 "收不到验证码" = "Code non reçu";
@@ -150,7 +150,7 @@
 "用户Code" = "Code utilisateur";
 "注销账号" = "Supprimer le compte";
 "您的邮箱" = "Votre e-mail";
-"更换邮箱" = "Saisir une nouvelle adresse e-mail";
+"更换邮箱" = "Entrer un nouvel e-mail";
 "账号验证" = "Vérification du compte";
 "点击获取验证码，验证码将会发送到你的邮箱：" = "Cliquez sur 'Obtenir le code' pour envoyer le code de vérification à l'e-mail :";
 "请输入账号" = "Veuillez saisir le compte";
