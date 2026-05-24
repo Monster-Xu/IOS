@@ -105,6 +105,7 @@
 @property (nonatomic, strong) NSArray<NSString *> *storyLengths;
 @property (nonatomic, copy) NSString *storyTypesLanguageCode;
 @property (nonatomic, copy) NSString *storyLengthsLanguageCode;
+@property (nonatomic, copy) NSString *detailStatusDesc;
 
 // 故事类型的code映射（用于与服务器数据匹配）
 @property (nonatomic, strong) NSArray<NSNumber *> *storyTypeCodes;
@@ -490,6 +491,7 @@
         NSLog(@"✅ 获取故事详情成功: %@", story.storyName);
         // 更新当前的故事模型为最新数据
         self.storyModel = story;
+        self.detailStatusDesc = story.statusDesc;
         dispatch_group_leave(group);
         
     } failure:^(NSError *error) {
@@ -564,7 +566,6 @@
                                 }
                             }
                         }
-                        
                         if (desc && desc.length > 0 && seconds) {
                             [lengths addObject:desc];
                             [lengthSeconds addObject:seconds];
@@ -750,6 +751,8 @@
     self.failureMessageLabel.text = LocalString(@"生成失败，请重试");
     self.failureMessageLabel.font = [UIFont systemFontOfSize:14];
     self.failureMessageLabel.textColor = [UIColor systemRedColor];
+    self.failureMessageLabel.numberOfLines = 0;
+    self.failureMessageLabel.textAlignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
     [self.failureBannerView addSubview:self.failureMessageLabel];
     
     [self.failureMessageLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -1989,7 +1992,7 @@
     
     // 检查故事状态，如果是生成失败，显示失败横幅
     if (storyModel.storyStatus == StoryStatusGenerateFailed || storyModel.storyStatus == StoryStatusAudioFailed) {
-        [self showFailureBanner];
+        [self showFailureBannerWithStoryModel:storyModel];
     } else {
         [self hideFailureBanner];
     }
@@ -2069,7 +2072,8 @@
 #pragma mark - Failure Banner Methods
 
 /// 显示失败横幅
-- (void)showFailureBanner {
+- (void)showFailureBannerWithStoryModel:(VoiceStoryModel *)storyModel {
+    self.failureMessageLabel.text = [self failureBannerTextForStoryModel:storyModel];
     self.failureBannerView.hidden = NO;
     
     // 调整 ScrollView 的 top 约束，为横幅留出空间
@@ -2080,6 +2084,23 @@
     }];
     
     NSLog(@"⚠️ 显示失败横幅");
+}
+
+- (NSString *)failureBannerTextForStoryModel:(VoiceStoryModel *)storyModel {
+    if (self.detailStatusDesc.length > 0) {
+        return self.detailStatusDesc;
+    }
+    if (storyModel.statusDesc.length > 0) {
+        return storyModel.statusDesc;
+    }
+    switch (storyModel.storyStatus) {
+        case StoryStatusGenerateFailed:
+            return LocalString(@"故事生成失败");
+        case StoryStatusAudioFailed:
+            return LocalString(@"音频生成失败");
+        default:
+            return LocalString(@"生成失败，请重试");
+    }
 }
 
 /// 隐藏失败横幅
