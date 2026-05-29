@@ -759,9 +759,8 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         [self updateExploreDollUI];
     }
     
-    // 缓存命中时只刷新前两段，避免整表重载引发卡顿
+    // 缓存命中时只刷新设备段。我的公仔内嵌横向列表，返回页面时重载会重置横向位置。
     [self reloadSectionSafely:0];
-    [self reloadSectionSafely:1];
     
     NSLog(@"✅ UI已使用缓存数据立即刷新");
 }
@@ -1254,6 +1253,21 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
         NSString *oldId = oldModel.Id ?: @"";
         NSString *newId = newModel.Id ?: @"";
         if (![oldId isEqualToString:newId]) {
+            return NO;
+        }
+        if (oldModel.totalStoryNum != newModel.totalStoryNum ||
+            oldModel.totalStoryDuration != newModel.totalStoryDuration) {
+            return NO;
+        }
+        NSString *oldName = oldModel.dollModel.name ?: @"";
+        NSString *newName = newModel.dollModel.name ?: @"";
+        NSString *oldCover = oldModel.dollModel.coverImg ?: @"";
+        NSString *newCover = newModel.dollModel.coverImg ?: @"";
+        NSString *oldBackground = oldModel.dollModel.backgroundImg ?: @"";
+        NSString *newBackground = newModel.dollModel.backgroundImg ?: @"";
+        if (![oldName isEqualToString:newName] ||
+            ![oldCover isEqualToString:newCover] ||
+            ![oldBackground isEqualToString:newBackground]) {
             return NO;
         }
     }
@@ -2108,7 +2122,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
                 [weakSelf reloadHomeListData];
             } failure:^(NSError *error) {
                 [weakSelf hiddenHud];
-                [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
             }];
         }else{
             [home joinFamilyWithAccept:NO success:^(BOOL result) {

@@ -119,7 +119,9 @@
         
     } failure:^(NSError *error) {
         [SVProgressHUD dismiss];
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription ?: LocalString(@"加载失败")];
+        [SVProgressHUD showErrorWithStatus:[APIManager preferredMessageWithServerMessage:nil
+                                                                            fallbackError:error
+                                                                          fallbackMessage:@"加载失败"]];
     }];
 }
 

@@ -58,7 +58,7 @@
     } failure:^(NSError *error) {
       // 指令下发失败
         NSLog(@"指令下发失败");
-        [SVProgressHUD showErrorWithStatus:error.description];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
         self.status = AddStatusType_default;
         [self.tableView reloadData];
     }];
@@ -239,7 +239,7 @@
 - (void)bleWifiActivator:(ThingSmartBLEWifiActivator *)activator notConfigStateWithError:(NSError *)error {
   // 设备不在配网状态
     NSLog(@"！！！！设备不在配网状态");
-//    [SVProgressHUD showErrorWithStatus:error.description];
+//    [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     self.status = AddStatusType_fail;
     [self.tableView reloadData];
 }
@@ -294,7 +294,7 @@
             //设备连不上路由器
             [SVProgressHUD showErrorWithStatus:LocalString(@"网络信号连接不佳，请将设备和手机尽量靠近路由器。")];
         }else{
-            [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+            [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
         }
 
         self.status = AddStatusType_fail;

@@ -157,7 +157,7 @@
                 [weakSelf.navigationController popViewControllerAnimated:YES];
             } failure:^(NSError *error) {
                 [weakSelf hiddenHud];
-                [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
             }];
         }
     }];
@@ -177,7 +177,7 @@
     //                    weakSelf.memberModel.name = inputText;
     //                    [weakSelf.tableView reloadData];
     //                } failure:^(NSError *error) {
-    //                    [SVProgressHUD showErrorWithStatus:error.description];
+    //                    [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     //                    NSLog(@"updateNickname failure: %@", error);
     //                }];
     //            }
@@ -198,7 +198,7 @@
                     [weakSelf.tableView reloadSection:0 withRowAnimation:UITableViewRowAnimationNone];
                     } failure:^(NSError *error) {
                         [self hiddenHud];
-                        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
                     }];
             }else{
                 ThingSmartHomeInvitationInfoRequestModel *requestModel = [[ThingSmartHomeInvitationInfoRequestModel alloc] init];
@@ -212,7 +212,7 @@
                     [weakSelf.tableView reloadSection:0 withRowAnimation:UITableViewRowAnimationNone];
                 } failure:^(NSError *error) {
                     [weakSelf hiddenHud];
-                    [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                    [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
                 }];
             }
         } else {
@@ -231,7 +231,7 @@
             [weakSelf createInvitCode];
         }
     } failure:^(NSError *error) {
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
     //埋点：点击重新邀请家庭成员
     [[AnalyticsManager sharedManager]reportEventWithName:@"tap_resend_home_member" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击重新邀请家庭成员时" properties:@{@"familymembername":self.inviteModel.name,@"familymemberid":@"0"} completion:^(BOOL success, NSString * _Nullable message) {
@@ -255,7 +255,7 @@
             }
         }];
     } failure:^(NSError *error) {
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
 }
 
@@ -280,7 +280,7 @@
                     
                 }
             } failure:^(NSError *error) {
-                [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
             }];
         }
     }];
