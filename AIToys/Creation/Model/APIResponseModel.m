@@ -8,6 +8,7 @@
 #import "APIResponseModel.h"
 #import "VoiceStoryModel.h"
 #import "VoiceModel.h"
+#import "APIManager.h"
 
 @implementation APIResponseModel
 
@@ -18,6 +19,9 @@
 - (NSString *)errorMessage {
     if (self.isSuccess) {
         return nil;
+    }
+    if (self.message.length > 0) {
+        return self.message;
     }
     
     switch (self.code) {
@@ -48,7 +52,7 @@
         case 10013:
             return LocalString(@"声音克隆中，请稍后");
         default:
-            return self.message ?: LocalString(@"请求失败");
+            return LocalString(@"请求失败");
     }
 }
 

@@ -40,6 +40,9 @@ typedef void(^failBlock)(NSString *msg);
 // 统一错误文案映射，避免英文错误直接透传到界面
 + (NSString *)localizedMessageForError:(NSError * _Nullable)error;
 + (NSString *)localizedMessageForString:(NSString * _Nullable)message;
++ (NSString *)preferredMessageWithServerMessage:(NSString * _Nullable)serverMessage
+                                  fallbackError:(NSError * _Nullable)error
+                                fallbackMessage:(NSString * _Nullable)fallbackMessage;
 
 
 #pragma mark -- 上传图片

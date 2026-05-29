@@ -44,7 +44,7 @@
         [self.tableView reloadData];
     } failure:^(NSError *error) {
         [self hiddenHud];
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
     
 }
@@ -132,7 +132,7 @@
                         [weakSelf loadDataRefreshOrPull:1];
                     } failure:^(NSError *error) {
                         [weakSelf hiddenHud];
-                        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
                     }];
                 }else{
                     [home joinFamilyWithAccept:NO success:^(BOOL result) {

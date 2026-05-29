@@ -33,9 +33,9 @@
 #define KCURRENT_HOME_ID @"KCURRENT_HOME_ID"
 #endif
 
-static NSString * const successMsg = @"Operation successful";
-static NSString * const failureMsg = @"Data anomaly";
-static NSString * const netErrorMsg = @"Network abnormality";
+static NSString * const successMsg = @"操作成功";
+static NSString * const failureMsg = @"数据异常";
+static NSString * const netErrorMsg = @"网络请求失败，请稍后重试";
 
 // 常量定义
 static NSTimeInterval const kDefaultTimeoutInterval = 30.0;
@@ -92,6 +92,22 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     return trimmedMessage;
 }
 
++ (NSString *)preferredMessageWithServerMessage:(NSString *)serverMessage
+                                  fallbackError:(NSError *)error
+                                fallbackMessage:(NSString *)fallbackMessage {
+    NSString *trimmedServerMessage = [serverMessage stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (trimmedServerMessage.length > 0) {
+        return trimmedServerMessage;
+    }
+    if (error) {
+        return [self localizedMessageForError:error];
+    }
+    if (fallbackMessage.length > 0) {
+        return LocalString(fallbackMessage);
+    }
+    return LocalString(@"请求失败");
+}
+
 #pragma mark -- 上传图片
 - (void)uploadImg:(UIImage *)img
              isH5:(BOOL)isH5
@@ -99,7 +115,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
              fail:(failBlock)fail {
     
     if (!img) {
-        if (fail) fail(@"图片不能为空");
+        if (fail) fail(LocalString(@"图片不能为空"));
         return;
     }
     
@@ -114,7 +130,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
             
             if (originalData.length > kMaxImageSizeInBytes) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    if (fail) fail(@"图片文件不能大于8MB");
+                    if (fail) fail(LocalString(@"图片文件不能大于8MB"));
                 });
                 return;
             }
@@ -123,7 +139,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
             UIImage *compressedImage = [CompressImageData compressImgQuality:img toByte:kCompressedImageSizeInBytes];
             if (!compressedImage) {
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    if (fail) fail(@"图片压缩失败");
+                    if (fail) fail(LocalString(@"图片压缩失败"));
                 });
                 return;
             }
@@ -139,7 +155,9 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
                                [self handleUploadImageResult:result isH5:isH5 success:succ failure:fail];
                            } 
                            failure:^(NSError *error) {
-                               if (fail) fail(@"上传失败，请检查网络后重试");
+                               if (fail) fail([APIManager preferredMessageWithServerMessage:nil
+                                                                              fallbackError:error
+                                                                            fallbackMessage:@"上传失败，请检查网络后重试"]);
                            }];
             });
         }
@@ -166,7 +184,9 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
             }
         } else {
             if (failure) {
-                NSString *msg = result[@"msg"] ?: @"上传失败";
+                NSString *msg = [APIManager preferredMessageWithServerMessage:result[@"msg"]
+                                                                fallbackError:nil
+                                                              fallbackMessage:@"上传失败"];
                 failure(msg);
             }
         }
@@ -278,10 +298,11 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     
     // 检查网络状态
     if (self.netStatus == NetStatus_NoNet) {
+        NSString *message = LocalString(netErrorMsg);
         if (failure) {
-            failure(nil, netErrorMsg);
+            failure(nil, message);
         }
-        [SVProgressHUD showErrorWithStatus:netErrorMsg];
+        [SVProgressHUD showErrorWithStatus:message];
         return;
     }
     
@@ -332,7 +353,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     
     if (![responseObject isKindOfClass:[NSDictionary class]]) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (failure) failure(nil, @"返回数据格式错误");
+            if (failure) failure(nil, LocalString(@"返回数据格式错误"));
         });
         return;
     }
@@ -349,8 +370,11 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         });
     } fail:^(int code, NSString *msg) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            if (failure) failure(nil, msg);
-            [SVProgressHUD showErrorWithStatus:msg];
+            NSString *message = [APIManager preferredMessageWithServerMessage:msg
+                                                                fallbackError:nil
+                                                              fallbackMessage:@"请求失败"];
+            if (failure) failure(nil, message);
+            [SVProgressHUD showErrorWithStatus:message];
         });
     }];
 }
@@ -542,8 +566,8 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     if (!urlStr || urlStr.length == 0) {
         if (completionHandler) {
             NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain" 
-                                               code:-1 
-                                           userInfo:@{NSLocalizedDescriptionKey: @"URL不能为空"}];
+                                               code:-1
+                                           userInfo:@{NSLocalizedDescriptionKey: LocalString(@"URL不能为空")}];
             completionHandler(nil, nil, error);
         }
         return nil;
@@ -580,8 +604,8 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         NSLog(@"创建请求失败: %@", exception);
         if (completionHandler) {
             NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain" 
-                                               code:-2 
-                                           userInfo:@{NSLocalizedDescriptionKey: @"创建请求失败"}];
+                                               code:-2
+                                           userInfo:@{NSLocalizedDescriptionKey: LocalString(@"创建请求失败")}];
             completionHandler(nil, nil, error);
         }
         return nil;
@@ -705,7 +729,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain" 
                                                code:-1 
-                                           userInfo:@{NSLocalizedDescriptionKey: @"上传参数不能为空"}];
+                                           userInfo:@{NSLocalizedDescriptionKey: LocalString(@"上传参数不能为空")}];
             failure(error);
         }
         return;
@@ -769,7 +793,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain" 
                                                code:-1 
-                                           userInfo:@{NSLocalizedDescriptionKey: @"参数错误"}];
+                                           userInfo:@{NSLocalizedDescriptionKey: LocalString(@"参数错误")}];
             failure(error);
         }
         return;
@@ -883,17 +907,19 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         if (success) {
             if ([msg isKindOfClass:NSString.class]){
                 if (msg.length == 0) {
-                    msg = successMsg;
+                    msg = LocalString(successMsg);
                 }
             }
-            success(result[@"data"], successMsg);
+            success(result[@"data"], msg ?: LocalString(successMsg));
         }
     }else {
         if (failure) {
             if ([msg isKindOfClass:NSString.class]) {
                 if (msg.length == 0) {
-                    msg = failureMsg;
+                    msg = LocalString(failureMsg);
                 }
+            } else {
+                msg = LocalString(failureMsg);
             }
             if (code == 401) {
                 msg = LocalString(@"登录信息已过期,请重新登录");
@@ -1031,7 +1057,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain"
                                                  code:-1
-                                             userInfo:@{NSLocalizedDescriptionKey: @"URL不能为空"}];
+                                             userInfo:@{NSLocalizedDescriptionKey: LocalString(@"URL不能为空")}];
             failure(error);
         }
         return;
@@ -1041,7 +1067,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain"
                                                  code:-2
-                                             userInfo:@{NSLocalizedDescriptionKey: @"文件数据不能为空"}];
+                                             userInfo:@{NSLocalizedDescriptionKey: LocalString(@"文件数据不能为空")}];
             failure(error);
         }
         return;
@@ -1062,13 +1088,14 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     
     // 检查网络状态
     if (self.netStatus == NetStatus_NoNet) {
+        NSString *message = LocalString(netErrorMsg);
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain"
                                                  code:-3
-                                             userInfo:@{NSLocalizedDescriptionKey: netErrorMsg}];
+                                             userInfo:@{NSLocalizedDescriptionKey: message}];
             failure(error);
         }
-        [SVProgressHUD showErrorWithStatus:netErrorMsg];
+        [SVProgressHUD showErrorWithStatus:message];
         return;
     }
     
@@ -1078,7 +1105,7 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"APIManagerErrorDomain"
                                                  code:-4
-                                             userInfo:@{NSLocalizedDescriptionKey: @"文件大小不能超过20MB"}];
+                                             userInfo:@{NSLocalizedDescriptionKey: LocalString(@"文件大小不能超过20MB")}];
             failure(error);
         }
         return;
@@ -1197,13 +1224,13 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     if ([error.domain isEqualToString:NSURLErrorDomain]) {
         switch (error.code) {
             case NSURLErrorTimedOut:
-                return @"上传超时";
+                return LocalString(@"上传超时");
             case NSURLErrorNotConnectedToInternet:
-                return @"网络连接失败";
+                return LocalString(@"网络请求失败，请稍后重试");
             case NSURLErrorCannotConnectToHost:
-                return @"无法连接服务器";
+                return LocalString(@"服务器繁忙，请稍后重试");
             case NSURLErrorCancelled:
-                return @"上传已取消";
+                return LocalString(@"上传已取消");
             default:
                 break;
         }
@@ -1213,15 +1240,15 @@ static NSInteger const kCompressedImageSizeInBytes = 1024 * 1024; // 1MB
     if ([error.userInfo[AFNetworkingOperationFailingURLResponseErrorKey] isKindOfClass:[NSHTTPURLResponse class]]) {
         NSHTTPURLResponse *response = error.userInfo[AFNetworkingOperationFailingURLResponseErrorKey];
         if (response.statusCode == 413) {
-            return @"文件太大，服务器拒绝接收";
+            return LocalString(@"文件太大，服务器拒绝接收");
         } else if (response.statusCode == 415) {
-            return @"不支持的文件类型";
+            return LocalString(@"不支持的文件类型");
         } else if (response.statusCode >= 500) {
-            return @"服务器错误，请稍后重试";
+            return LocalString(@"服务器繁忙，请稍后重试");
         }
     }
     
-    return @"上传失败，请重试";
+    return [APIManager localizedMessageForError:error];
 }
 
 // 根据文件扩展名获取MIME类型（类方法）

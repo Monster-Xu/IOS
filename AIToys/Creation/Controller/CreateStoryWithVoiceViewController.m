@@ -1637,35 +1637,21 @@
 
 /// 显示删除确认对话框
 - (void)showDeleteConfirmation {
-    NSString *alertTitle = LocalString(@"删除故事");
+    NSString *alertTitle = LocalString(@"确认删除");
     NSString *alertMessage = LocalString(@"确定要删除故事吗？");
-    
-    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:alertTitle
-                                                                             message:alertMessage
-                                                                      preferredStyle:UIAlertControllerStyleAlert];
-    
-    // ✅ 取消按钮
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:LocalString(@"取消")
-                                                            style:UIAlertActionStyleCancel
-                                                          handler:^(UIAlertAction * _Nonnull action) {
-//        NSLog(@"📝 User cancelled story deletion: %@", storyName);
+
+    __weak typeof(self) weakSelf = self;
+    [LGBaseAlertView showAlertWithTitle:alertTitle
+                                content:alertMessage
+                           cancelBtnStr:LocalString(@"取消")
+                          confirmBtnStr:LocalString(@"确定")
+                           confirmBlock:^(BOOL is_value, id obj) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf || !is_value) {
+            return;
+        }
+        [strongSelf performDeleteStory];
     }];
-    
-    // ✅ 确认按钮（使用危险样式）
-    UIAlertAction *deleteAction = [UIAlertAction actionWithTitle:LocalString(@"确定")
-                                                            style:UIAlertActionStyleDestructive
-                                                          handler:^(UIAlertAction * _Nonnull action) {
-//        NSLog(@"🗑️ User confirmed story deletion: %@, starting deletion", storyName);
-        [self performDeleteStory];
-    }];
-    
-    [alertController addAction:cancelAction];
-    [alertController addAction:deleteAction];
-    
-    // ✅ 显示对话框
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self presentViewController:alertController animated:YES completion:nil];
-    });
 }
 
 /// 执行删除故事操作

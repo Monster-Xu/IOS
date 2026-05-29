@@ -137,7 +137,9 @@
                 }
                 [weakSelf dismiss:0];
             } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
-                [SVProgressHUD showErrorWithStatus:msg];
+                [SVProgressHUD showErrorWithStatus:[APIManager preferredMessageWithServerMessage:msg
+                                                                                    fallbackError:error
+                                                                                  fallbackMessage:@"请求失败"]];
                 [weakSelf dismiss:0];
             }];
         }else{
