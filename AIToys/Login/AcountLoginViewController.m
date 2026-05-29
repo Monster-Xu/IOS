@@ -94,14 +94,15 @@
 
 
 - (NSAttributedString *)agreementAttributedText {
-    NSString *fullText = LocalString(@"同意隐私政策、用户协议、创作协议") ?: @"";
+    NSString *fullText = [self normalizedAgreementDisplayText:[ATLanguageHelper localizedStringForKey:@"同意隐私政策、用户协议、创作协议"] ?: @""];
     NSArray<NSDictionary<NSString *, id> *> *linkedItems = @[
-        @{@"texts": @[LocalString(@"Talenpal隐私政策") ?: @"", LocalString(@"隐私政策") ?: @""], @"link": @"privacyPolicy://"},
-        @{@"texts": @[LocalString(@"Talenpal用户协议") ?: @"", LocalString(@"用户协议") ?: @""], @"link": @"userProtocol://"},
-        @{@"texts": @[LocalString(@"创作协议") ?: @""], @"link": @"creativeAgreement://"}
+        @{@"texts": @[[ATLanguageHelper localizedStringForKey:@"Talenpal隐私政策"] ?: @"", [ATLanguageHelper localizedStringForKey:@"隐私政策"] ?: @""], @"link": @"privacyPolicy://"},
+        @{@"texts": @[[ATLanguageHelper localizedStringForKey:@"Talenpal用户协议"] ?: @"", [ATLanguageHelper localizedStringForKey:@"用户协议"] ?: @""], @"link": @"userProtocol://"},
+        @{@"texts": @[[ATLanguageHelper localizedStringForKey:@"创作协议"] ?: @""], @"link": @"creativeAgreement://"}
     ];
 
     NSMutableAttributedString *attrStr = [[NSMutableAttributedString alloc] initWithString:fullText];
+    [attrStr addAttribute:NSFontAttributeName value:[ATFontManager systemFontOfSize:12] range:NSMakeRange(0, fullText.length)];
     [attrStr addAttribute:NSForegroundColorAttributeName value:UIColorFromRGBA(000000, 0.5) range:NSMakeRange(0, fullText.length)];
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.alignment = [ATLanguageHelper isRTLLanguage] ? NSTextAlignmentRight : NSTextAlignmentLeft;
@@ -126,6 +127,16 @@
         [attrStr addAttribute:NSLinkAttributeName value:item[@"link"] ?: @"" range:range];
     }
     return attrStr;
+}
+
+- (NSString *)normalizedAgreementDisplayText:(NSString *)text {
+    if (text.length == 0) {
+        return text;
+    }
+    NSString *normalizedText = [text stringByReplacingOccurrencesOfString:@"、" withString:@", "];
+    normalizedText = [normalizedText stringByReplacingOccurrencesOfString:@"，" withString:@", "];
+    normalizedText = [normalizedText stringByReplacingOccurrencesOfString:@",  " withString:@", "];
+    return normalizedText;
 }
 
 //设置右侧按钮

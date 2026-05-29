@@ -163,7 +163,7 @@
                     }];
                 
                 } failure:^(NSError *error) {
-                    [SVProgressHUD showErrorWithStatus:error.description];
+                    [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
                     NSLog(@"updateNickname failure: %@", error);
                 }];
         } else {

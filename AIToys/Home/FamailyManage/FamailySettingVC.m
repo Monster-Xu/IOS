@@ -74,7 +74,7 @@
             dispatch_group_leave(group);
         } failure:^(NSError *error) {
             dispatch_group_leave(group);
-            [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+            [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
         }];
     });
     
@@ -90,7 +90,7 @@
             dispatch_group_leave(group);
         } failure:^(NSError *error) {
             dispatch_group_leave(group);
-            [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+            [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
         }];
     });
     
@@ -178,7 +178,7 @@
                                 
                         }];
             } failure:^(NSError *error) {
-                [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
             }];
         } else {
             if(is_value){
@@ -222,7 +222,7 @@
                         }];
             } failure:^(NSError *error) {
                 [weakSelf hiddenHud];
-                [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+                [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
             }];
         }
     }];
@@ -270,7 +270,7 @@
                 }];
     } failure:^(NSError *error) {
         btn.userInteractionEnabled = YES;
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
 }
 #pragma mark -- UITableViewDataSource

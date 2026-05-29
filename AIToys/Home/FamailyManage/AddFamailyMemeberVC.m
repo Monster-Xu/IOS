@@ -122,7 +122,7 @@
 
     } failure:^(NSError *error) {
         [weakSelf hiddenHud];
-        [SVProgressHUD showErrorWithStatus:error.localizedDescription];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
     }];
 }
 

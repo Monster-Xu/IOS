@@ -520,7 +520,7 @@
       // 指令下发失败
         [self configureThingDelegatesActive:NO];
         NSLog(@"指令下发失败");
-        [SVProgressHUD showErrorWithStatus:error.description];
+        [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
 //        self.status = AddStatusType_default;
         [self.tableView reloadData];
     }];
@@ -533,7 +533,7 @@
   // 设备不在配网状态
     [self configureThingDelegatesActive:NO];
     NSLog(@"！！！！设备不在配网状态");
-    [SVProgressHUD showErrorWithStatus:error.description];
+    [SVProgressHUD showErrorWithStatus:[APIManager localizedMessageForError:error]];
 //    self.status = AddStatusType_fail;
 //    [self.tableView reloadData];
 }

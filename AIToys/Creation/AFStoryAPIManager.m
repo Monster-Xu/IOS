@@ -49,7 +49,7 @@
         response.requestId = dict[@"requestId"] ?: @"";
     } else {
         response.code = -1;
-        response.message = @"响应格式错误";
+        response.message = LocalString(@"响应格式错误");
     }
     
     return response;
@@ -525,7 +525,7 @@
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"AudioUploadError"
                                                  code:-1
-                                             userInfo:@{NSLocalizedDescriptionKey: @"音频数据为空"}];
+                                             userInfo:@{NSLocalizedDescriptionKey: LocalString(@"音频数据为空")}];
             failure(error);
         }
         return;
@@ -537,7 +537,7 @@
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"AudioUploadError"
                                                  code:-2
-                                             userInfo:@{NSLocalizedDescriptionKey: @"音频文件大小不能超过50MB"}];
+                                             userInfo:@{NSLocalizedDescriptionKey: LocalString(@"音频文件大小不能超过50MB")}];
             failure(error);
         }
         return;
@@ -628,9 +628,16 @@
                     success(dataDic);  // ⭐ 返回完整的data字典
                 }
             } else {
+                NSString *serverMessage = nil;
+                if ([responseObject isKindOfClass:[NSDictionary class]]) {
+                    NSDictionary *response = (NSDictionary *)responseObject;
+                    serverMessage = response[@"msg"] ?: response[@"message"];
+                }
                 NSError *error = [NSError errorWithDomain:@"AudioUploadError"
                                                      code:-3
-                                                 userInfo:@{NSLocalizedDescriptionKey: @"无法解析上传结果"}];
+                                                 userInfo:@{NSLocalizedDescriptionKey: [APIManager preferredMessageWithServerMessage:serverMessage
+                                                                                                                       fallbackError:nil
+                                                                                                                     fallbackMessage:@"无法解析上传结果"]}];
                 if (failure) {
                     failure(error);
                 }
@@ -642,9 +649,20 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             if (failure) {
+                NSString *serverMessage = nil;
+                NSData *responseData = error.userInfo[AFNetworkingOperationFailingURLResponseDataErrorKey];
+                if ([responseData isKindOfClass:[NSData class]]) {
+                    NSDictionary *response = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:nil];
+                    if ([response isKindOfClass:[NSDictionary class]]) {
+                        serverMessage = response[@"msg"] ?: response[@"message"];
+                    }
+                }
+                NSString *message = [APIManager preferredMessageWithServerMessage:serverMessage
+                                                                    fallbackError:error
+                                                                  fallbackMessage:@"上传失败"];
                 NSError *uploadError = [NSError errorWithDomain:@"AudioUploadError"
                                                             code:error.code
-                                                        userInfo:@{NSLocalizedDescriptionKey: error.localizedDescription ?: @"上传失败"}];
+                                                        userInfo:@{NSLocalizedDescriptionKey: message}];
                 failure(uploadError);
             }
         });
@@ -662,7 +680,7 @@
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"AudioUploadError"
                                                  code:-1
-                                             userInfo:@{NSLocalizedDescriptionKey: @"文件路径为空"}];
+                                             userInfo:@{NSLocalizedDescriptionKey: LocalString(@"文件路径为空")}];
             failure(error);
         }
         return;
@@ -674,7 +692,7 @@
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"AudioUploadError"
                                                  code:-2
-                                             userInfo:@{NSLocalizedDescriptionKey: @"文件不存在"}];
+                                             userInfo:@{NSLocalizedDescriptionKey: LocalString(@"文件不存在")}];
             failure(error);
         }
         return;
@@ -690,7 +708,7 @@
         if (failure) {
             NSError *error = [NSError errorWithDomain:@"AudioUploadError"
                                                  code:-3
-                                             userInfo:@{NSLocalizedDescriptionKey: @"无法读取文件"}];
+                                             userInfo:@{NSLocalizedDescriptionKey: LocalString(@"无法读取文件")}];
             failure(error);
         }
         return;
