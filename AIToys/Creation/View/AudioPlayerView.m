@@ -995,6 +995,13 @@ static NSMutableSet<AudioPlayerView *> *_activePlayerInstances = nil;
 }
 
 - (void)stop {
+    self.isCancelledByUser = YES;
+    if (self.downloadTask) {
+        [self.downloadTask cancel];
+        self.downloadTask = nil;
+        NSLog(@"⏹️ 已取消音频下载任务");
+    }
+
     if (self.audioPlayer) {
         [self.audioPlayer stop];
         self.audioPlayer.currentTime = 0;
