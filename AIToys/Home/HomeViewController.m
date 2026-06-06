@@ -97,6 +97,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 @property (nonatomic, copy) NSString *currentAudioURL;
 @property (nonatomic, copy) NSString *currentStoryTitle;
 @property (nonatomic, copy) NSString *currentCoverImageURL;
+@property (nonatomic, assign) NSUInteger audioPlaybackRequestToken;
 @property (nonatomic, copy) NSArray<NSString *> *cachedBannerMediaURLs;
 
 @end
@@ -370,19 +371,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     self.currentHome = nil;
     
     // 清理音频播放器
-    if (self.currentAudioPlayer) {
-        [self.currentAudioPlayer stop];
-        [self.currentAudioPlayer removeFromSuperview];
-        self.currentAudioPlayer = nil;
-    }
-    
-    // 清理持久化播放信息
-    self.currentAudioURL = nil;
-    self.currentStoryTitle = nil;
-    self.currentCoverImageURL = nil;
-    
-    // 清理系统媒体控制中心
-    [self clearNowPlayingInfo];
+    [self stopCurrentHomeAudioPlaybackAndClearState:YES];
 }
 
 - (void)viewDidLoad {
@@ -2197,19 +2186,24 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     [self reloadDeviceData:YES];
 }
 -(void)auditionClick:(NSNotification *)notification{
-    
+
+    self.audioPlaybackRequestToken += 1;
+    NSUInteger requestToken = self.audioPlaybackRequestToken;
     self.view.userInteractionEnabled = NO;
-    [self.currentAudioPlayer stop];
-    [self getDollDetailListWithId:notification.userInfo[@"DollId"]];
+    [self stopCurrentHomeAudioPlaybackAndClearState:YES];
+    [self getDollDetailListWithId:notification.userInfo[@"DollId"] requestToken:requestToken];
 }
--(void)getDollDetailListWithId:(NSString * )Id{
+-(void)getDollDetailListWithId:(NSString * )Id requestToken:(NSUInteger)requestToken{
     [SVProgressHUD showWithStatus:LocalString(@"音频加载中...")];
     WEAK_SELF
     NSMutableDictionary *param = [NSMutableDictionary dictionary];
     [param setObject:Id forKey:@"dollModelId"];
     [[APIManager shared] GET:[APIPortConfiguration getdollListUrl] parameter:param success:^(id  _Nonnull result, id  _Nonnull data, NSString * _Nonnull msg) {
+        if (requestToken != weakSelf.audioPlaybackRequestToken) {
+            return;
+        }
         [SVProgressHUD dismiss];
-        self.view.userInteractionEnabled = YES;
+        weakSelf.view.userInteractionEnabled = YES;
         // 添加安全检查
         if ([data isKindOfClass:NSArray.class] && ((NSArray *)data).count > 0) {
             NSDictionary * dataDic = data[0];
@@ -2227,9 +2221,12 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
             [SVProgressHUD showErrorWithStatus:LocalString(@"音频数据为空")];
         }
     } failure:^(NSError * _Nonnull error, NSString * _Nonnull msg) {
+        if (requestToken != weakSelf.audioPlaybackRequestToken) {
+            return;
+        }
         [SVProgressHUD dismiss];
         NSLog(@"❌ 获取音频详情失败: %@", msg);
-        self.view.userInteractionEnabled = YES;
+        weakSelf.view.userInteractionEnabled = YES;
         [SVProgressHUD showErrorWithStatus:LocalString(@"音频加载失败")];
     }];
 }
@@ -2438,6 +2435,24 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 }
 
 
+- (void)stopCurrentHomeAudioPlaybackAndClearState:(BOOL)clearState {
+    if (self.currentAudioPlayer) {
+        [self.currentAudioPlayer stop];
+        [self.currentAudioPlayer removeFromSuperview];
+        self.currentAudioPlayer = nil;
+        NSLog(@"🛑 已停止之前的音频播放器");
+    }
+
+    self.isAudioSessionActive = NO;
+
+    if (clearState) {
+        self.currentAudioURL = nil;
+        self.currentStoryTitle = nil;
+        self.currentCoverImageURL = nil;
+        [self clearNowPlayingInfo];
+    }
+}
+
 // 播放新的音频
 - (void)playNewAudioForAudioURL:(NSString *)Url storyTitle:(NSString *)title coverImageURL:(NSString *)coverImageURL{
     NSLog(@"🎵 尝试播放音频 - 故事: %@, audioUrl: %@", title, Url);
@@ -2449,12 +2464,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
     }
     
     // 停止并清理当前播放器 - 重要：防止重复播放
-    if (self.currentAudioPlayer) {
-        [self.currentAudioPlayer stop];
-        [self.currentAudioPlayer removeFromSuperview];
-        self.currentAudioPlayer = nil;
-        NSLog(@"🛑 已停止之前的音频播放器");
-    }
+    [self stopCurrentHomeAudioPlaybackAndClearState:NO];
     
     // 保存播放信息，用于应用恢复时重建播放器
     self.currentAudioURL = Url;
@@ -2550,17 +2560,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 - (void)audioPlayerDidFinish {
     NSLog(@"✅ 音频播放完成");
-    [self.currentAudioPlayer removeFromSuperview];
-    self.currentAudioPlayer = nil;
-    self.isAudioSessionActive = NO;
-    
-    // 清理持久化播放信息
-    self.currentAudioURL = nil;
-    self.currentStoryTitle = nil;
-    self.currentCoverImageURL = nil;
-    
-    // 清理系统媒体控制中心的播放信息
-//    [self clearNowPlayingInfo];
+    [self stopCurrentHomeAudioPlaybackAndClearState:YES];
     
     // 释放音频会话
     NSError *error = nil;
@@ -2592,18 +2592,7 @@ static const CGFloat JXPageheightForHeaderInSection = 100;
 
 - (void)audioPlayerDidClose {
     NSLog(@"❌ 音频播放器关闭");
-    
-    // 清理播放器引用
-    self.currentAudioPlayer = nil;
-    self.isAudioSessionActive = NO;
-    
-    // 清理持久化播放信息
-    self.currentAudioURL = nil;
-    self.currentStoryTitle = nil;
-    self.currentCoverImageURL = nil;
-    
-    // 清理系统媒体控制中心的播放信息
-    [self clearNowPlayingInfo];
+    [self stopCurrentHomeAudioPlaybackAndClearState:YES];
     
     // 释放音频会话
     NSError *error = nil;

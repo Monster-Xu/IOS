@@ -202,10 +202,7 @@
     self.layoutTaskToken += 1;
     
     // ✅ 离开页面时停止音频播放
-    if (self.audioPlayerView && self.audioPlayerView.isPlaying) {
-        [self.audioPlayerView stop];
-        NSLog(@"⏸️ 离开页面，暂停音频播放");
-    }
+    [self stopAudioPlayback];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSize) object:nil];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(updateMainScrollViewContentSizeWithExtraHeight:) object:nil];
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(adjustStoryViewHeightOptimized) object:nil];
@@ -669,24 +666,17 @@
     
     // 如果点击的是正在播放的音色，则暂停
     if (self.currentPlayingIndex == index && self.audioPlayerView && self.audioPlayerView.isPlaying) {
-        [self.audioPlayerView stop];
+        [self stopAudioPlayback];
         return;
     }
-    
-    // 停止之前的播放
-    if (self.currentPlayingIndex >= 0 && self.currentPlayingIndex != index) {
-        // 重置之前播放的cell的按钮状态
-        [self resetPlayButtonAtIndex:self.currentPlayingIndex];
-    }
-    
-    // 更新当前播放索引
-    self.currentPlayingIndex = index;
-    
+
     // 获取音频信息
     NSString *audioURL = voiceModel.sampleAudioUrl;
-    NSString *coverImageURL = voiceModel.avatarUrl;
-    NSString *title = voiceModel.voiceName;
-    
+    BOOL isSwitchingVoice = self.currentPlayingIndex >= 0 && self.currentPlayingIndex != index;
+    if (isSwitchingVoice) {
+        [self stopAudioPlayback];
+    }
+
     if (!audioURL || audioURL.length == 0) {
         NSLog(@"❌ 音频URL为空");
         [self showErrorAlert:LocalString(@"获取音频地址失败")];
@@ -695,13 +685,18 @@
     }
     
     NSLog(@"🎵 加载音频: %@", audioURL);
-    
-    // 创建或更新AudioPlayerView
-    if (!self.audioPlayerView) {
+
+    BOOL shouldCreateNewPlayer = !self.audioPlayerView || ![self.currentPlayingAudioURL isEqualToString:audioURL];
+    if (shouldCreateNewPlayer) {
+        [self stopAudioPlayback];
         self.audioPlayerView = [[AudioPlayerView alloc] initWithAudioURL:audioURL backgroundPlay:YES];
         self.audioPlayerView.delegate = self;
+        self.currentPlayingAudioURL = audioURL;
     }
     
+    // 更新当前播放索引
+    self.currentPlayingIndex = index;
+
     // ✅ 显示播放器 - 现在在根视图上显示，不在滚动视图中
 //    CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
 //    CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
@@ -719,6 +714,8 @@
     
     if (self.audioPlayerView && self.audioPlayerView.isPlaying) {
         [self.audioPlayerView pause];
+    } else {
+        [self stopAudioPlayback];
     }
 }
 
@@ -752,7 +749,7 @@
 
 - (void)audioPlayerDidFinish {
     NSLog(@"✅ 音频播放完成");
-    [self resetPlayButtonAtIndex:self.currentPlayingIndex];
+    [self stopAudioPlayback];
 }
 
 - (void)audioPlayerDidUpdateProgress:(CGFloat)progress currentTime:(NSTimeInterval)currentTime totalTime:(NSTimeInterval)totalTime {
@@ -761,10 +758,7 @@
 
 - (void)audioPlayerDidClose {
     NSLog(@"❌ 音频播放器关闭");
-    [self resetPlayButtonAtIndex:self.currentPlayingIndex];
-    [self.audioPlayerView stop];
-    self.currentPlayingIndex = -1;
-    self.audioPlayerView = nil;
+    [self stopAudioPlayback];
 }
 
 #pragma mark - ScrollView Setup
@@ -1697,10 +1691,17 @@
 
 /// 停止音频播放
 - (void)stopAudioPlayback {
+    NSInteger previousPlayingIndex = self.currentPlayingIndex;
+    self.currentPlayingIndex = -1;
+    self.currentPlayingAudioURL = nil;
+
+    if (previousPlayingIndex >= 0) {
+        [self resetPlayButtonAtIndex:previousPlayingIndex];
+    }
+
     if (self.audioPlayerView) {
         [self.audioPlayerView stop];
         self.audioPlayerView = nil;
-        self.currentPlayingIndex = -1;
         NSLog(@"🔇 已停止音频播放");
     }
 }
