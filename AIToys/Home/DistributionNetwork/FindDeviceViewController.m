@@ -54,24 +54,6 @@
     }
 }
 
-- (NSString *)searchingWifiHUDStatusText {
-    NSString *statusText = LocalString(@"正在寻找可用Wi-Fi...");
-    NSString *languageCode = [[ATLanguageHelper currentLanguageCode] lowercaseString] ?: @"";
-    if (![languageCode hasPrefix:@"ar"]) {
-        return statusText;
-    }
-
-    NSRange wifiRange = [statusText rangeOfString:@"Wi-Fi" options:NSCaseInsensitiveSearch];
-    if (wifiRange.location == NSNotFound || wifiRange.location == 0) {
-        return statusText;
-    }
-
-    NSString *prefix = [[statusText substringToIndex:wifiRange.location] stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceCharacterSet];
-    NSString *wifiText = [statusText substringWithRange:wifiRange];
-    NSString *suffix = [statusText substringFromIndex:NSMaxRange(wifiRange)];
-    return [NSString stringWithFormat:@"%@\n%@%@", prefix, wifiText, suffix];
-}
-
 -(NSMutableArray *)checkPermmitionArr{
     if(!_checkPermmitionArr){
         _checkPermmitionArr = [NSMutableArray array];
@@ -529,7 +511,7 @@
 //获取wifi列表
 -(void)loadWifiDataWithDeviceInfo:(ThingBLEAdvModel *)deviceInfo{
     
-    [SVProgressHUD showWithStatus:[self searchingWifiHUDStatusText]];
+    [SVProgressHUD showWithStatus:LocalString(@"正在寻找可用Wi-Fi...")];
     [ThingSmartBLEWifiActivator sharedInstance].bleWifiDelegate = self;
     [[ThingSmartBLEWifiActivator sharedInstance] connectAndQueryWifiListWithUUID:deviceInfo.uuid success:^{
       // 指令下发成功

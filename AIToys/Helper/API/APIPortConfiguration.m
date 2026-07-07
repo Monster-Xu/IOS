@@ -107,10 +107,6 @@
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/content/app-avatar/get"];
 }
 
-+ (NSString *)getUsageReportUrl {
-    return [[APIPortConfiguration baseURL] stringByAppendingString:@"#/talenpal/report/week-month?defaultTab=weekly"];
-}
-
 + (NSString *)getdollListUrl{
     return [[APIPortConfiguration baseURL] stringByAppendingString:@"app-api/doll/model/asset/list-by-doll-model-id"];
 }
