@@ -17,6 +17,7 @@
 #import "AvatarModel.h"
 #import "MyWebViewController.h"
 #import "ATLanguageHelper.h"
+#import "APIPortConfiguration.h"
 
 @interface MineViewController ()
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
@@ -51,6 +52,7 @@
 //        @{@"icon" : @"mine_msg", @"title" : LocalString(@"消息中心"), @"toVC" : @"MessageCenterVC"},
         @{@"icon" : @"mine_setting", @"title" : LocalString(@"设置"), @"toVC" : @"SettingViewController"},
         @{@"icon":@"mine_help",@"title":LocalString(@"帮助中心"),@"toVC":@"MyWebViewController"},
+        @{@"icon":@"mine-report",@"title":LocalString(@"使用报告"),@"toVC":@"UsageReport"},
     ] mutableCopy];
 //    @{@"icon" : @"mine_help", @"title" : LocalString(@"帮助中心"), @"toVC" : @"FamailyManageVC"},
     [self.itemArray addObjectsFromArray:arr];
@@ -166,6 +168,11 @@
             [[AnalyticsManager sharedManager]reportEventWithName:@"me_tap_message_center" level1:kAnalyticsLevel1_Home level2:@"" level3:@"" reportTrigger:@"点击消息中心时" properties:nil completion:^(BOOL success, NSString * _Nullable message) {
                             
                     }];
+    }else if ([str isEqualToString:@"UsageReport"]){
+        MyWebViewController * webVC = [[MyWebViewController alloc]init];
+        webVC.fullscreenDisplay = YES;
+        webVC.mainUrl = [APIPortConfiguration getUsageReportUrl];
+        [self.navigationController pushViewController:webVC animated:YES];
     }else if ([title isEqualToString:LocalString(@"帮助中心")]){
         MyWebViewController * webVC = [[MyWebViewController alloc]init];
         webVC.mainUrl = @"https://www.talenpal.com/pages/faq";

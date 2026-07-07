@@ -61,6 +61,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 获取用户头像
 + (NSString *)getAppAvatarUrl;
+/// 使用报告
++ (NSString *)getUsageReportUrl;
 //获取创意公仔信息
 + (NSString *)getdollListUrl;
 
