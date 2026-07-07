@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MyWebViewController : BaseViewController
 @property (nonatomic, copy) NSString *mainUrl;
+@property (nonatomic, assign) BOOL fullscreenDisplay;
 
 -(void)setNavigationBarColor:(UIColor *)color;
 @end
