@@ -51,8 +51,8 @@
     NSMutableArray *arr = [@[
 //        @{@"icon" : @"mine_msg", @"title" : LocalString(@"消息中心"), @"toVC" : @"MessageCenterVC"},
         @{@"icon" : @"mine_setting", @"title" : LocalString(@"设置"), @"toVC" : @"SettingViewController"},
-        @{@"icon":@"mine_help",@"title":LocalString(@"使用报告"),@"toVC":@"UsageReport"},
         @{@"icon":@"mine_help",@"title":LocalString(@"帮助中心"),@"toVC":@"MyWebViewController"},
+        @{@"icon":@"mine-report",@"title":LocalString(@"使用报告"),@"toVC":@"UsageReport"},
     ] mutableCopy];
 //    @{@"icon" : @"mine_help", @"title" : LocalString(@"帮助中心"), @"toVC" : @"FamailyManageVC"},
     [self.itemArray addObjectsFromArray:arr];
