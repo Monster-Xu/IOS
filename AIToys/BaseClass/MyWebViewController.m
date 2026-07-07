@@ -37,8 +37,6 @@
 <WKUIDelegate, WKNavigationDelegate, WKScriptMessageHandler>
 @property (nonatomic, strong) WKWebView *webView;
 @property (nonatomic, strong) UIProgressView *progressView;
-@property (nonatomic, strong) NSDate *backgroundDate;
-@property (nonatomic, assign) BOOL webContentProcessTerminated;
 @end
 
 @implementation MyWebViewController
@@ -47,7 +45,12 @@
     [super viewDidLoad];
     self.hj_NavIsHidden = self.fullscreenDisplay;
     [self setupUI];
-    [self loadMainRequest];
+    NSURL *url = [self webURLForMainUrl:self.mainUrl ?: @"http://192.168.1.74:8710/course/api/course/view/introduce/1287995003540406274"];
+    if (url.isFileURL) {
+        [self.webView loadFileURL:url allowingReadAccessToURL:url.URLByDeletingLastPathComponent];
+    } else {
+        [self.webView loadRequest:[NSURLRequest requestWithURL:url]];
+    }
     [self.navigationController.navigationBar setBarTintColor:UIColor.redColor];
 }
 
@@ -68,7 +71,6 @@
 
 - (void)dealloc {
     //移除观察者
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
     [_webView removeObserver:self forKeyPath:@"estimatedProgress"];
     [_webView.configuration.userContentController removeScriptMessageHandlerForName:@"TalenpalBridge"];
 //    [_webView removeObserver:self forKeyPath:@"title"];
@@ -112,8 +114,6 @@
     //添加监测网页加载进度的观察者
     [self.webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionNew context:nil];
 //    [self.webView addObserver:self forKeyPath:@"title" options:NSKeyValueObservingOptionNew context:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidEnterBackground:) name:UIApplicationDidEnterBackgroundNotification object:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillEnterForeground:) name:UIApplicationWillEnterForegroundNotification object:nil];
 }
 
 #pragma mark -- KVO
@@ -177,43 +177,6 @@
         return url;
     }
     return [NSURL fileURLWithPath:mainUrl];
-}
-
-- (void)loadMainRequest {
-    NSURL *url = [self webURLForMainUrl:self.mainUrl ?: @"http://192.168.1.74:8710/course/api/course/view/introduce/1287995003540406274"];
-    if (url.isFileURL) {
-        [self.webView loadFileURL:url allowingReadAccessToURL:url.URLByDeletingLastPathComponent];
-    } else {
-        [self.webView loadRequest:[NSURLRequest requestWithURL:url]];
-    }
-}
-
-- (void)reloadWebViewIfNeededAfterForeground {
-    if (!self.isViewLoaded || !self.webView) {
-        return;
-    }
-    if (self.webContentProcessTerminated) {
-        self.webContentProcessTerminated = NO;
-        [self.webView reload];
-        return;
-    }
-    if (![self isUsageReportURLString:self.mainUrl]) {
-        return;
-    }
-    NSTimeInterval backgroundDuration = self.backgroundDate ? [[NSDate date] timeIntervalSinceDate:self.backgroundDate] : 0;
-    BOOL shouldReloadAfterLongBackground = backgroundDuration >= 60;
-    BOOL hasNoVisibleURL = self.webView.URL.absoluteString.length == 0 || [self.webView.URL.absoluteString isEqualToString:@"about:blank"];
-    if (shouldReloadAfterLongBackground || hasNoVisibleURL) {
-        [self loadMainRequest];
-    }
-}
-
-- (void)applicationDidEnterBackground:(NSNotification *)notification {
-    self.backgroundDate = [NSDate date];
-}
-
-- (void)applicationWillEnterForeground:(NSNotification *)notification {
-    [self reloadWebViewIfNeededAfterForeground];
 }
 
 - (BOOL)isUsageReportURLString:(NSString *)urlString {
@@ -382,7 +345,7 @@
 
 // 页面加载完成之后调用
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
-    self.webContentProcessTerminated = NO;
+    
 }
 
 //提交发生错误时调用
@@ -433,11 +396,7 @@
 
 //进程被终止时调用
 - (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView {
-    self.webContentProcessTerminated = YES;
-    if (UIApplication.sharedApplication.applicationState == UIApplicationStateActive) {
-        self.webContentProcessTerminated = NO;
-        [webView reload];
-    }
+    
 }
 
 
